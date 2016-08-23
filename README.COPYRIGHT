@@ -1,0 +1,175 @@
+
+   ----COPYRIGHT INFO FOR FIASCO AND INCLUDED CODE----
+
+Fiasco is distributed under the following copyright:
+
+ ************************************************************
+ *                                                          *
+ *  Permission is hereby granted to any individual or       *
+ *  institution for use, copying, or redistribution of      *
+ *  this code and associated documentation, provided        *
+ *  that such code and documentation are not sold for       *
+ *  profit and the following copyright notice is retained   *
+ *  in the code and documentation:                          *
+ *                                                          *
+ *  Copyright (c) 1997,1998,1999 Carnegie Mellon University *
+ *                                                          *
+ *  This program is distributed in the hope that it will    *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the   *
+ *  implied warranty of MERCHANTABILITY or FITNESS FOR A    *
+ *  PARTICULAR PURPOSE.  Neither Carnegie Mellon University *
+ *  nor any of the authors assume any liability for         *
+ *  damages, incidental or otherwise, caused by the         *
+ *  installation or use of this software.                   *
+ *                                                          *
+ *  CLINICAL APPLICATIONS ARE NOT RECOMMENDED, AND THIS     *
+ *  SOFTWARE HAS NOT BEEN EVALUATED BY THE UNITED STATES    *
+ *  FDA FOR ANY CLINICAL USE.                               *
+ *                                                          *
+ ************************************************************
+
+*************************************************************
+In addition, Fiasco contains some code from other sources.
+
+The double-precision cumulative distribution function library
+DCDFLIB is available from 
+ftp://odin.mda.uth.tmc.edu//pub/unix/dcdflib.c.tar.Z .  It is
+distributed under the following copyright information:
+
+                              LEGALITIES
+
+Code that appeared  in an    ACM  publication  is subject  to    their
+algorithms policy:
+
+     Submittal of  an  algorithm    for publication  in   one of   the  ACM
+     Transactions implies that unrestricted use  of the algorithm within  a
+     computer is permissible.   General permission  to copy and  distribute
+     the algorithm without fee is granted provided that the copies  are not
+     made  or   distributed for  direct   commercial  advantage.    The ACM
+     copyright notice and the title of the publication and its date appear,
+     and  notice is given that copying  is by permission of the Association
+     for Computing Machinery.  To copy otherwise, or to republish, requires
+     a fee and/or specific permission.
+
+     Krogh, F.  Algorithms  Policy.  ACM  Tran.   Math.  Softw.   13(1987),
+     183-186.
+
+We place the DCDFLIB code that we have written in the public domain.
+
+                                 NO WARRANTY
+
+     WE PROVIDE ABSOLUTELY  NO WARRANTY  OF ANY  KIND  EITHER  EXPRESSED OR
+     IMPLIED,  INCLUDING BUT   NOT LIMITED TO,  THE  IMPLIED  WARRANTIES OF
+     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK
+     AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS  WITH YOU.  SHOULD
+     THIS PROGRAM PROVE  DEFECTIVE, YOU ASSUME  THE COST  OF  ALL NECESSARY
+     SERVICING, REPAIR OR CORRECTION.
+
+     IN NO  EVENT  SHALL THE UNIVERSITY  OF TEXAS OR  ANY  OF ITS COMPONENT
+     INSTITUTIONS INCLUDING M. D.   ANDERSON HOSPITAL BE LIABLE  TO YOU FOR
+     DAMAGES, INCLUDING ANY  LOST PROFITS, LOST MONIES,   OR OTHER SPECIAL,
+     INCIDENTAL   OR  CONSEQUENTIAL DAMAGES   ARISING   OUT  OF  THE USE OR
+     INABILITY TO USE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA OR
+     ITS ANALYSIS BEING  RENDERED INACCURATE OR  LOSSES SUSTAINED  BY THIRD
+     PARTIES) THE PROGRAM.
+
+     (Above NO WARRANTY modified from the GNU NO WARRANTY statement.)
+
+
+*************************************************************
+
+The cumulative distribution function library CDFLIB is
+available from http://www.stat.cmu.edu/general/ ; it is
+distributed with the following copyright information:
+
+
+ ************************************************************
+                              LEGALITIES
+
+ Code that appeared  in an    ACM  publication  is subject  to    their
+ algorithms policy:
+
+     Submittal of  an  algorithm    for publication  in   one of   the  ACM
+     Transactions implies that unrestricted use  of the algorithm within  a
+     computer is permissible.   General permission  to copy and  distribute
+     the algorithm without fee is granted provided that the copies  are not
+     made  or   distributed for  direct   commercial  advantage.    The ACM
+     copyright notice and the title of the publication and its date appear,
+     and  notice is given that copying  is by permission of the Association
+     for Computing Machinery.  To copy otherwise, or to republish, requires
+     a fee and/or specific permission.
+
+     Krogh, F.  Algorithms  Policy.  ACM  Tran.   Math.  Softw.   13(1987),
+     183-186.
+
+ We place the CDFLIB code that we have written in the public domain.  
+
+                                 NO WARRANTY
+     
+     WE PROVIDE ABSOLUTELY  NO WARRANTY  OF ANY  KIND  EITHER  EXPRESSED OR
+     IMPLIED,  INCLUDING BUT   NOT LIMITED TO,  THE  IMPLIED  WARRANTIES OF
+     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK
+     AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS  WITH YOU.  SHOULD
+     THIS PROGRAM PROVE  DEFECTIVE, YOU ASSUME  THE COST  OF  ALL NECESSARY
+     SERVICING, REPAIR OR CORRECTION.
+     
+     IN NO  EVENT  SHALL THE UNIVERSITY  OF TEXAS OR  ANY  OF ITS COMPONENT
+     INSTITUTIONS INCLUDING M. D.   ANDERSON HOSPITAL BE LIABLE  TO YOU FOR
+     DAMAGES, INCLUDING ANY  LOST PROFITS, LOST MONIES,   OR OTHER SPECIAL,
+     INCIDENTAL   OR  CONSEQUENTIAL DAMAGES   ARISING   OUT  OF  THE USE OR
+     INABILITY TO USE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA OR
+     ITS ANALYSIS BEING  RENDERED INACCURATE OR  LOSSES SUSTAINED  BY THIRD
+     PARTIES) THE PROGRAM.
+     
+     (Above NO WARRANTY modified from the GNU NO WARRANTY statement.)
+ ***************************************************************
+
+Fiasco contains a translated version of the "pvmgetarch" utility from 
+the PVM package.  The copyright for that package follows:
+
+****************************************************************
+
+         PVM version 3.4:  Parallel Virtual Machine System
+               University of Tennessee, Knoxville TN.
+           Oak Ridge National Laboratory, Oak Ridge TN.
+                   Emory University, Atlanta GA.
+      Authors:  J. J. Dongarra, G. E. Fagg, G. A. Geist,
+                 J. A. Kohl, R. J. Manchek, P. Mucci,
+         P. M. Papadopoulos, S. L. Scott, and V. S. Sunderam
+                   (C) 1997 All Rights Reserved
+
+                              NOTICE
+
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose and without fee is hereby granted
+ provided that the above copyright notice appear in all copies and
+ that both the copyright notice and this permission notice appear in
+ supporting documentation.
+
+ Neither the Institutions (Emory University, Oak Ridge National
+ Laboratory, and University of Tennessee) nor the Authors make any
+ representations about the suitability of this software for any
+ purpose.  This software is provided ``as is'' without express or
+ implied warranty.
+
+ PVM version 3 was funded in part by the U.S. Department of Energy,
+ the National Science Foundation and the State of Tennessee.
+
+________________________________________________________________________
+CONTACT
+
+The PVM web home page is at
+
+    http://www.csm.ornl.gov/pvm/pvm_home.html .
+
+A newsgroup, comp.parallel.pvm, exists for discussions about PVM
+and help with specific problems.
+
+Please direct any e-mail (questions, bugs, bug fixes, etc.) to:
+
+    pvm@msr.CSM.ORNL.GOV.
+
+To report bugs or problems with PVM, please see the file
+
+    $PVM_ROOT/doc/bugreport .
+

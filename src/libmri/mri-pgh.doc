@@ -1,0 +1,148 @@
+
+		THE PITTSBURGH MRI FORMAT
+
+		by
+		Mark Hahn, LRDC, Univ. of Pittsburgh
+		Greg Hood, Pittsburgh Supercomputing Center
+
+		Version 1.0
+		March, 1996			
+		Copyright (c) 1996 Pittsburgh Supercomputing Center
+
+----------------------------------------------------------------------------
+INTRODUCTION
+
+This document summarizes the proposed format for MRI data within the
+Pittsburgh fMRI community.  The intent here was to provide a simple,
+extensible format that could be used by various research groups.
+Why not use an existing format as a standard?  The more general widely-used
+formats such as DICOM are perceived to have too much complexity for a
+research effort in which people do not want to devote a large amount of
+time learning and conforming to a standard.  On the other hand, the simpler
+formats such as ANALYZE are perceived as too limiting to people who want to
+include various types of additional information along with the image data.
+
+----------------------------------------------------------------------------
+CONCEPTS
+
+A "dataset" may encompass any number of MRI images plus other information
+relevant to those images.  Let us consider a dataset named "example1".
+
+Each dataset has a header which is always stored at the beginning of a file
+with extension ".mri".  So the header for dataset "example1" is located in
+"example1.mri".  The header holds a set of key/value pairs.  The value
+of a key is a string.  For instance, we could have an "acquisition_date"
+key with value "15-Dec-95".   Other keys could hold strictly numerical
+strings, such as "34".
+
+In the special case where the key's value is "[chunk]", the key points
+off to a large chunk of binary data.  These chunks are simply multidimensional
+arrays of data.  So we may have an "images" key which points to a
+256x256x9x100 array of image data, holding 256x256 resolution images
+with 9 slices at each of 100 timesteps.
+
+These binary chunks may be stored in the ".mri" file after the header.
+Or they may be directed into other files at the API level.  For instance,
+it would not be unusual to keep the "images" data in a file named
+"example1.dat".
+
+
+----------------------------------------------------------------------------
+FORMAT
+
+Here we describe in detail the file format.  This section may be skipped
+by all who intend to just use the provided software interfaces.
+
+The header is written at the beginning of the .mri file and consists of ASCII
+characters so that it is human-readable.  The header is basically just
+a list of lines of the form "key = value".
+
+The format may be described by the following grammar (a '|' indicates alternative
+constructions and a '*' indicates 0 or more repetitions of the starred item):
+
+	<mri-file> := <header>   |
+			<header> ^L^Z <binary data>*		# we separate the binary data with ^L^Z
+								# to facilitate viewing the file with
+								# 'more' and other utilities
+	<header> := <key-value-pair>*
+	<key-value-pair> := <key> = <value> ^J			# one key/value pair per line
+
+	<key> := <string>					# keys are arbitrary strings; note that
+								# case is significant
+	<value> := <string>					# values are arbitrary strings;
+								# special case: [chunk] indicates
+								# that the value is a chunk
+	<string> := <an unquoted sequence of non-control
+			characters but excluding '='>   |
+		    " <a quoted C-style string> "
+
+
+White space is ignored between elements, but is significant within quoted string values.
+
+----------------------------------------------------------------------------
+KEYS
+
+In order to maintain portability of the files between research
+groups, it will be necessary to name keys in a manner that
+avoids conflict.  We anticipate that some keys will be fairly
+standard and others will be specific to a particular research
+project.  We will maintain a list of all commonly used keys
+and their interpretation so that duplication and conflicts
+are minimized.
+
+The only mandatory keys are "!format" and "!version" keys which
+identify the file as a PGH-format MRI dataset.  The '!' prefix
+is used to force these keys to be first in the header, since
+the header is typically written out with the keys sorted
+alphabetically.
+	!format = pgh
+	!version = 1.0
+
+We reserve some keys in order to specify how binary chunks
+are to be interpreted.  We adopt the convention that these keys
+are named by concatenating the chunk name with a dot and an
+identifying suffix.  For example if we have an "images"
+chunk, we will name its properties as follows:
+
+	images.datatype = int16
+	images.dimensions = xyzt
+	images.extent.x = 64
+	images.extent.y = 64
+	images.extent.z = 10
+	images.file = .dat
+	images.order = 0
+	images.offset = 0
+	images.size = 81920
+
+where:
+    images.datatype key may be one of the following:
+		uint8		# unsigned 8-bit integer
+		int16		# signed 16-bit integer
+		int32		# sigend 32-bit integer
+		float32		# 32-bit IEEE floating pt number
+		float64		# 64-bit IEEE floating pt number
+    images.dimensions is a string listing the dimensions of
+    	the data within the chunk.  Each character within
+	the string gives the name of that dimension and its
+	ordering within the chunk data.  The first-named
+	dimension is taken to vary most rapidly and the
+	last-named dimension least rapidly.
+    images.extent.<dimension> gives the number of steps
+	along the specified dimension.  If not present,
+	there is assumed to be just one step.
+    images.little_endian, if present and set to 1, specifies that the
+	data is stored in a little-endian format.  The implementation
+	will, by default, create chunks with native endian format.
+	But by explicitly setting images.little_endian to true or false,
+	the user can control the storage representation of the binary data.
+    images.file, if present, is the filename where the chunk is located;
+	it may be ".<ext>" to indicate a file with the same name but
+	different extension, or a full filename.
+    images.order is the relative order of the chunk within its
+	file; if order is 0, the chunk will be placed first in the file;
+	if 1, it will be placed second, etc.; if order is "fixed_offset",
+	the offset specifies an absolute location which will not be
+	changed even if other chunks are added or removed.
+    images.offset is the byte offset specifying the starting location
+	within the file.
+    images.size is the size of the chunk in bytes.

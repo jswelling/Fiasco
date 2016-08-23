@@ -1,0 +1,123 @@
+#
+#	Makefile.pkg for FMRI packages
+#
+#	Copyright (c) 1996  Pittsburgh Supercomputing Center
+#
+#	HISTORY
+#		9/96	Written by Greg Hood (PSC)
+#
+
+SHELL  = /bin/sh
+O      = $(FMRI)/obj/$(ARCH)/$(PKG)
+L      = $(FMRI)/lib/$(ARCH)
+B      = $(FMRI)/bin/$(ARCH)
+I      = $(FMRI)/include/$(ARCH)
+CB     = $(FMRI)/bin/$(COMPILE_ARCH)
+D      = $(FMRI)/doc/generated
+CFLAGS = $(PKG_CFLAGS) $(FMRI_CFLAGS)
+LFLAGS = $(PKG_LFLAGS) -L$L $(FMRI_LFLAGS)
+LIBS   = $(PKG_LIBS) $(FMRI_LIBS)
+DIRS   = $L $O $B $I $(PKG_DIRS)
+
+# Clear the default suffix list, and replace it with my own.
+.SUFFIXES:
+.SUFFIXES: .h .c .o .a .help
+
+# The following will generally be overridden from the command line
+DEP_NM= dummy
+
+# if "make" is invoked from a src subdirectory, then just compile that
+# directory
+local:
+	dir=`pwd | awk -F/ '{print $$NF}' -`; \
+	cd ../..; \
+	$(MAKE) $$dir
+
+all: dirs include_updated $(PKG_MAKELIBS) $(PKG_MAKEBINS) \
+	$(PKG_MAKETARGETS) docs
+
+docs: $(PKG_MAKEBINS)
+	@( if [ -n "$(?F)" ]; then \
+	  for i in  $(?F) dummy ; \
+	    do if ( [ $$i != dummy ] && [ -r $${i}_help.help ] && \
+                ( $(NEWER) $B/$$i $D/$$i.html ) ) ; then \
+	      echo "%%%% Generating $$i.html %%%%" ; \
+	      $B/$$i -help htmldoc > $D/$$i.html ; \
+	      fi; \
+	    done; \
+	fi )
+
+fiattarfile: $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
+	tar rvf /tmp/fiat.tar -C $(FMRI) \
+		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
+
+tarfile: $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
+	tar rvf /tmp/fiasco.tar -C $(FMRI) \
+		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
+
+dirs:
+	@echo "%%%% Creating directories for $(PKG) %%%%"
+	@mkdir -p $(DIRS) >/dev/null 2>&1; exit 0
+
+include_updated: $(PKG_EXPORTS)
+	@( echo "%%%% Exporting include files from $(PKG) %%%%" ; \
+          if [ -n "$(?F)" ]; then \
+	    for f in  $(?F) dummy ; \
+	        do if ( [ $$f != dummy ] && ( $(NEWER) $$f $I/$$f ) ) ; then \
+                    cp -f $$f $I ; \
+                  fi; \
+	        done; \
+	    touch $O/include_updated; \
+	fi )
+
+clean:
+	-@echo "%%%% Cleaning $(PWD) %%%%"
+	-rm -rf $O
+	-cd $L; rm -f $(PKG_MAKELIBS)
+	-cd $B; rm -f $(PKG_MAKEBINS)
+	-@( if [ -n "$(PKG_MAKEBINS)" ]; then \
+	  for i in  $(PKG_MAKEBINS) dummy ; \
+	    do if ( [ $$i != dummy ] && [ -r $D/$$i.html ] ) ; then \
+	      @echo "%%%% Removing $$i.html %%%%" ; \
+	      rm -f $D/$$i.html ; fi ; \
+	    done; \
+	fi )
+
+depend: $(CSOURCE) $(HFILES)
+	@echo "%%%% Generating dependencies in $(PWD) %%%%"
+	@-rm -f depend.mk.$(ARCH)
+	@echo '#Automatically generated; do not edit.' > depend.mk.$(ARCH) 
+	@makedepend -p$(O)/ -f depend.mk.$(ARCH) -DMAKING_DEPEND -- \
+		 $(CFLAGS) -- $(CSOURCE) 
+
+depend.mk.$(ARCH):
+	touch depend.mk.$(ARCH)
+
+checkout:
+	-(for i in $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)
+
+CC_RULE = @( echo "%%%% Compiling $(@F:.o=.c) %%%%" ; \
+             $(CC) -c $(CFLAGS) -o $@ $(@F:.o=.c) )
+HELP_RULE = @( echo "%%%% Compiling $(@F:.o=.help) %%%%" ; \
+               m4 ../libcrg/macros.m4 $(@F:.o=.help) | \
+		  $(CB)/buildhelp - $O/$(@F:.o=); \
+	       $(CC) -c $(CFLAGS) -o $@ $O/$(@F:.o=)Help.c ; \
+	       rm $O/$(@F:.o=)Help.c )
+BASIC_LD = @( echo "%%%% Linking $(@F) %%%%" ; \
+              $(LD) $(LFLAGS) -o $B/$(@F) $O/$(@F).o $(LIBS) )
+SINGLE_LD = @( echo "%%%% Linking $(@F) %%%%" ; \
+	      $(LD) $(LFLAGS) -o $B/$(@F) $O/$(@F).o $(LIBS) )
+SINGLE_HELP_LD = @( echo "%%%% Linking $(@F) %%%%" ; \
+	      $(LD) $(LFLAGS) -o $B/$(@F) $O/$(@F).o $O/$(@F)_help.o $(LIBS) )
+MULTI_LD  = @( echo "%%%% Linking $(@F) %%%%" ; \
+               $(LD) $(LFLAGS) -o $B/$(@F) $(PKG_OBJS) $(LIBS) )
+MULTI_HELP_LD = @( echo "%%%% Linking $(@F) %%%%" ; \
+	$(LD) $(LFLAGS) -o $B/$(@F) $(PKG_OBJS) $O/$(@F)_help.o $(LIBS) )
+
+include depend.mk.$(DEP_NM)
+

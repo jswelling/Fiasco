@@ -1,0 +1,75 @@
+static double algdiv(double*,double*);
+static double alngam(double*);
+static double alnrel(double*);
+static double apser(double*,double*,double*,double*);
+static double basym(double*,double*,double*,double*);
+static double bcorr(double*,double*);
+static double betaln(double*,double*);
+static double bfrac(double*,double*,double*,double*,double*,double*);
+static void bgrat(double*,double*,double*,double*,double*,double*,int*i);
+static double bpser(double*,double*,double*,double*);
+static void bratio(double*,double*,double*,double*,double*,double*,int*);
+static double brcmp1(int*,double*,double*,double*,double*);
+static double brcomp(double*,double*,double*,double*);
+static double bup(double*,double*,double*,double*,int*,double*);
+static void cumbet(double*,double*,double*,double*,double*,double*);
+static void cumbin(double*,double*,double*,double*,double*,double*);
+static void cumchi(double*,double*,double*,double*);
+static void cumchn(double*,double*,double*,double*,double*);
+static void cumf(double*,double*,double*,double*,double*);
+static void cumfnc(double*,double*,double*,double*,double*,double*);
+static void cumgam(double*,double*,double*,double*);
+static void cumnbn(double*,double*,double*,double*,double*,double*);
+static void cumnor(double*,double*,double*);
+static void cumpoi(double*,double*,double*,double*);
+static void cumt(double*,double*,double*,double*);
+static double dbetrm(double*,double*);
+static double devlpl(double [],int*,double*);
+static double dexpm1(double*);
+static double dinvnr(double *p,double *q);
+static void E0000(int,int*,double*,double*,unsigned long*,
+                  unsigned long*,double*,double*,double*,
+                  double*,double*,double*,double*);
+static void dinvr(int*,double*,double*,unsigned long*,unsigned long*);
+static void dstinv(double*,double*,double*,double*,double*,double*,
+            double*);
+static double dlanor(double*);
+static double dln1mx(double*);
+static double dln1px(double*);
+static double dlnbet(double*,double*);
+static double dlngam(double*);
+static double dstrem(double*);
+static double dt1(double*,double*,double*);
+static void E0001(int,int*,double*,double*,double*,double*,
+                  unsigned long*,unsigned long*,double*,double*,
+                  double*,double*);
+static void dzror(int*,double*,double*,double*,double *,
+		  unsigned long*,unsigned long*);
+static void dstzr(double *zxlo,double *zxhi,double *zabstl,double *zreltl);
+static double erf1(double*);
+static double erfc1(int*,double*);
+static double esum(int*,double*);
+static double exparg(int*);
+static double fpser(double*,double*,double*,double*);
+static double gam1(double*);
+static void gaminv(double*,double*,double*,double*,double*,int*);
+static double gamln(double*);
+static double gamln1(double*);
+static double Xgamm(double*);
+static void grat1(double*,double*,double*,double*,double*,double*);
+static void gratio(double*,double*,double*,double*,int*);
+static double gsumln(double*,double*);
+static double psi(double*);
+static double rcomp(double*,double*);
+static double rexp(double*);
+static double rlog(double*);
+static double rlog1(double*);
+static double spmpar(int*);
+static double stvaln(double*);
+static double fifdint(double);
+static double fifdmax1(double,double);
+static double fifdmin1(double,double);
+static double fifdsign(double,double);
+static long fifidint(double);
+static long fifmod(long,long);
+static void ftnstop(char*);

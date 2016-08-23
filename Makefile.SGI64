@@ -1,0 +1,20 @@
+#
+#	SGI64-specific Makefile for FMRI software
+#
+#	Copyright (c) 1996 Pittsburgh Supercomputing Center
+#	Written by Greg Hood, PSC, Sept. 1996
+#
+
+CC     = cc
+ARCH_CFLAGS = -I$(FMRI)/include/$(ARCH) -DFORTRAN_ADD_UNDERSCORE -O3
+LD     = cc -woff 84
+ARCH_LFLAGS = 
+ARCH_LIBS   = 
+AR     = ar 
+ARCH_ARFLAGS= -r
+RANLIB = echo "%%%%" ranlib not needed for
+NEWER = /usr/lib/desktop/newer
+SHR_EXT = so
+SHR_LD = cc -shared
+
+include Makefile.common

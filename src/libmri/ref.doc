@@ -1,0 +1,21 @@
+FUNCTION REFERENCE MANUAL
+
+
+MRI_Dataset *mri_open_dataset(char *name, MRI_OpenMode mode);
+
+/* mri_open_dataset opens a dataset and returns a pointer to it
+   if successful, otherwise NULL.
+	name is the filename where the dataset header is stored,
+		The header for the dataset is stored in a file
+		with extension .mri, so if the supplied name does
+		not end in ".mri", that extension will automatically
+		be appended to it.
+	mode may be: MRI_READ to indicate that we will only be reading
+				an existing dataset;
+		     MRI_WRITE to indicate that we will be creating
+				a new dataset;
+		     MRI_MODIFY to indicate that we will be reading
+				an existing dataset and making modifications
+				to it. */
+
+	The			

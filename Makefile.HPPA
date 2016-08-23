@@ -1,0 +1,20 @@
+#
+#	HPPA-specific Makefile for FMRI software
+#
+#	Copyright (c) 1996 Pittsburgh Supercomputing Center
+#	Written by Greg Hood, PSC, Sept. 1996
+#
+
+CC     = cc
+ARCH_CFLAGS = -I$(FMRI)/include/$(ARCH) -O -Ae
+LD     = cc
+ARCH_LFLAGS = 
+ARCH_LIBS   = 
+AR     = ar
+ARCH_ARFLAGS= -r
+RANLIB = echo ranlib not needed on $(ARCH) for
+NEWER = newer
+SHR_EXT = sl
+SHR_LD = ld -b
+
+include Makefile.common

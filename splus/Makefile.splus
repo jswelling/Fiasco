@@ -1,0 +1,52 @@
+#
+#	Makefile.pkg for FMRI packages
+#
+#	Copyright (c) 1996  Pittsburgh Supercomputing Center
+#
+#	HISTORY
+#		9/96	Written by Greg Hood (PSC)
+#               7/97    Modified for Splus by Joel Welling (PSC/stats)
+#
+
+SHELL  = /bin/sh
+B      = $(FMRI)/bin/$(ARCH)
+L       = $(FMRI)/lib/$(ARCH)
+I       = $(FMRI)/include/$(ARCH)
+DLO     = $(FMRI)/splus/dlo/$(ARCH)
+DLO_SRC = $(FMRI)/splus/dlo_src
+SCRIPT  = $(FMRI)/splus/script
+S = $(FMRI)/splus/S/$(ARCH)
+CFLAGS = $(PKG_CFLAGS) $(FMRI_CFLAGS)
+DIRS   = ${DLO} ${S}
+.SUFFIXES: .h .c .o .a .help
+
+# if "make" is invoked from a src subdirectory, then just compile that
+# directory
+local:
+	dir=`pwd | awk -F/ '{print $$NF}' -`; \
+	cd ../..; \
+	$(MAKE) $$dir
+
+all: dirs $(PKG_MAKETARGETS)
+
+releaseprep:
+	echo "no release prep from " `pwd`
+
+tarfile: $(CSOURCE) $(HFILES) $(SSOURCE) $(MISCFILES) $(MAKEFILES)
+	tar rvf /usr/tmp/fiasco.tar -C $(FMRI) \
+		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) $(SSOURCE) \
+		depend.mk.dummy `
+
+dirs:
+	@-mkdir -p $(DIRS) >/dev/null 2>&1; exit 0
+
+.c.o:
+	$(CC) -c $(CFLAGS) -o $O/$@ $<
+
+clean:
+	-rm -rf ${DIRS}
+
+checkout:
+	-(for i in $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)

@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Pittsburgh MRI File Format, Version 1.0</title>
+  </head>
+
+  <body>
+      <h1>Pittsburgh MRI File Format, Version 1.0</h1>
+
+<h2>Copyright</h2> Pittsburgh Supercomputing Center, March 1996
+
+<h2>Authors</h2>
+Mark Hahn, LRDC, Univ. of Pittsburgh<br>
+Greg Hood, Pittsburgh Supercomputing Center
+
+<h2>Introduction</h2>
+
+This document summarizes the proposed format for MRI data within the
+Pittsburgh fMRI community.  The intent here was to provide a simple,
+extensible format that could be used by various research groups.
+Why not use an existing format as a standard?  The more general widely-used
+formats such as DICOM are perceived to have too much complexity for a
+research effort in which people do not want to devote a large amount of
+time learning and conforming to a standard.  On the other hand, the simpler
+formats such as ANALYZE are perceived as too limiting to people who want to
+include various types of additional information along with the image data.
+
+<h2>Concepts</h2>
+
+A "dataset" may encompass any number of MRI images plus other information
+relevant to those images.  Let us consider a dataset named "example1".
+<p>
+Each dataset has a header which is always stored at the beginning of a file
+with extension ".mri".  So the header for dataset "example1" is located in
+"example1.mri".  The header holds a set of key/value pairs.  The value
+of a key is a string.  For instance, we could have an "acquisition_date"
+key with value "15-Dec-95".   Other keys could hold strictly numerical
+strings, such as "34".
+<p>
+In the special case where the key's value is "[chunk]", the key points
+off to a large chunk of binary data.  These chunks are simply multidimensional
+arrays of data.  So we may have an "images" key which points to a
+256x256x9x100 array of image data, holding 256x256 resolution images
+with 9 slices at each of 100 timesteps.
+<p>
+These binary chunks may be stored in the ".mri" file after the header.
+Or they may be directed into other files at the API level.  For instance,
+it would not be unusual to keep the "images" data in a file named
+"example1.dat".
+<p>
+
+<h2>Format</h2>
+
+Here we describe in detail the file format.  This section may be skipped
+by all who intend to just use the provided software interfaces.
+<p>
+The header is written at the beginning of the .mri file and consists of ASCII
+characters so that it is human-readable.  The header is basically just
+a list of lines of the form "key = value".
+<p>
+The format may be described by the following grammar (a '|' indicates alternative
+constructions and a '*' indicates 0 or more repetitions of the starred item):
+
+<pre>
+        &lt;mri-file&gt; := &lt;header&gt;   |
+                      &lt;header&gt; ^L^Z &lt;binary data&gt;*
+
+        &lt;header&gt; := &lt;key-value-pair&gt;*
+        &lt;key-value-pair&gt; := &lt;key&gt; = &lt;value&gt; ^J   # one key/value pair per line
+
+        &lt;key&gt; := &lt;string&gt;                    
+
+        &lt;value&gt; := &lt;string&gt;                  
+
+        &lt;string&gt; := &lt;an unquoted sequence of non-control
+                        characters but excluding '='&gt;   |
+                    " &lt;a quoted C-style string&gt; "
+</pre>       
+We separate the binary data with ^L^Z
+to facilitate viewing the file with
+'more' and other utilities.
+<p>
+Keys are arbitrary strings; note that case is significant.
+<p>
+
+Values are arbitrary strings; special case: [chunk] indicates
+that the value is a chunk.
+<p>
+
+White space is ignored between elements, but is significant within quoted string values.
+
+<h2>Keys</h2>
+
+In order to maintain portability of the files between research
+groups, it will be necessary to name keys in a manner that
+avoids conflict.  We anticipate that some keys will be fairly
+standard and others will be specific to a particular research
+project.  We will maintain a list of all commonly used keys
+and their interpretation so that duplication and conflicts
+are minimized.
+<p>
+The only mandatory keys are "!format" and "!version" keys which
+identify the file as a PGH-format MRI dataset.  The '!' prefix
+is used to force these keys to be first in the header, since
+the header is typically written out with the keys sorted
+alphabetically.
+<pre>
+        !format = pgh
+        !version = 1.0
+</pre>
+<p>
+We reserve some keys in order to specify how binary chunks
+are to be interpreted.  We adopt the convention that these keys
+are named by concatenating the chunk name with a dot and an
+identifying suffix.  For example if we have an "images"
+chunk, we will name its properties as follows:
+<pre>
+        images.datatype = int16
+        images.dimensions = xyzt
+        images.extent.x = 64
+        images.extent.y = 64
+        images.extent.z = 10
+        images.file = .dat
+        images.order = 0
+        images.offset = 0
+        images.size = 81920
+</pre>
+where:
+<dl>
+<dt>images.datatype key <dd>may be one of the following:
+<pre>
+                uint8                # unsigned 8-bit integer
+                int16                # signed 16-bit integer
+                int32                # sigend 32-bit integer
+                float32                # 32-bit IEEE floating pt number
+                float64                # 64-bit IEEE floating pt number
+</pre>
+<dt>images.dimensions<dd>is a string listing the dimensions of
+            the data within the chunk.  Each character within
+        the string gives the name of that dimension and its
+        ordering within the chunk data.  The first-named
+        dimension is taken to vary most rapidly and the
+        last-named dimension least rapidly.
+<dt>images.extent.&lt;dimension&gt; <dd>gives the number of steps
+        along the specified dimension.  If not present,
+        there is assumed to be just one step.
+<dt>images.little_endian<dd>if present and set to 1, specifies that the
+        data is stored in a little-endian format.  The implementation
+        will, by default, create chunks with native endian format.
+        But by explicitly setting images.little_endian to true or false,
+        the user can control the storage representation of the binary data.
+<dt>images.file<dd>if present, is the filename where the chunk is located;
+        it may be ".&lt;ext&gt;" to indicate a file with the same name but
+        different extension, or a full filename.
+<dt>images.order<dd>is the relative order of the chunk within its
+        file; if order is 0, the chunk will be placed first in the file;
+        if 1, it will be placed second, etc.; if order is "fixed_offset",
+        the offset specifies an absolute location which will not be
+        changed even if other chunks are added or removed.
+<dt>images.offset<dd>is the byte offset specifying the starting location
+        within the file.
+<dt>images.size <dd>is the size of the chunk in bytes.
+</dl>
+
+
+
+      <hr>
+      <address><a href="mailto:welling@sloth.stat.cmu.edu">Joel Welling</a></address>
+<!-- Created: Wed Nov  5 17:38:49 EST 1997 -->
+<!-- hhmts start -->
+Last modified: Wed Nov  5 18:03:50 EST 
+<!-- hhmts end -->
+  </body>
+</html>

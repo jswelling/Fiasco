@@ -1,0 +1,18 @@
+#
+# LINUX-specific Makefile for FMRI software
+#
+#
+
+CC     = cc
+ARCH_CFLAGS = -D_BSD_SOURCE -D_XOPEN_SOURCE=500 -DFORTRAN_ADD_UNDERSCORE -Wimplicit -g
+LD     = $(CC)
+ARCH_LFLAGS = 
+ARCH_LIBS   = 
+AR     = ar
+ARCH_ARFLAGS= -r
+RANLIB = echo "%%%%" ranlib not needed for
+NEWER = $(FMRI)/src/fiat_scripts/test_newer.csh
+SHR_EXT = so
+SHR_LD = cc -shared
+
+include Makefile.common

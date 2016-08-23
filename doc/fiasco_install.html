@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Fiasco Installation Instructions</title>
+  </head>
+
+  <body>
+      <h1>Fiasco Installation Instructions</h1>
+
+Installing Fiasco 4.1 is much easier than installing earlier versions,
+though it can still be non-trivial.  
+
+<p>You will need the following third party packages.  
+<ul>
+<li><a href="http://www.epm.ornl.gov/pvm/pvm_home.html">PVM3</a>,
+	  available from ftp.netlib.org .  PVM allows Fiasco to run
+	  in parallel across multiple CPUs.
+<li><a href="http://www.netlib.org/lapack/index.html">LAPACK</a>, 
+a standard library of mathematics routines built on the
+Basic Linear Algebra Subroutines (BLAS).  LAPACK is available from
+netlib also, but most vendors provide versions of this library tuned
+to their machines.
+<li>The <a href="http://www.acm.org/~perlman/statinfo.html">|Stat</a>
+	  or <b>Unix Stat</b> package.  See src/mri_unix_stat/README
+	  in the Fiasco distribution for
+	  the reasons for this requirement.
+</ul>
+<p>
+
+Splus, available from <a href="http://www.mathsoft.com/">MathSoft</a>,
+      is an optional component of Fiasco.  Splus is used only to
+	create graphs of statistics.  If you do not have Splus, you
+	may wish to try a java-based parameter estimate viewer we
+	are developing.  Send mail to
+	<a href="mailto:fiasco@stat.cmu.edu">fiasco@stat.cmu.edu</a>
+	and ask about ParViewer.
+
+<p>
+To install Fiasco 4.1, do the following.
+<ol>
+<li>Install pvm3, using the instructions included in that package.
+	  You should make sure that the install works to the point
+	  where you can type the command "pvm" and the PVM daemon and
+	  console will start up without error.  Type "halt" at the pvm
+	  prompt to stop
+	  the daemon and exit the console program. At the end of this
+	  process, the following environment variables should be set:
+<ul>
+<li>PVM_ROOT should point to the place where you installed pvm3.
+<li>PVM_ARCH should be the value returned by the script
+	      ${PVM_ROOT}/lib/pvmgetarch .
+</ul>
+<li>Install |Stat according to the instructions included with that
+	  package.
+<li>Find the vendor's version of LAPACK on your system, or install it.
+<li>Get the tar file Fiasco4.1.tar.gz (or .Z) plus any required patches from
+	  <a href="http://www.stat.cmu.edu/~fiasco/download/">
+	http://www.stat.cmu.edu/~fiasco/download/</a> .
+<li>Pick a root directory in which to install Fiasco, for example
+	  your home directory.
+<li>Use gunzip (or uncompress) to uncompress Fiasco4.1.tar .
+<li>Untar Fiasco4.1.tar using the command:
+<pre>
+<kbd>tar xvf Fiasco4.1.tar</kbd>
+</pre>
+This will create a subdirectory called Fiasco4.1 .
+<li>Use the command <kbd>cd Fiasco4.1</kbd> to move to the new
+	  subdirectory.
+<li>Install any 
+<a href="http://www.stat.cmu.edu/~fiasco/fiasco_doc/fiasco_patches.html">
+patches</a>.
+<li>Customize the file config.mk for your installation.  Instructions
+are in the file;  this amounts to telling Fiasco where the other packages
+listed above are installed.
+<li>If Fiasco doesn't come with a machine-specific Makefile for your
+machine and operating system, you will have to create one.  These
+files have names line Makefile.HPPA or Makefile.SGI64;  the last
+part is the PVM machine type of your machine.  To find that machine
+type, issue the command:
+<pre>
+<kbd>echo $PVM_ARCH</kbd>
+</pre>
+(If this command didn't work, PVM is not installed correctly or your
+are not properly setting the environment variables PVM_ROOT or
+PVM_ARCH in your login script).  If you need to do this, it is best
+to start with an existing file like Makefile.HPPA and modify it.
+<li>Make sure the PVM command <kbd>pvmgetarch</kbd> is in your path.
+The command can be found in ${PVM_ROOT}/lib .
+<li>Issue the commands:
+<pre><kbd>
+make depend
+make
+</kbd></pre>
+A lot of compiling should happen, at the end of which Fiasco should
+exist on your system.  Machine-specific binaries end up in
+Fiasco4.1/bin/${PVM_ARCH} .  The environment variable FIASCO must
+	  point to this directory for the package to run properly.
+<li>Test the software.  A quick, non-thorough test can be performed as
+	  follows.
+<ol>
+<li>Go to a new, empty directory.
+<li>Make sure all the environment variables listed above are set.
+<li>Set the environment variable FIASCO to the Fiasco executables
+directory, as mentioned above.
+<li>Add $FIASCO to the beginning of your path, so the executable
+	      FIASCO can be found.
+<li>Type "FIASCO epi" .  Fiasco should execute a short EPI analysis,
+	      taking a few minutes to do so.  The execution log of the
+	      analysis will end up in out/logfile.
+</ol>
+</ol>
+
+
+      <hr>
+      <address><a href="mailto:fiasco@stat.cmu.edu">Joel Welling</a></address>
+<!-- Created: Wed Nov 26 19:49:05 EST 1997 -->
+<!-- hhmts start -->
+Last modified: Fri May  8 17:52:03 EDT 
+<!-- hhmts end -->
+  </body>
+</html>

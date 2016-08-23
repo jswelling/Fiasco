@@ -1,0 +1,20 @@
+#
+#	ALPHA-specific Makefile for FMRI software
+#
+#	Copyright (c) 1996 Pittsburgh Supercomputing Center
+#	Written by Greg Hood, PSC, Sept. 1996
+#
+
+CC     = cc
+ARCH_CFLAGS = -DLITTLE_ENDIAN -DFORTRAN_ADD_UNDERSCORE -I$(FMRI)/include/$(ARCH) -O
+LD     = $(CC)
+ARCH_LFLAGS = 
+ARCH_LIBS   = 
+AR     = ar
+ARCH_ARFLAGS= -rc
+RANLIB = echo ranlib not needed on $(ARCH) for
+NEWER = $(FMRI)/src/fiat_scripts/test_newer.csh
+SHR_EXT = so
+SHR_LD = cc -shared
+
+include Makefile.common

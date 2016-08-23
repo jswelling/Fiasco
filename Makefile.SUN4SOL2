@@ -1,0 +1,19 @@
+#
+#	SUN4SOL2-specific Makefile for FMRI software
+#
+#	Copyright (c) 1996 Pittsburgh Supercomputing Center
+#	Written by Greg Hood, PSC, Sept. 1996
+#
+
+ARCH_CFLAGS = -DFORTRAN_ADD_UNDERSCORE -D__EXTENSIONS__ -I$(FMRI)/include/$(ARCH) -O
+LD     = $(CC)
+ARCH_LFLAGS = 
+ARCH_LIBS   = -lnsl -lsocket
+AR     = ar
+ARCH_ARFLAGS= -r
+RANLIB = echo "%%%%" ranlib not needed for
+NEWER = $(FMRI)/src/fiat_scripts/test_newer.csh
+SHR_EXT = so
+SHR_LD = cc -G
+
+include Makefile.common

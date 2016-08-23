@@ -1,0 +1,9 @@
+*CumulativeDistributionFunctions
+
+  Cumulative distribution functions and their inverses are provided
+  by routines from "dcdflib.c", available from the 
+  \<a href="http://gams.nist.gov/serve.cgi/Module/RANDOM/DCDFLIB.C/13184/"\>Guide to Available Mathematical Software\<a\>.  This version has
+  been slightly modified in packaging, for example changing names like
+  cdft() to cdf_t(), reducing the number of external symbols, and
+  changes to the routines that provide machine precision information.
+

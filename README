@@ -1,0 +1,47 @@
+
+------ README file for the Fiasco fMRI analysis package ------
+
+Fiasco provides a number of tools for reconstruction, noise
+reduction, and statistical analysis of functional MRI data.
+Full documentation and installation instructions are available 
+from the Fiasco home page,
+
+ http://www.stat.cmu.edu/~fiasco
+
+Mail regarding Fiasco should be sent to:
+
+ fiasco@stat.cmu.edu
+
+The short form of the installation instructions is:
+
+1) Install the package FFTW, and optionally PVM or MPI 
+   and R or SPlus.  If your system does not already have a 
+   collection of LAPACK and BLAS numerical routines, install 
+   those also.
+
+2) Run the "configure" script to create a config.mk file.  This
+   file contains information about where things are to be found on
+   your system; it is easy to edit if "configure" does not find
+   the components you wish to use.  config.mk.sample contains a
+   sample of a fully specified config.mk file.  "configure --help"
+   will show options for the "configure" script.
+
+3) Type "make depend"
+
+4) Type "make"
+
+Fiasco should then build.  If ARCH is the machine architecture
+(which you can see with the command "src/fiat_scripts/fiasco_getarch.csh"),
+the executables and scripts are created in the directory bin/$ARCH .
+
+It is customary to define the environment variable FIASCO to point to
+the directory of executables, and add $FIASCO to your path.
+
+See the web page for further details and cautions.
+
+Please see the associated README.COPYRIGHT file for
+copyright, disclaimer, and redistribution information.
+
+Please see the associated README.CITATIONS file for publication
+citation information for Fiasco and some atlas datasets distributed
+with Fiasco.

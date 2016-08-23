@@ -1,0 +1,24 @@
+This directory contains the C libmri library for reading and writing
+the Pittburgh MRI format.
+
+A description of the file format is in mri-pgh.doc.
+
+Documentation on how to use the C interface is in mri-c.doc.
+
+To install the package:
+
+1. Decide whether you want to use the mmap routine (default is not to).
+   If so, uncomment the #define USE_MMAP line at the beginning of mri.h.
+
+2. If your machine requires ranlib to be run when making a library (most
+   no longer do), then remove the '#' from the RANLIB line in the Makefile.
+
+3. Run "make" in the libmri directory.
+
+4. Install the libmri.a library in the appropriate directory on your machine.
+
+That's all there is to it!
+
+
+Copyright (c) 1996 Pittsburgh Supercomputing Center
+Written by Greg Hood

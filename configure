@@ -1,0 +1,1402 @@
+#! /bin/sh
+######
+# This preamble uses sh to check for the existence of python, then
+# exec's python.
+######
+python="none"
+if ( which python > /dev/null 2>&1 ) ;
+then python=`which python`;
+else
+  if ( which python2 > /dev/null 2>&1 );
+  then python=`which python2`;
+  fi ;
+fi
+if [ $python = "none" ] ; then
+  echo 'You must have at least Python v2.0 to build Fiasco'
+  exit -1 ;
+fi
+version=`$python -c 'import sys; print sys.hexversion'`
+echo 'Found python = ' $python ', hexversion ' $version
+if [ ${version} -lt 33554432 ]; then
+  echo 'You must have at least Python v2.0 to build Fiasco'
+  exit -1 ;
+fi
+exec $python - $* << EOF
+######
+# End of preamble; we are now in the land of python.
+######
+import sys
+import os
+import os.path
+import string
+import getopt
+
+#
+# Some globals
+#
+rcsid = '\$Id: configure,v 1.36 2008/09/19 21:31:56 welling Exp $'
+ofile = "config.mk"
+debugFlag= 0 # set this to 1 for additional diagnostics
+newDict= {} # Will hold the methods we identify
+oldDict= {} # Vals read from old config.mk
+clDict= {}  # Vals from command line
+
+defsOfInterest= ['CC', 'PAR_CFLAGS','PAR_LIBS','FFTW_INCLUDE','FFTW_CFLAGS',\
+                 'FFTW_LIB','LAPACK_LIBS','SPLUSEXE','SPLUSDIRS','AFS_FLAG',\
+                 'PYTHON_INCLUDE','FIFF_CFLAGS',\
+                 'NFFT_LIBS','NFFT_CFLAGS','PNG_LIBS','PNG_CFLAGS',\
+                 'TIFF_LIBS','TIFF_CFLAGS','SWIG',
+                 'FITSIO_LIBS','FITSIO_CFLAGS']
+defsMustHave= ['CC', 'FFTW_INCLUDE','FFTW_CFLAGS',\
+                 'FFTW_LIB','LAPACK_LIBS','AFS_FLAG',\
+                 'PYTHON_INCLUDE']
+
+#
+# Short pieces of code used to test various tools
+#
+cTestProg= \
+"""
+#include <stdio.h>
+int main()
+{
+  printf("Hello World!"); /* no \n to avoid having to quote the backslash */
+  return 0;
+}
+"""
+
+parTestProg= \
+"""
+#include <stdio.h>
+#ifdef PVM
+#include <pvm3.h>
+#endif
+#ifdef MPI
+#include <mpi.h>
+#endif
+int main(int argc, char* argv[])
+{
+#ifdef PVM
+  int my_tid= pvm_mytid();
+  pvm_exit();
+#endif
+#ifdef MPI
+  (void)MPI_Init(&argc, &argv);
+  (void)MPI_Finalize();
+#endif
+}
+"""
+
+fftwTestProg= \
+"""              
+#ifdef FFTW3
+#include <fftw3.h>
+int main()
+{
+  fftw_plan p;
+  fftw_complex *in, *out;
+  p= fftw_plan_dft_1d(1000, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_destroy_plan(p);
+}
+#else
+#include <fftw.h>
+int main()
+{
+  fftw_plan p;
+  p= fftw_create_plan(1000, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_destroy_plan(p);
+}
+#endif
+"""
+
+lapackTestProg= \
+"""
+#include <stdio.h>
+#include "src/fmri/lapack.h"
+int main()
+{
+  int hundred = 100;
+  int info;
+  double space[100];
+  DGESVD("N","O",&hundred,&hundred,space,&hundred,space,space,
+         &hundred,space,&hundred,space,&hundred,&info);
+  printf("%d",hundred);
+}
+"""
+
+rTestProg= \
+"""
+q();
+
+"""
+
+nfftTestProg= \
+"""
+#ifdef USE_NFFT
+#include <nfft.h>
+#else
+#error("USE_NFFT not defined!")
+#endif
+int main()
+{
+  static nfft_plan fwd_plan;
+  nfft_init_1d(&fwd_plan, 64, 64);
+}
+"""
+
+fiffTestProg= \
+"""
+#include <stdio.h>
+#ifdef USE_FIFF
+#include <fiff_types.h>
+#include <fiff_file.h>
+#else
+#error("USE_FIFF not defined!")
+#endif
+int main()
+{
+  fprintf(stderr,"Hello World!");
+}
+"""
+
+pngTestProg= \
+"""
+#include <stdio.h>
+#ifdef USE_PNG
+#include <png.h>
+#else
+#error("USE_PNG not defined!")
+#endif
+int main()
+{
+#ifdef USE_PNG
+   png_structp png_ptr;
+   png_infop info_ptr;
+   png_text notes[5];
+   FILE* fp= fopen("configure_tmp.png","w");
+   png_ptr= png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+   if (!png_ptr) {
+      fprintf(stderr,"Unable to create png data structure! (1)");
+      exit(-1);
+   }
+   info_ptr = png_create_info_struct(png_ptr);
+   if (!info_ptr) {
+      png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+      fprintf(stderr,"Unable to create png data structure! (2)");
+      exit(-1);
+   }
+   if (setjmp(png_ptr->jmpbuf)) {
+     png_destroy_write_struct(&png_ptr, &info_ptr);
+     fprintf(stderr,"Fatal error in png libraries!");
+     exit(-1);
+   }
+
+   png_init_io(png_ptr,fp);
+   info_ptr->bit_depth= 8;
+   info_ptr->color_type= PNG_COLOR_TYPE_GRAY;
+   info_ptr->gamma= 1.0;
+   info_ptr->height= 10;
+   info_ptr->width= 10;
+   info_ptr->num_text= 0;
+   info_ptr->max_text= 2;
+   info_ptr->text= notes;
+   notes[0].key= "Title";
+   notes[0].text= (png_charp)"This is my title";
+   notes[0].text_length= strlen("This is mytitle");
+   png_write_info(png_ptr,info_ptr);
+#endif
+   return 0;
+}
+"""
+
+
+tiffTestProg= \
+"""
+#include <stdio.h>
+#ifdef USE_TIFF
+#include <tiff.h>
+#include <tiffio.h>
+#else
+#error("USE_TIFF not defined!")
+#endif
+int main()
+{
+#ifdef USE_TIFF
+    printf("%s\n",TIFFGetVersion());
+#endif
+   return 0;
+}
+"""
+
+fitsioTestProg= \
+"""
+#include <stdio.h>
+#ifdef USE_FITSIO
+#include <fitsio.h>
+#else
+#error("USE_FITSIO not defined!")
+#endif
+int main()
+{
+#ifdef USE_FITSIO
+   int status= 0;
+   fitsfile *fptr;
+   fits_open_file(&fptr, "somefile.fits", READONLY, &status);
+#endif
+   return 0;
+}
+"""
+
+#
+# Some utility functions
+#
+def debugMessage(s):
+    if debugFlag: sys.stdout.write("%s\n"%s)
+
+def Message(s):
+    sys.stdout.write("%s\n"%s)
+
+def runCmd(cmd):
+    debugMessage("running <%s>"%cmd)
+    cmdout= os.popen(cmd+" 2>/dev/null")
+    result= cmdout.readlines()
+    return ( cmdout.close(), result )
+
+def runCompiledExe(cmd,arch):
+    if arch.find('CYGWIN')>=0:
+        debugMessage("running <%s.exe>"%cmd)
+        cmdout= os.popen(cmd+".exe 2>/dev/null")
+        result= cmdout.readlines()
+    else:
+        debugMessage("running <%s>"%cmd)
+        cmdout= os.popen(cmd+" 2>/dev/null")
+        result= cmdout.readlines()
+    return ( cmdout.close(), result )
+
+def compiledExeExists(exeName,arch):
+    if arch.find('CYGWIN')>=0:
+        return os.access("%s.exe"%exeName,os.W_OK)
+    else:
+        return os.access("%s"%exeName,os.W_OK)
+
+def deleteCompiledExe(exeName,arch):
+    if arch.find('CYGWIN')>=0:
+        if os.access("%s.exe"%exeName,os.W_OK):
+            debugMessage("Deleting <%s.exe>"%exeName)
+            os.unlink("%s.exe"%exeName)
+    else:
+        if os.access("%s"%exeName,os.W_OK):
+            debugMessage("Deleting <%s>"%exeName)
+            os.unlink("%s"%exeName)
+
+libsWarnedAbout= {}
+def libExists(libName,path,arch):
+    debugMessage("Looking for lib %s in %s on %s"%(libName,path,arch))
+    result= 0
+    fullName= None
+    if os.access(os.path.join(path,"lib%s.a"%libName),os.R_OK): result=1
+    if os.access(os.path.join(path,"lib%s.la"%libName),os.R_OK): result=1
+    if os.access(os.path.join(path,"lib%s.dylib"%libName),os.R_OK): result=1
+    if os.access(os.path.join(path,"lib%s.so"%libName),os.R_OK): result=1
+    if not result:
+        # Try it the hard way
+        if os.access(path,os.R_OK):
+            fullName= "lib%s.so."%libName
+            for fname in os.listdir(path):
+                if fname.find(fullName)==0:
+                    if arch=='LINUX':
+                        # Sometimes, shared libs under Linux lack symbol defs
+                        fullPath= os.path.join(path,fname)
+                        (rc,lines)= runCmd("nm %s"%fullPath)
+                        if len(lines)!=0:
+                            result=1
+                            break
+                        else:
+                            if not libsWarnedAbout.has_key(fullPath):
+                                Message("%s exists but has no symbols"%\
+                                        fullPath)
+                            libsWarnedAbout[fullPath]= 1
+                    else:
+                        result=1
+                        break
+    return result
+
+def incExists(incName,path,arch):
+    debugMessage("Looking for %s in %s on %s"%(incName,path,arch))
+    return os.access(os.path.join(path,incName),os.R_OK)
+
+def libLocRequiresExplicitPath(path,arch):
+    # Current LD_LIBRARY_PATH might be user-specific.  Be conservative.
+    return (path!='/usr/lib' and path!='/usr/local/lib')
+
+def incLocRequiresExplicitPath(path,arch):
+    # Current LD_LIBRARY_PATH might be user-specific.  Be conservative.
+    return (path != '/include' and path!='/usr/include' \
+            and path!='/usr/local/include')
+
+def maybeWrite(o,dict,key):
+    if dict.has_key(key):
+        o.write("%s = %s\n"%(key,dict[key]))
+    else:
+        o.write("#%s = ????\n"%key)
+
+def describeSelf():
+    Message(\
+"""
+This script configures Fiasco for compilation.  It gets initial
+values from the values in %s, and from the command line.  After
+that, it will search your system for any additional needed packages.
+
+To provide input, you can edit %s or use any of the following
+command line arguments:
+"""%(ofile,ofile))
+    for key in defsOfInterest:
+        Message("   --%s"%key)
+    Message(\
+"""
+For example, --FFTW_LIB=-lfftw3
+
+Alternately, any of the above keys (for example, FFTW_LIB) can be
+set as an environment variable before running the script.
+
+Setting multi-word values from the command line may be tricky, so
+it's easiest to edit %s or set an environment variable in such cases.
+"""%ofile)
+
+########
+# Main
+########
+    
+Message( "This is configure for Fiasco, RCS version %s"%rcsid )
+
+optParseList= ["help"]
+for key in defsOfInterest:
+    optParseList.append(key+"=")
+try:
+    (opts,pargs) = getopt.getopt(sys.argv[1:],"dh",optParseList)
+except:
+    print "%s: Invalid command line parameter" % sys.argv[0]
+    describeSelf();
+    sys.exit()
+
+#Check calling syntax; parse args
+if len(pargs) != 0 :
+    Message("Invalid command line argument")
+    describeSelf()
+    sys.exit()
+
+for a,b in opts:
+    if a=="-d": debugFlag= 1
+    elif a=="-h":
+        describeSelf()
+        sys.exit()
+    elif a=="--help":
+        describeSelf()
+        sys.exit()
+    else:
+        for key in defsOfInterest:
+            if a=="--"+key:
+                clDict[key]= b
+
+#
+# Are we at the top of the FIASCO source tree?
+#
+if (not os.access("src/fiat_scripts/test_in_subshell.csh",os.X_OK)) \
+       or (not os.access("src/fiat_scripts/fiasco_getarch.csh",os.X_OK)):
+    sys.exit("Either %s is not being run from the top of the FIASCO\n"\
+             %sys.argv[0] \
+             +"source tree, or the scripts in src/fiat_scripts are not executable.")
+
+if (not os.access("src/fmri/lapack.h",os.R_OK)):
+    sys.exit("Either %s is not being run from the top of the FIASCO\n"\
+             %sys.argv[0] \
+             +"source tree, or src/fmri/lapack.h is missing")
+    
+#
+# What type of machine is this?
+#
+(rc, lines)= runCmd("src/fiat_scripts/fiasco_getarch.csh")
+if rc != None:
+    sys.exit("I can't figure out this machine's architecture!")
+else:
+    arch= string.strip(lines[0])
+    if arch == "UNKNOWN":
+        sys.exit("I can't figure out this machine's architecture!")
+    else:
+        Message("This machine seems to be %s"%arch)
+        newDict['arch']= arch
+
+possibleLibLocs= [ os.path.join(os.environ['HOME'],'lib'),\
+                   os.path.join(os.environ['HOME'],'lib',newDict['arch']),\
+                   '/usr/lib','/usr/local/lib','/usr/statlocal/lib',
+                   '/sw/lib','/usr/lib64','/opt/local/lib']
+possibleIncLocs= [os.path.join(os.environ['HOME'],'include'),
+                  os.path.join(os.environ['HOME'],'include',newDict['arch']),
+                  '/usr/local/include','/usr/include','/usr/statlocal/include',
+                  '/sw/include','/opt/local/include']
+
+
+#
+# Grab old values from the existing config.mk
+#
+if os.access(ofile,os.R_OK):
+    f= open(ofile,"r")
+    lines= f.readlines()
+    f.close()
+    for line in lines:
+        if line.find('This file was generated for architecture')>=0:
+            words= string.split(line)
+            oldDict['arch']= words[-1]
+        elif line.find(': configure,v')>=0:
+            oldDict['configure_version']= string.split(line)[3]
+        else:
+            words= string.split(line)
+            if len(words)>=2 and words[1]=='=' and words[0][0]!='#':
+                s= ""
+                for word in words[2:]:
+                    s += ( word + " ")
+                # strip old quotes. We avoid just using strip() because
+                # of worries about the python version.
+                if len(s)>0:
+                  for iStart in xrange(len(s)):
+                      if not s[iStart] in string.whitespace \
+                         and s[iStart]!='"' \
+                         and s[iStart]!="'": break
+                  for iEnd in xrange(len(s)):
+                      if not s[-(iEnd+1)] in string.whitespace \
+                         and s[-(iEnd+1)]!='"' \
+                         and s[-(iEnd+1)]!="'": break
+                  iEnd -= 1
+                  if iEnd>=0:
+                      oldDict[words[0]]= s[iStart:-(iEnd+1)]
+                  else:
+                      oldDict[words[0]]= s[iStart:]
+                else:
+                  oldDict[words[0]]= ""
+            
+    # Update old entries appropriately for obsolete versions of config.mk
+    # If FFTW_INCLUDE came from a pre-1.27 revision, prepend -I
+    if oldDict.has_key('configure_version') and \
+           float(oldDict['configure_version'])<1.27:
+        if oldDict.has_key('FFTW_INCLUDE'):
+            oldDict['FFTW_INCLUDE']= '-I'+oldDict['FFTW_INCLUDE']
+else:
+    pass
+
+#
+# Try to find useful things in old config or command line, or
+# finally in the environment.
+#
+if oldDict.has_key('arch'):
+    Message("Previous version of %s was generated for %s"%\
+            (ofile,oldDict['arch']))
+    if oldDict['arch'] == newDict['arch']:
+        Message("Looking for values in old %s"%ofile)
+        for key in defsOfInterest:
+            if oldDict.has_key(key):
+                Message("  %s found"%key)
+                newDict[key]= oldDict[key]
+    else:
+        Message("Architecture has changed; I don't trust old %s"%ofile)
+for key in defsOfInterest:
+    if os.environ.has_key(key):
+        Message("Using environment value for %s"%key)
+        newDict[key]= os.environ[key]
+for key in defsOfInterest:
+    if clDict.has_key(key):
+        Message("Using command line value for %s"%key)
+        newDict[key]= clDict[key]
+if debugFlag: Message("imported and command line values: %s"%newDict)
+
+#
+# If the old config specified a C compiler, does it work?
+#
+if newDict.has_key('CC'):
+  Message("Testing C compiler from previous version of %s"%ofile)
+  tfile= open("configure_tmp.c","w")
+  tfile.write(cTestProg)
+  tfile.close()
+  (rc,lines)= runCmd("%s -o configure_tmp configure_tmp.c"%newDict['CC'])
+  os.unlink("configure_tmp.c")
+  deleteCompiledExe("configure_tmp",arch)
+  if rc != None:
+    Message("%s does not appear to be a working C compiler!"%newDict['CC'])
+    del newDict['CC']
+
+#
+# Can we find the C compiler?
+#
+if not newDict.has_key('CC'):
+    Message("Finding the C compiler")
+    tfile= open("configure_tmp.c","w")
+    tfile.write(cTestProg)
+    tfile.close()
+    for cc in ["cc", "gcc"]:
+        Message("  Trying %s"%cc)
+        (rc,lines)= runCmd("%s -o configure_tmp configure_tmp.c"%cc)
+        if rc==None:
+            newDict['CC']= cc
+            break
+    os.unlink("configure_tmp.c")
+    deleteCompiledExe("configure_tmp",arch)
+    if newDict.has_key('CC'):
+        Message("Found that %s is a working C compiler."%newDict['CC'])
+    else:
+        sys.exit("Unable to find the C compiler!  You must have a working\n"+\
+                 "C compiler to build Fiasco.")
+
+#
+# First look for PVM
+#
+if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+    Message("Looking for a parallelism method")
+    if os.environ.has_key('PVM_ROOT'):
+        if os.access(os.path.join(os.environ['PVM_ROOT'],"lib",\
+                                  newDict['arch']),
+                     os.R_OK):
+            Message("PVM_ROOT environment variable seems valid")
+            newDict['PAR_LIBS']= "-L${PVM_ROOT}/lib/%s -lgpvm3 -lpvm3"%\
+                                 newDict['arch']
+        if os.access(os.path.join(os.environ['PVM_ROOT'],'include'),
+                     os.R_OK):
+            newDict['PAR_CFLAGS']= "-DPVM -I${PVM_ROOT}/include"
+if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+    if newDict['arch']=='CRAY':
+        Message("Selecting parallelism method based on architecture")
+        newDict['PAR_LIBS']= "-L/afs/psc/packages/pvm/@sys/lib"
+        newDict['PAR_CFLAGS']= "-DPVM"
+            
+#
+# Look for MPI
+#
+oldCC= None
+if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+    (rc1,lines1)= runCmd("which mpirun")
+    (rc2,lines2)= runCmd("which mpicc")
+    if rc1==None and len(lines1[0].split())==1 \
+	and rc2==None and len( lines2[0].split())==1:
+        Message("Found mpirun and mpicc")
+        newDict['PAR_LIBS']= ""
+        newDict['PAR_CFLAGS']= "-DMPI"
+        oldCC= newDict['CC'] # in case test below fails
+        newDict['CC']= "mpicc"
+        
+#
+# Test guesses about parallelism
+#
+if newDict.has_key('PAR_LIBS') and newDict.has_key('PAR_CFLAGS'):
+    Message("Testing parallelism")
+    cflags= newDict['PAR_CFLAGS']
+    libs= newDict['PAR_LIBS'] + " -lm"
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    tfile= open("configure_tmp.c","w")
+    tfile.write(parTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    deleteCompiledExe("configure_tmp",arch)
+    if rc!=None:
+        Message("cannot find parallel libraries.  My guess of %s %s failed."%\
+                (newDict['PAR_CFLAGS'],newDict['PAR_LIBS']))
+        del newDict['PAR_CFLAGS']
+        del newDict['PAR_LIBS']
+        if oldCC != None:
+            newDict['CC']= oldCC
+#
+# Did we find a parallelism method?
+#
+if not newDict.has_key('PAR_CFLAGS') or not newDict.has_key('PAR_LIBS'):
+  Message("I can't find PVM or MPI.  If PVM is installed, set the environment")
+  Message("  variable PVM_ROOT to point to the appropriate directory and")
+  Message("  re-run configure.  If MPI is installed, make sure mpirun and")
+  Message("  mpicc are in your path and re-run configure.  Without PVM or")
+  Message("  MPI, FIASCO will still work but it will be installed without")
+  Message("  parallelism.")
+  newDict['PAR_CFLAGS']= ""
+  newDict['PAR_LIBS']= ""
+
+#
+# Location of FFTW library
+#
+if not newDict.has_key('FFTW_LIB'):
+    Message("Looking for FFTW library")
+    for loc in possibleLibLocs:
+        if libExists('fftw',loc,newDict['arch']):
+            newDict['fftwversion']= 2
+            if libLocRequiresExplicitPath(loc,newDict['arch']):
+                newDict['FFTW_LIB']= "-L%s -lfftw"%loc
+            else:
+                newDict['FFTW_LIB']= "-lfftw"
+            break
+        elif libExists('fftw3',loc,newDict['arch']):
+            newDict['fftwversion']= 3
+            if libLocRequiresExplicitPath(loc,newDict['arch']):
+                newDict['FFTW_LIB']= "-L%s -lfftw3"%loc
+            else:
+                newDict['FFTW_LIB']= "-lfftw3"
+            break
+               
+if not newDict.has_key('FFTW_LIB'):
+    if oldDict.has_key('FFTW_LIB'):
+        Message("I will try the old location for the FFTW library.")
+        newDict['FFTW_LIB']= oldDict['FFTW_LIB']
+
+if newDict.has_key('FFTW_LIB') and not newDict.has_key('fftwversion'):
+    if newDict['FFTW_LIB'].find('fftw3')>=0:
+        newDict['fftwversion']= 3
+    else:
+        newDict['fftwversion']= 2
+
+if not newDict.has_key('FFTW_LIB'):
+    Message("I can't find the FFTW library!  This library is required.")
+if newDict.has_key('FFTW_LIB') and not newDict.has_key('fftwversion'):
+    sys.exit("I can't figure out what version of FFTW you are using!")
+   
+#
+# Location of FFTW includes
+#
+if not newDict.has_key('FFTW_INCLUDE'):
+    if newDict.has_key('fftwversion'):
+        Message("Looking for FFTW includes")
+        if newDict['fftwversion']==2: incName= "fftw.h"
+        elif newDict['fftwversion']==3: incName= "fftw3.h"
+        else: sys.exit("configure internal error: fftwversion should be 2 or 3!")
+
+        for loc in possibleIncLocs:
+            if incExists(incName,loc,newDict['arch']):
+                if incLocRequiresExplicitPath(loc,newDict['arch']):
+                    newDict['FFTW_INCLUDE']= "-I%s"%loc
+                else:
+                    newDict['FFTW_INCLUDE']= ""
+                break
+    else:
+        Message("I can't look for FFTW includes because I don't know the FFTW version!")
+                     
+if not newDict.has_key('FFTW_INCLUDE'):
+    if oldDict.has_key('FFTW_INCLUDE'):
+        Message("I will try the old location for the FFTW library.")
+        newDict['FFTW_INCLUDE']= oldDict['FFTW_INCLUDE']
+
+if not newDict.has_key('FFTW_INCLUDE'):
+    Message("I can't find the FFTW include file!  This file is required.")
+
+if not newDict.has_key('FFTW_CFLAGS'):
+    if newDict.has_key('fftwversion'):
+        if newDict['fftwversion']==2: newDict['FFTW_CFLAGS']= '-DFFTW2'
+        elif newDict['fftwversion']==3: newDict['FFTW_CFLAGS']= '-DFFTW3'
+        else: sys.exit("configure internal error: fftwversion should be 2 or 3!")
+    else:
+        Message("I can't predict FFTW_CFLAGS without knowing FFTW version!")
+
+#
+# Test guesses about FFTW
+#
+if newDict.has_key('FFTW_INCLUDE') and newDict.has_key('FFTW_LIB')\
+   and newDict.has_key('FFTW_CFLAGS'):
+    Message("Testing locations for FFTW")
+    cflags= ""
+    if len(newDict['FFTW_INCLUDE'])>0:
+           cflags= cflags + newDict['FFTW_INCLUDE']
+    cflags += " " + newDict['FFTW_CFLAGS']
+    libs= newDict['FFTW_LIB'] + " -lm"
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    tfile= open("configure_tmp.c","w")
+    tfile.write(fftwTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    deleteCompiledExe("configure_tmp",arch)
+    if rc!=None:
+        Message("cannot find FFTW libraries.  My guess of %s %s %s failed."%\
+                (newDict['FFTW_INCLUDE'],newDict['FFTW_CFLAGS'], \
+                 newDict['FFTW_LIB']))
+        del newDict['FFTW_CFLAGS']
+        del newDict['FFTW_LIB']
+        del newDict['FFTW_INCLUDE']
+
+#
+# Location of LAPACK and BLAS
+#
+if not newDict.has_key('LAPACK_LIBS'):
+    Message("Looking for LAPACK and BLAS libraries")
+    if newDict['arch']=='DARWIN':
+        newDict['LAPACK_LIBS']= '-framework vecLib -lm'
+    elif newDict['arch'].find('SGIMP')==0:
+        newDict['LAPACK_LIBS']= '-lcomplib.sgimath_mp'
+    elif newDict['arch'].find('SGI')==0:
+        newDict['LAPACK_LIBS']= '-lcomplib.sgimath'
+    else:
+        libNamesListList= [ ['lapack-3'], \
+                            ['lapack', 'f77blas', 'cblas', 'atlas', 'g2c'], \
+                            ['lapack', 'f77blas', 'cblas', 'atlas'], \
+                            ['lapack', 'blas', 'g2c'],
+                            ['lapack', 'blas'] ]
+        guess= None
+        for nameList in libNamesListList:
+            guess= ""
+            success= 1
+            debugMessage("Looking for the following set of libs: %s"%nameList)
+            for name in nameList:
+                found= 0
+                for loc in possibleLibLocs:
+                    if libExists(name,loc,newDict['arch']):
+                        if libLocRequiresExplicitPath(loc,newDict['arch']):
+                            guess= "%s -L%s -l%s"%(guess,loc,name)
+                        else:
+                            guess= "%s -l%s"%(guess,name)
+                        found= 1
+                        break
+                if not found:
+                    success= 0
+                    break
+            if success: break
+        if guess:
+            newDict['LAPACK_LIBS']= guess
+
+if not newDict.has_key('LAPACK_LIBS'):
+    if oldDict.has_key('LAPACK_LIBS'):
+        Message("I will try the old location for the LAPACK libraries.")
+        newDict['LAPACK_LIBS']= oldDict['LAPACK_LIBS']
+
+if not newDict.has_key('LAPACK_LIBS'):
+    Message("I can't find the LAPACK and BLAS libraries! They are required.")
+
+#
+# Test guesses about LAPACK and BLAS
+#
+if newDict.has_key('LAPACK_LIBS'):
+    Message("Testing locations for LAPACK and BLAS")
+    cflags= ""
+    libs= newDict['LAPACK_LIBS'] + " -lm"
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    tfile= open("configure_tmp.c","w")
+    tfile.write(lapackTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    deleteCompiledExe("configure_tmp",arch)
+    if rc!=None:
+        Message("cannot find LAPACK library.  My guess of %s failed."%\
+                 newDict['LAPACK_LIBS'])
+        del newDict['LAPACK_LIBS']
+
+#
+# Test guesses about FIFF
+#
+if newDict.has_key('FIFF_CFLAGS'):
+    Message("Testing location for FIFF")
+    cflags= "%s"%newDict['FIFF_CFLAGS']
+    tfile= open("configure_tmp.c","w")
+    tfile.write(fiffTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -c %s -o configure_tmp.o configure_tmp.c"%\
+                       (newDict['CC'],cflags))
+    os.unlink("configure_tmp.c")
+    if os.access("configure_tmp.o",os.W_OK):
+        os.unlink("configure_tmp.o")
+    if rc!=None:
+        Message("cannot find FIFF C flags.  My guess of %s failed."%\
+                 newDict['FIFF_CFLAGS'])
+        del newDict['FIFF_CFLAGS']
+
+if (not newDict.has_key("fftwversion")) or newDict['fftwversion']==2:
+    Message("NFFT skipped, because it requires FFTW version 3")
+    if newDict.has_key('NFFT_CFLAGS'): del newDict['NFFT_CFLAGS']
+    if newDict.has_key('NFFT_LIBS'): del newDict['NFFT_LIBS']
+else:
+    #
+    # Location of NFFT library
+    #
+    if not newDict.has_key('NFFT_LIBS'):
+        Message("Looking for NFFT library")
+        for loc in possibleLibLocs:
+            if libExists('nfft',loc,newDict['arch']):
+                if libLocRequiresExplicitPath(loc,newDict['arch']):
+                    newDict['NFFT_LIBS']= "-L%s -lnfft"%loc
+                else:
+                    newDict['NFFT_LIBS']= "-lnfft"
+                break
+
+    if not newDict.has_key('NFFT_LIBS'):
+        if oldDict.has_key('NFFT_LIBS'):
+            Message("I will try the old location for the NFFT library.")
+            newDict['NFFT_LIBS']= oldDict['NFFT_LIBS']
+
+    if not newDict.has_key('NFFT_LIBS'):
+        Message("I did not find the NFFT library.")
+
+    #
+    # Location of NFFT includes
+    #
+    if not newDict.has_key('NFFT_CFLAGS'):
+        for loc in possibleIncLocs:
+            if incExists("nfft.h",loc,newDict['arch']):
+                if incLocRequiresExplicitPath(loc,newDict['arch']):
+                    newDict['NFFT_CFLAGS']= "-DUSE_NFFT -I%s"%loc
+                else:
+                    newDict['NFFT_CFLAGS']= "-DUSE_NFFT"
+                break
+
+    if not newDict.has_key('NFFT_CFLAGS'):
+        if oldDict.has_key('NFFT_CFLAGS'):
+            Message("I will try the old location for the NFFT include files.")
+            newDict['NFFT_CFLAGS']= oldDict['NFFT_CFLAGS']
+
+    if not newDict.has_key('NFFT_CFLAGS'):
+        Message("I did not find the NFFT include file.")
+
+    #
+    # Test guesses about NFFT
+    #
+    if newDict.has_key('NFFT_CFLAGS') and newDict.has_key('NFFT_LIBS')\
+           and newDict.has_key('FFTW_INCLUDE') and newDict.has_key('FFTW_CFLAGS')\
+           and newDict.has_key('FFTW_LIB'):
+        Message("Testing locations for NFFT")
+        cflags= "%s %s "%(newDict['FFTW_CFLAGS'],newDict['NFFT_CFLAGS'])
+        if len(newDict['FFTW_INCLUDE'])>0:
+               cflags= cflags + "%s "%newDict['FFTW_INCLUDE']
+        if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+            cflags += " -DFORTRAN_ADD_UNDERSCORE"
+        libs= "%s %s -lm"%(newDict['NFFT_LIBS'],newDict['FFTW_LIB'])
+        tfile= open("configure_tmp.c","w")
+        tfile.write(nfftTestProg)
+        tfile.close()
+        (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                           (newDict['CC'],cflags,libs))
+        os.unlink("configure_tmp.c")
+        deleteCompiledExe("configure_tmp",arch)
+        if rc!=None:
+            Message("cannot find NFFT libraries.  My guess of %s %s failed."%\
+                    (newDict['NFFT_CFLAGS'],newDict['NFFT_LIBS']))
+            del newDict['NFFT_CFLAGS']
+            del newDict['NFFT_LIBS']
+
+#
+# Location of Splus or equivalent
+#
+if not newDict.has_key('SPLUSEXE'):
+    Message("Looking for R or Splus")
+    (rc,lines)= runCmd('which R')
+    if rc==None and len(lines[0].split())==1:
+        newDict['SPLUSEXE']= "%s --no-save"%string.strip(lines[0])
+    else:
+        (rc,lines)= runCmd('which Splus')
+        if rc==None and len(lines[0].split())==1:
+            newDict['SPLUSEXE']= "%s"%string.strip(lines[0])
+            
+if not newDict.has_key('SPLUSEXE'):
+    if oldDict.has_key('SPLUSEXE'):
+        Message("Will try value from old %s"%ofile)
+        newDict['SPLUSEXE']= oldDict['SPLUSEXE']
+
+if newDict.has_key('SPLUSEXE'):
+    Message("Testing R/Splus")
+    tfile= open("configure_tmp.R","w")
+    tfile.write(rTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s < configure_tmp.R"%newDict['SPLUSEXE'])
+    os.unlink("configure_tmp.R")
+    if rc!=None:
+        Message("My guess of %s failed."%\
+                newDict['SPLUSEXE'])
+        del newDict['SPLUSEXE']
+
+if newDict.has_key('SPLUSEXE'):
+    if not newDict.has_key('SPLUSDIRS'):
+        newDict['SPLUSDIRS']= 'script dlo_src'
+else:
+    Message("Cannot find R or SPlus (but that's OK)")
+    if newDict.has_key('SPLUSDIRS'): del newDict['SPLUSDIRS']
+
+
+#
+# Is there a writeable AFS file system?
+#
+if not newDict.has_key('AFS_FLAG'):
+    (rc,lines)= runCmd('which fs')
+    if rc==None and len(lines[0].split())==1:
+        (rc,lines)= runCmd('fs sys')
+        if rc==None:
+            Message("Found writable AFS file system")
+            newDict['AFS_FLAG']= '-DAFS'
+        else:
+            newDict['AFS_FLAG']= '-DNOAFS'
+    else:
+        newDict['AFS_FLAG']= '-DNOAFS'
+
+if newDict.has_key('AFS_FLAG') and newDict['AFS_FLAG']=='-DNOAFS':
+    Message("No writable AFS file system (which makes life easy)")
+
+#
+# Is libpng available?
+#
+#
+# Location of PNG library
+#
+if not newDict.has_key('PNG_LIBS'):
+    Message("Looking for PNG library")
+    pngLibLoc= None
+    for loc in possibleLibLocs:
+        if libExists('png',loc,newDict['arch']):
+            pngLibLoc= loc
+            break
+    zLibLoc= None
+    for loc in possibleLibLocs:
+        if libExists('z',loc,newDict['arch']):
+            zLibLoc= loc
+            break
+    if pngLibLoc and zLibLoc:
+        if libLocRequiresExplicitPath(pngLibLoc,newDict['arch']):
+            newDict['PNG_LIBS']= "-L%s -lpng"%pngLibLoc
+        else:
+            newDict['PNG_LIBS']= "-lpng"
+        if libLocRequiresExplicitPath(zLibLoc,newDict['arch']):
+            newDict['PNG_LIBS']= "%s -L%s -lz"%(newDict['PNG_LIBS'],zLibLoc)
+        else:
+            newDict['PNG_LIBS']= "%s -lz"%newDict['PNG_LIBS']
+
+if not newDict.has_key('PNG_LIBS'):
+    if oldDict.has_key('PNG_LIBS'):
+        Message("I will try the old location for the PNG library.")
+        newDict['PNG_LIBS']= oldDict['PNG_LIBS']
+
+if not newDict.has_key('PNG_LIBS'):
+    Message("I did not find the PNG library.")
+
+#
+# Location of PNG includes
+#
+if not newDict.has_key('PNG_CFLAGS'):
+    for loc in possibleIncLocs:
+        if incExists("png.h",loc,newDict['arch']):
+            if incLocRequiresExplicitPath(loc,newDict['arch']):
+                newDict['PNG_CFLAGS']= "-DUSE_PNG -I%s"%loc
+            else:
+                newDict['PNG_CFLAGS']= "-DUSE_PNG"
+            break
+
+if not newDict.has_key('PNG_CFLAGS'):
+    if oldDict.has_key('PNG_CFLAGS'):
+        Message("I will try the old location for the PNG include files.")
+        newDict['PNG_CFLAGS']= oldDict['PNG_CFLAGS']
+
+if not newDict.has_key('PNG_CFLAGS'):
+    Message("I did not find the PNG include file.")
+
+#
+# Test guesses about PNG
+#
+if newDict.has_key('PNG_CFLAGS') and newDict.has_key('PNG_LIBS'):
+    Message("Testing locations for PNG")
+    cflags= "%s "%newDict['PNG_CFLAGS']
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    libs= "%s -lm"%newDict['PNG_LIBS']
+    tfile= open("configure_tmp.c","w")
+    tfile.write(pngTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    if rc==None:
+        if compiledExeExists("configure_tmp",arch):
+            (rc,lines)= runCompiledExe("./configure_tmp",arch)
+            deleteCompiledExe("configure_tmp",arch)
+            if rc==None and os.access("configure_tmp.png",os.W_OK):
+                os.unlink("configure_tmp.png")
+    if rc!=None:
+        Message("cannot find PNG libraries.  My guess of %s %s failed."%\
+                (newDict['PNG_CFLAGS'],newDict['PNG_LIBS']))
+        del newDict['PNG_CFLAGS']
+        del newDict['PNG_LIBS']
+
+#
+# Is libfitsio available?
+#
+#
+# Location of FITS library
+#
+if not newDict.has_key('FITSIO_LIBS'):
+    Message("Looking for FITSIO library")
+    fitsLibLoc= None
+    for loc in possibleLibLocs:
+        if libExists('cfitsio',loc,newDict['arch']):
+            fitsLibLoc= loc
+            break
+    if fitsLibLoc:
+        if libLocRequiresExplicitPath(fitsLibLoc,newDict['arch']):
+            newDict['FITSIO_LIBS']= "-L%s -lcfitsio"%fitsLibLoc
+        else:
+            newDict['FITSIO_LIBS']= "-lcfitsio"
+
+if not newDict.has_key('FITSIO_LIBS'):
+    if oldDict.has_key('FITSIO_LIBS'):
+        Message("I will try the old location for the FITSIO library.")
+        newDict['FITSIO_LIBS']= oldDict['FITSIO_LIBS']
+
+if not newDict.has_key('FITSIO_LIBS'):
+    Message("I did not find the FITSIO library.")
+
+#
+# Location of FITSIO includes
+#
+if not newDict.has_key('FITSIO_CFLAGS'):
+    for loc in possibleIncLocs:
+        if incExists("fitsio.h",loc,newDict['arch']):
+            if incLocRequiresExplicitPath(loc,newDict['arch']):
+                newDict['FITSIO_CFLAGS']= "-DUSE_FITSIO -I%s"%loc
+            else:
+                newDict['FITSIO_CFLAGS']= "-DUSE_FITSIO"
+            break
+
+if not newDict.has_key('FITSIO_CFLAGS'):
+    if oldDict.has_key('FITSIO_CFLAGS'):
+        Message("I will try the old location for the FITSIO include files.")
+        newDict['FITSIO_CFLAGS']= oldDict['FITSIO_CFLAGS']
+
+if not newDict.has_key('FITSIO_CFLAGS'):
+    Message("I did not find the FITS include file.")
+
+#
+# Test guesses about FITSIO
+#
+if newDict.has_key('FITSIO_CFLAGS') and newDict.has_key('FITSIO_LIBS'):
+    Message("Testing locations for FITSIO")
+    cflags= "%s "%newDict['FITSIO_CFLAGS']
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    libs= "%s -lm"%newDict['FITSIO_LIBS']
+    tfile= open("configure_tmp.c","w")
+    tfile.write(fitsioTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    if rc==None:
+        print "clause 1"
+        if compiledExeExists("configure_tmp",arch):
+            deleteCompiledExe("configure_tmp",arch)
+    if rc!=None:
+        Message("cannot find FITSIO libraries.  My guess of %s %s failed."%\
+                (newDict['FITSIO_CFLAGS'],newDict['FITSIO_LIBS']))
+        del newDict['FITSIO_CFLAGS']
+        del newDict['FITSIO_LIBS']
+
+#
+# Is libtiff available?
+#
+#
+# Location of TIFF library
+#
+if not newDict.has_key('TIFF_LIBS'):
+    Message("Looking for TIFF library")
+    tiffLibLoc= None
+    for loc in possibleLibLocs:
+        if libExists('tiff',loc,newDict['arch']):
+            tiffLibLoc= loc
+            break
+    if tiffLibLoc:
+        if libLocRequiresExplicitPath(tiffLibLoc,newDict['arch']):
+            newDict['TIFF_LIBS']= "-L%s -ltiff"%tiffLibLoc
+        else:
+            newDict['TIFF_LIBS']= "-ltiff"
+
+if not newDict.has_key('TIFF_LIBS'):
+    if oldDict.has_key('TIFF_LIBS'):
+        Message("I will try the old location for the TIFF library.")
+        newDict['TIFF_LIBS']= oldDict['TIFF_LIBS']
+
+if not newDict.has_key('TIFF_LIBS'):
+    Message("I did not find the TIFF library.")
+
+#
+# Location of TIFF includes
+#
+if not newDict.has_key('TIFF_CFLAGS'):
+    for loc in possibleIncLocs:
+        if incExists("tiff.h",loc,newDict['arch']) and \
+               incExists("tiffio.h",loc,newDict['arch']):
+            if incLocRequiresExplicitPath(loc,newDict['arch']):
+                newDict['TIFF_CFLAGS']= "-DUSE_TIFF -I%s"%loc
+            else:
+                newDict['TIFF_CFLAGS']= "-DUSE_TIFF"
+            break
+
+if not newDict.has_key('TIFF_CFLAGS'):
+    if oldDict.has_key('TIFF_CFLAGS'):
+        Message("I will try the old location for the TIFF include files.")
+        newDict['TIFF_CFLAGS']= oldDict['TIFF_CFLAGS']
+
+if not newDict.has_key('TIFF_CFLAGS'):
+    Message("I did not find the TIFF include file.")
+
+#
+# Test guesses about TIFF
+#
+if newDict.has_key('TIFF_CFLAGS') and newDict.has_key('TIFF_LIBS'):
+    Message("Testing locations for TIFF")
+    cflags= "%s "%newDict['TIFF_CFLAGS']
+    if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    libs= "%s -lm"%newDict['TIFF_LIBS']
+    tfile= open("configure_tmp.c","w")
+    tfile.write(tiffTestProg)
+    tfile.close()
+    (rc,lines)= runCmd("%s -o configure_tmp %s configure_tmp.c %s"%\
+                       (newDict['CC'],cflags,libs))
+    os.unlink("configure_tmp.c")
+    if rc==None:
+        if compiledExeExists("configure_tmp",arch):
+            (rc,lines)= runCompiledExe("./configure_tmp",arch)
+            deleteCompiledExe("configure_tmp",arch)
+    if rc!=None:
+        Message("cannot find TIFF libraries.  My guess of %s %s failed."%\
+                (newDict['TIFF_CFLAGS'],newDict['TIFF_LIBS']))
+        del newDict['TIFF_CFLAGS']
+        del newDict['TIFF_LIBS']
+
+#
+# Look for swig interface generator
+#
+if not newDict.has_key('SWIG'):
+    Message("Looking for swig interface generator")
+    (rc,lines)= runCmd('which swig')
+    if rc==None and len(lines[0].split())==1:
+        newDict['SWIG']= "swig"
+            
+if not newDict.has_key('SWIG'):
+    if oldDict.has_key('SWIG'):
+        Message("Will try value from old %s"%ofile)
+        newDict['SWIG']= oldDict['SWIG']
+
+if newDict.has_key('SWIG'):
+    Message("Testing swig")
+    (rc,lines)= runCmd("%s -version 2>&1 | cat "%newDict['SWIG'])
+    if rc==None:
+        vstring= None
+        for line in lines:
+            words= line.split()
+            if "SWIG" in words and "Version" in words:
+                vstring= words[-1].strip()
+                print "swig version <%s>"%vstring
+                break
+        if not vstring:
+            Message("My guess of %s failed."%newDict['SWIG'])
+            del newDict['SWIG']
+    else:
+        Message("My guess of %s failed."%newDict['SWIG'])
+        del newDict['SWIG']
+
+if not newDict.has_key('SWIG'):
+    Message("Cannot find swig interface generator (but that's OK)")
+
+#
+# Make a note of the location of the Python include file.
+#
+if not newDict.has_key('PYTHON_INCLUDE') or \
+    not incExists("Python.h",newDict['PYTHON_INCLUDE'],newDict['arch']):
+    newDict['PYTHON_INCLUDE']= os.path.join(sys.prefix,"include",\
+	"python%s"%sys.version[:3])
+
+#
+# Do we have everything we need?
+#
+Message("Found the following values:")
+for key in defsOfInterest:
+    if newDict.has_key(key):
+        Message("  %s: <%s>"%(key,newDict[key]))
+    else:
+        Message("  %s: no value found"%key)
+missingNeeded= 0
+for key in defsMustHave:
+    if not newDict.has_key(key):
+        missingNeeded += 1
+if missingNeeded:
+    Message("Please install the following third-party packages and re-configure.")
+    for key in defsMustHave:
+        if not newDict.has_key(key):
+            Message("  %s"%key)
+
+#
+# Save the old config.mk, if any
+#
+if os.access(ofile,os.R_OK):
+    Message("Saving %s to %s.sav"%(ofile,ofile))
+    os.rename(ofile,ofile+".sav")
+
+#
+# Write the new config.mk
+#
+Message("Writing %s"%ofile)
+o= open(ofile,"w")
+            
+o.write(\
+"""#
+# This file contains information used while building Fiasco.  It
+# was generated by the Fiasco configure script, version:
+# %s
+#
+# This file was generated for architecture %s
+#
+
+#
+# The following line controls which C compiler will be used to 
+# build Fiasco.  Note that if MPI is to be used for parallelism,
+# you probably want mpicc!
+#
+"""%(rcsid,newDict['arch']))
+maybeWrite(o,newDict,'CC')
+
+o.write(\
+"""
+#
+# Fiasco uses the FFTW package, available from 
+# http://theory.lcs.mit.edu/~fftw or from the Fiasco download directory.
+# Installation instructions can be found on the web page above.
+# Set the following lines to be the appropriate include and library
+# paths for the fftw software on your system.
+#
+""")
+for key in ['FFTW_INCLUDE','FFTW_LIB','FFTW_CFLAGS']:
+    maybeWrite(o,newDict,key)
+
+o.write(\
+"""
+#
+# Fiasco uses the LAPACK and BLAS (basic linear algebra subroutines)
+# math libraries, available free of charge from netlib (see 
+# http://www.netlib.org/lapack/index.html).  Most systems
+# come with LAPACK and BLAS already installed.  Set the
+# following line to be the appropriate library path for the LAPACK
+# and BLAS (basic linear algebra subroutines) on your system.
+#
+""")
+maybeWrite(o,newDict,'LAPACK_LIBS')
+
+o.write(\
+"""
+#
+# If your system includes a writable AFS file system, uncomment the
+# following line and set the right hand side to -DAFS.  To specify
+# that an existing AFS file system be ignored, uncomment the line
+# and set the right hand side to -DNOAFS .  (This avoids some time-
+# consuming AFS operations).
+#
+""")
+maybeWrite(o,newDict,'AFS_FLAG')
+
+o.write(\
+"""
+#
+# If your system has Splus, uncomment the next two lines and modify
+# the second to point to the Splus executable.  The value you use
+# for SPLUSEXE will get "frozen into" src/csh/fiasco.local.csh when
+# that subdirectory is made.  To use R instead of Splus, use a line
+# like:
+#   SPLUSEXE = ""/usr/statlocal/bin/R --no-save""
+#
+""")
+maybeWrite(o,newDict,'SPLUSDIRS')
+# Because Makefiles are stupid...
+if newDict.has_key('SPLUSEXE') and len(string.split(newDict['SPLUSEXE']))>1:
+    o.write('SPLUSEXE = ""%s""\n'%newDict['SPLUSEXE'])
+else:
+    maybeWrite(o,newDict,'SPLUSEXE')
+
+o.write(\
+"""
+#
+# If your system supports parallel programs with PVM or MPI, set the
+# following lines appropriately.  If PAR_CFLAGS and PAR_LIBS are not
+# defined or are defined to have no value, Fiasco will be compiled
+# without parallelism.
+#
+""")
+for key in ['PAR_CFLAGS','PAR_LIBS']:
+    maybeWrite(o,newDict,key)
+
+o.write(\
+"""
+#
+# If Python.h is not in the default include path, its path should be
+# specified here.
+#
+""")
+maybeWrite(o,newDict,'PYTHON_INCLUDE')
+
+o.write(\
+"""
+#
+# If the include files describing the FIFF file format are available,
+# uncomment the following line and give it a value like:
+# FIFF_CFLAGS = -DUSE_FIFF -Isomedirectory
+#
+""")
+maybeWrite(o,newDict,'FIFF_CFLAGS')
+
+o.write(\
+"""
+#
+# If libpng is available,uncomment the following lines and give them values
+# something like:
+# PNG_CFLAGS = -DUSE_PNG -Isomedirectory
+# PNG_LIBS = -Lsomeotherdirectory -lpng
+#
+""")
+maybeWrite(o,newDict,'PNG_CFLAGS')
+maybeWrite(o,newDict,'PNG_LIBS')
+
+o.write(\
+"""
+#
+# If libcfitsio is available,uncomment the following lines and give them values
+# something like:
+# FITSIO_CFLAGS = -DUSE_FITSIO -Isomedirectory
+# FITSIO_LIBS = -Lsomeotherdirectory -lcfitsio
+#
+""")
+maybeWrite(o,newDict,'FITSIO_CFLAGS')
+maybeWrite(o,newDict,'FITSIO_LIBS')
+
+o.write(\
+"""
+#
+# If libtiff and libtiffio are available,uncomment the following lines and 
+# give them values something like:
+# TIFF_CFLAGS = -DUSE_TIFF -Isomedirectory
+# TIFF_LIBS = -Lsomeotherdirectory -ltiff -ltiffio
+#
+""")
+maybeWrite(o,newDict,'TIFF_CFLAGS')
+maybeWrite(o,newDict,'TIFF_LIBS')
+
+o.write(\
+"""
+#
+# If NFFT is available,uncomment the following lines and give them values
+# something like:
+# NFFT_CFLAGS = -DUSE_NFFT -Isomedirectory
+# NFFT_LIBS = -Lsomeotherdirectory -lnfft
+#
+""")
+maybeWrite(o,newDict,'NFFT_CFLAGS')
+maybeWrite(o,newDict,'NFFT_LIBS')
+
+o.write(\
+"""
+#
+# If the swig interface generator is available,uncomment the following
+# line and give it a value something like:
+# SWIG = swig
+#
+""")
+maybeWrite(o,newDict,'SWIG')
+
+o.close()
+
+

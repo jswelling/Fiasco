@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML VERSION="2.0">
+<HEAD>
+<!-- WEBMAGIC VERSION NUMBER="2.0.1" -->
+<!-- WEBMAGIC TRANSLATION NAME="ServerRoot" SRC="/var/www/htdocs/" DST="/" -->
+<!-- WEBMAGIC TRANSLATION NAME="ProjectRoot" SRC="./" DST="" -->
+</HEAD>
+<BODY>
+<H2>Parallel FIASCO: A User's Guide</H2>
+<P>Parallel FIASCO allows one to use multiple workstations to process MRI datasets
+in considerably less time than it would take to perform the same operations
+on a single workstation. The prerequisites for using parallel FIASCO are: </P>
+<OL>
+<LI>The set of workstations you wish to use must share a common file system
+(NFS, AFS, etc.) in order that all processes may work within the same directories.
+Your home directory should also be on this common filesystem.
+<LI>The operating system must support processes on different machines simultaneously
+opening a file for writing, where each process indepedently seeks and writes
+to different segments within the file. Most UNIX operating system support
+this. 
+<LI>Since parallel FIASCO is based upon the PVM message-passing package (which
+is included with the standard FIASCO distribution), you must first install
+PVM. It is easiest to install PVM somewhere on the common filesystem. You
+can do this by untarring <TT>pvm.3.3.11.tar</TT> and following the installation directions in the <TT>Readme</TT> file.
+<LI>Make sure that <TT>$PVM_ROOT/lib</TT> is set to be on your <TT>$PATH</TT> within your <TT>.cshrc</TT>.
+</OL>
+<P>To actually run a FIASCO job in parallel, you should do the following things: </P>
+<OL>
+<LI>Set <TT>F_PARALLEL_HOSTS</TT> to the set of machines that you wish to use. The current machine on which
+you are starting things up is implicitly included in this list, so you don't
+have to include its name. Example: 
+<PRE>
+setenv F_PARALLEL_HOSTS &quot;revenge.stat.cmu.edu alarm.stat.cmu.edu&quot;
+</PRE>
+<P>If some of the machines are multiprocessors and you want to run more than
+one 
+process on them, you may optionally supply a process count after the name.
+Example: </P>
+<PRE>
+setenv F_PARALLEL_HOSTS &quot;hydra.psy.cmu.edu:6&quot;
+
+</PRE>
+<P>This will start 6 worker processes on hydra. </P>
+<LI>Set <TT>F_PARALLEL</TT> to 1 to enable parallelism. Currently, <TT>deghost</TT>, <TT>recon</TT>, <TT>sgrid</TT>, <TT>srecon</TT>, <tt>baseline</tt> and <TT>estireg</TT> are the only programs that will run in parallel. However, these usually
+account for the bulk of the processing time for a dataset. 
+<LI>Now, run FIASCO as you normally would for a single workstation. If you want
+to disable parallelism for subsequent runs, you can simply &quot;<TT>unsetenv F_PARALLEL&quot;</TT>, or &quot;<TT>setenv F_PARALLEL 0&quot;.</TT> 
+</OL>
+</BODY>
+</HTML>
+
+

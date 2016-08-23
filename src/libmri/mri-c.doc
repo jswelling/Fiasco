@@ -1,0 +1,294 @@
+
+	libmri: A C Interface for Reading and Writing the
+		Pittsburgh MRI format
+
+	Greg Hood, Pittsburgh Supercomputing Center	
+	March, 1996
+	Copyright (c) 1996 Pittsburgh Supercomputing Center
+
+---------------------------------------------------------------------------
+INTRODUCTION
+
+This document describes how to use the C function calls provided
+by the libmri library to create and modify MRI datasets.
+For a complete description of the Pittsburgh MRI format, see pgh-mri.doc.
+
+---------------------------------------------------------------------------
+OPENING & CLOSING DATASETS
+
+To create a new dataset "example", call the function:
+	ds = mri_open_dataset("example", MRI_WRITE);
+This call returns a handle (of type MRI_Dataset *) that one will use
+with most library functions to specify the dataset.
+
+To open an existing dataset read-only, call the function:
+	ds = mri_open_dataset("example", MRI_READ);
+
+To open a dataset for modification, call the function
+	ds = mri_open_dataset("example", MRI_MODIFY);
+
+It is possible to have more than one dataset open at a time.
+
+When the program is done working with the dataset, it should
+call:
+	mri_close_dataset(ds);
+
+This makes sure all buffers are written out, and deallocates
+all temporary data structures associated with the dataset.
+
+To permanently get rid of a dataset on disk as well as in memory,
+use the call:
+
+	mri_destroy_dataset(ds);
+
+To copy a dataset, first open the dataset you will be copying, and
+then use the call:
+
+	new_dataset = mri_copy_dataset("new_name", original_dataset);
+
+Both datasets are in the open state after this call, and so must
+eventually be closed with separate calls to mri_close_dataset.
+
+---------------------------------------------------------------------------
+READING AND SETTING KEYS
+
+To get the value of a key:
+	char *s;
+	s = mri_get_string(ds, "key_name")
+All keys are considered to have string values, so this
+will work for any valid key.  But if no such key exists,
+then this function will either abort or return NULL,
+depending on the error handling mode in effect (see below).
+The calling program should not alter the contents of the
+string pointed to by s.
+
+If the key value is expected to be a string representing an
+integer (e.g. "123"), then you can use the function:
+	i = mri_get_int(ds, "key_name");
+This function will consider a non-numerical value to be
+an error.
+
+Similarly, for floating point values:
+	f = mri_get_float(ds, "key_name");
+
+
+To set the value of a key, call the following function:
+	mri_set_string(ds, "key_name", "new_value");
+
+If the key did not previously exist, this call will create it.
+The value string is copied within the mri_set_string call,
+so the calling program is free to deallocate or overwrite
+the parameter string.
+
+Similar functions may be used to set integer and floating point values
+directly.
+
+	mri_set_int (ds, "key_name", 672);
+	mri_set_float (ds, "key_name", 2.37);
+
+Since the numerical values are converted to strings,
+	mri_set_int (ds, "key_name", 3);
+is identical in all respects to:
+	mri_set_string (ds, "key_name", "3");
+
+To determine if a dataset has a particular key, the following
+function may be used:
+
+	if (mri_has(ds, "key_name"))
+	   ...
+
+A key/value pair may be removed from the dataset by:
+
+	mri_remove(ds, "key_name");
+
+
+For those applications that need to iterate through the
+entire set of keys in a dataset, there are two functions
+available.  The program should first call:
+	mri_iterate_over_keys(ds);
+
+Then, with every successive call to
+	s = mri_next_key(ds);
+the program will return the name of the next key.  The keys
+are returned in alphabetical order.  After all keys have been
+exhausted, mri_next_key will return NULL.  The calling
+program should not alter the contents of the strings returned
+by mri_next_key.
+
+---------------------------------------------------------------------------
+CHUNKS
+
+A chunk is simply a potentially large multidimensional array
+that is part of the dataset.
+
+To create a new chunk:
+	mri_create_chunk(ds, "chunk_name");
+
+To set the datatype for the elements within the chunk:
+	mri_set_string(ds, "chunk_name.datatype", "int16");
+This informs the library that the chunk will consist of
+16-bit integers.  Valid options for the datatype are
+"uint8", "int16", "int32", "float32", and "float64".
+
+To set the dimensions of a chunk:
+	mri_set_string(ds, "chunk_name.dimensions", "xyz");
+Each character within the dimensions string forms
+the label for that dimension.  The first dimension varies
+most rapidly within the stored data.
+
+To set the size of the x dimension to 64:
+	mri_set_int(ds, "chunk_name.extents.x", 64);
+The size of the other dimensions can be set in a similar way.
+It is permissible to resize a chunk at any time.  Data within
+the chunk will not be altered, but will be interpreted
+according to the new dimensions.
+
+To get data out of a chunk:
+	pointer = mri_get_chunk(ds, "chunk_name", size, offset, array_type);
+This returns a pointer to the data, the type of which is determined by
+the array type.  For example, if the array type is MRI_SHORT, we will get
+back a pointer to an array of shorts, and if the array type is MRI_DOUBLE,
+we will get back a pointer to an array of doubles.  Valid types are
+MRI_UNSIGNED_CHAR, MRI_SHORT, MRI_INT, MRI_FLOAT, and MRI_DOUBLE.
+If the chunk data is not of the type requested, mri_get_chunk will convert
+it (in a temporary buffer, not in the chunk itself).
+The size specifies the number of elements to read, and the offset specifies
+the element number at which to begin.  This is useful for reading
+portions of very large chunks, when it would be impractical to read
+the entire chunk at once.  mri_get_chunk manages the data buffers; the
+caller should not free them.  The alternative call
+  pointer = mri_read_chunk(ds, "chunk_name", size, offset, array_type, buf);
+allows the caller to supply the buffer.
+
+
+To write data into a chunk:
+	mri_set_chunk(ds, "chunk_name", size, offset, array_type, pointer);
+This copies the data out of the array (specified by pointer) into the
+chunk.  The type of the array is passed in array_type, and may be
+MRI_UNSIGNED_CHAR, MRI_SHORT, MRI_INT, MRI_FLOAT, or MRI_DOUBLE.
+The array will placed into the portion of the chunk specified by
+size and offset (which, as in mri_get_chunk, refer to element counts and
+not byte counts).  The call:
+	mri_write_chunk(ds, "chunk_name", size, offset, array_type, pointer);
+is equivalent but is meant to better match the naming convention of mri_read_chunk().
+
+
+
+---------------------------------------------------------------------------
+CONTROLLING PLACEMENT AND REPRESENTATION OF CHUNKS
+
+Unless otherwise directed, a chunk will placed in the same file
+as the header for the dataset.  However, it is easy to control
+where a chunk should go, and people who prefer their data files
+to be kept separate from the header can do this.
+
+To place a chunk is a separate file (named the same as the header but
+with extension .dat):
+	mri_set_string(ds, "chunk_name.file", ".dat");
+A full filename can also be given instead of just an extension.
+
+If more than one chunk is directed to go into a single file, the
+libmri package will arbitrarily choose the order.  But the user can
+explicitly specify the order:
+	mri_set_int(ds, "chunk_name.order", 1);
+Then the chunks are arranged in the file from lowest order value to highest.
+
+For those who need to control the exact byte offset at which a
+chunk is placed:
+	mri_set_string(ds, "chunk_name.order", "fixed_offset");
+	mri_set_int(ds, "chunk_name.offset", 56000);
+These two calls request that the chunk be placed at byte offset 56000
+from the beginning of the file.
+
+One normally will not have to worry about endianness issues because
+the libmri library will do all necessary conversions to hide this
+from the calling program.  However, for performance and compatibility
+reasons, whether the data is stored in a big or little-endian format
+could matter, so it is possible to control this.  To force the data
+in a chunk to be written in little-endian format, use:
+	mri_set_int(ds, "chunk_name.little_endian", 1);
+
+Removing this field or setting its value to 0 will result in the
+chunk data being stored in big-endian format.  The respresentation
+used for a newly created chunk defaults to the native representation
+on the current machine.
+
+---------------------------------------------------------------------------
+BUFFER MANAGEMENT
+
+The pointers that mri_get_chunk returns are valid for only a limited
+time.  After several successive calls (currently 4), the buffer that
+was originally returned is recycled, and the pointer to no longer
+point to valid data.  Thus programs that simply get a chunk, process the
+data, get another chunk, etc. do not have to concern themselves
+with explicit buffer management.
+
+There are potential situations, however, where a program wants the
+pointer returned by mri_get_chunk to remain valid indefinitely.
+The program can do this by calling:
+	mri_retain_buffer(ds, pointer);
+where pointer is the value returned by mri_get_chunk.
+
+When the program is done with the buffer, it may release it
+by calling:
+	mri_discard_buffer(ds, pointer);
+
+
+---------------------------------------------------------------------------
+ERROR HANDLING & RECOVERY
+
+By default, the libmri library prints an error message and aborts
+when invalid parameters or other errors are detected.
+The applications program may want to attempt to recover from
+some of these errors itself.  If the program calls
+	mri_set_error_handling(MRI_IGNORE_ERRORS);
+the library will attempt to recover from errors, and return
+control back to calling program.  An indication of the last error
+is saved in the global variable:
+	extern char *mri_error;
+which the calling program may examine or reset to NULL at any time.
+
+An intermediate level of error handling may be invoked by:
+	mri_set_error_handling(MRI_REPORT_ERRORS);
+in which case the errors are reported but control is still
+returned to the calling program.
+
+The default error handling may be restored by calling:
+	mri_set_error_handling(MRI_ABORT_ON_ERROR);
+
+---------------------------------------------------------------------------
+STANDARDS
+
+There are very few reserved keys in a dataset.  The current package
+reserves only two keys, "!format" and "!version", to hold identifying
+information about the file format.
+
+Since we anticipate that most MRI datasets will contain a set of
+images, we would like to encourage the convention that the images
+be placed in a chunk named "images".  The default dimensions for
+this chunk is "xyzt", where 'x' and 'y' address the voxels within
+an image, 'z' represents the slice, and 't' represents the time.
+
+If these conventions are followed, the libmri library offers
+two additional routines, mri_get_image and mri_set_image,
+that simplify accessing images.
+
+To get a single image:
+	image = mri_get_image(ds, time, slice, array_type);
+This gets the image from a dataset corresponding to the given
+time and slice.  The image array is returned as a pointer.
+The array_type corresponds to the type of array one would
+like the function to return.  If the stored datatype of the
+"images" chunk is different, the appropriate conversions will
+be done.
+
+To set a single image:
+	mri_set_image(ds, time, slice, array_type, image);
+The array_type corresponds to the type of image array one is passing
+to the function in the last parameter.  If the stored datatype
+of the "images" chunk is different, the appropriate conversions
+will be done.
+
+
+---------------------------------------------------------------------------
+END

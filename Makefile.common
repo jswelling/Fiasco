@@ -1,0 +1,207 @@
+#
+#	common (architecture-independent) Makefile for FMRI software
+#
+#	Copyright (c) 1996 Pittsburgh Supercomputing Center
+#	Written by Greg Hood, PSC, Sept. 1996
+#
+
+# The following sets several defaults, and then overrides them from
+# the values set in config.mk
+FFTW_INCLUDE = 
+FFTW_LIB = -lfftw
+FFTW_CFLAGS = ""
+AFS_FLAG= 
+SPLUSDIRS= 
+SPLUSEXE= /usr/statlocal/bin/Splus
+PNG_CFLAGS = ""
+PNG_LIBS = ""
+TIFF_CFLAGS = ""
+TIFF_LIBS = ""
+SWIG = $(FMRI)/src/fiat_scripts/dummy_swig.csh
+include config.mk
+
+CFLAGS = $(ARCH_CFLAGS) -D$(ARCH) -I$(FMRI)/include/$(ARCH) \
+  $(PAR_CFLAGS) $(FFTW_CFLAGS) $(FIFF_CFLAGS) $(NFFT_CFLAGS) \
+  $(PNG_CFLAGS) $(TIFF_CFLAGS) $(FITSIO_CFLAGS)
+LFLAGS = $(ARCH_LFLAGS) $(PAR_LFLAGS)
+LIBS = $(ARCH_LIBS) $(PAR_LIBS) $(NFFT_LIBS) $(PNG_LIBS) $(TIFF_LIBS) \
+  $(FITSIO_LIBS)
+ARFLAGS = $(ARCH_ARFLAGS)
+
+SHELL = /bin/sh
+DEFINES = ARCH=$(ARCH) FMRI="$(FMRI)" CC="$(CC)" \
+  FMRI_CFLAGS="$(CFLAGS) $(AFS_FLAG) $(FFTW_INCLUDE)" LD="$(LD)" \
+  FMRI_LFLAGS="$(LFLAGS)" \
+  FMRI_LIBS="$(LIBS) $(FFTW_LIB) -lm" AR="$(AR)" ARFLAGS="$(ARFLAGS)" \
+  RANLIB="$(RANLIB)" \
+  UNIX_STAT_HOME="$(UNIX_STAT_HOME)" \
+  AFS_FLAG="$(AFS_FLAG)" SPLUSEXE="$(SPLUSEXE)" \
+  LAPACK_LIBS="$(LAPACK_LIBS)" NEWER="$(NEWER)" \
+  SWIG="$(SWIG)" \
+  SHR_EXT="$(SHR_EXT)" SHR_LD="$(SHR_LD)" PYTHON_INCLUDE="$(PYTHON_INCLUDE)"
+  
+FIAT_SRCDIRS = util libcrg libmri libdcdf fmri reader mri_util mri_anova \
+	misc image_proc meanc baseline deghost recon smregpar ireg \
+	outlier detrend intsplit stats displace summary phadj \
+	spiral estireg gift baseline2 brain partialk physio \
+	ireg3d estireg3d smregpar3d displace3d par_util morphology \
+	fiat_scripts $(ARCH_SRCDIRS)
+
+SRCDIRS = $(FIAT_SRCDIRS) scripthelp mripipes csh
+
+HFILES = 
+CSOURCE = 
+FIAT_MAKEFILES = Makefile Makefile.common Makefile.ALPHA Makefile.CRAY \
+	Makefile.HPPA Makefile.HPPA20 Makefile.SGI5 Makefile.SGI64 \
+	Makefile.SUN4SOL2 Makefile.T3D Makefile.T3E src/Makefile.pkg \
+	Makefile.SGIMP64 Makefile.LINUX Makefile.SGI6 Makefile.DARWIN \
+	Makefile.LINUXI386 Makefile.LINUXX86_64 Makefile.CYGWIN \
+	config.mk.sample configure 
+MAKEFILES = $(FIAT_MAKEFILES) splus/Makefile.splus
+DOCFILES = doc/fiasco_executables.html doc/fiasco_install.html \
+	doc/fiasco_instruct.html \
+	doc/fiasco_parallel.html doc/mri_pgh.html \
+	README README.COPYRIGHT README.CITATIONS
+DATADIRS = epidata spiraldata tsdata atlases
+SCRIPTFILES = 
+FIAT_MISCFILES = bin/placeholder include/placeholder lib/placeholder \
+	obj/placeholder doc/generated/placeholder 
+MISCFILES = $(FIAT_MISCFILES) splus/formula \
+	splus/dlo/placeholder splus/S/placeholder 
+
+all:
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i" DEP_NM=$(ARCH) all ; \
+             then cd ../..; else exit 1;  fi; fi; \
+           done)
+	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
+		  DEP_NM=$(ARCH) all ; \
+		then cd ../..; else exit 1; fi \
+	   fi ); fi; \
+	  done)
+
+install:
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) install ;\
+             then cd ../..; else exit 1;  fi; fi;\
+             done)
+	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
+		  DEP_NM=$(ARCH) install ; \
+		then cd ../..; else exit 1; fi \
+	   fi ); fi; \
+	done)
+
+clean:
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" clean ; \
+             then cd ../..; else exit 1;  fi; fi; \
+             done)
+	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
+		  DEP_NM=$(ARCH) clean ; \
+		then cd ../..; else exit 1; fi \
+	   fi ); fi; \
+	done)
+	rm -rf include/$(PVM_ARCH)
+
+releaseprep:
+	chmod +x configure
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) \
+		releaseprep ; \
+             then cd ../..; else exit 1;  fi; fi; \
+             done)
+	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
+		  DEP_NM=$(ARCH) releaseprep ; \
+		then cd ../..; else exit 1; fi \
+	   fi ); fi; \
+	done)
+
+fiattarfile: $(HFILES) $(CSOURCE) $(FIAT_MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES)
+	tar cvf /tmp/fiat.tar $(HFILES) $(CSOURCE) \
+		$(FIAT_MAKEFILES) $(DOCFILES) $(SCRIPTFILES) \
+		$(MISCFILES)
+	(for i in $(FIAT_SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" fiattarfile ; \
+             then cd ../..; else exit 1;  fi; fi; \
+         done)
+
+tarfile: $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) $(DATADIRS) \
+		$(SCRIPTFILES) $(MISCFILES)
+	tar cvf /tmp/fiasco.tar $(HFILES) $(CSOURCE) \
+		$(MAKEFILES) $(DOCFILES) $(SCRIPTFILES) $(DATADIRS) \
+		$(MISCFILES)
+	(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" tarfile ; \
+             then cd ../..; else exit 1;  fi; fi; \
+             done)
+	(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
+		  DEP_NM=$(ARCH) tarfile ; \
+		then cd ../..; else exit 1; fi \
+	   fi ); fi; \
+	done)
+
+depend:
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     $(MAKE) $(DEFINES) dirs include_updated ; \
+	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" depend ; \
+             then cd ../..; else exit 1;  fi; fi; \
+             done)
+
+checkout:
+	-@(for i in $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)
+	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
+	     echo '#### Doing checkouts in' `pwd` '####'; \
+	     $(MAKE) checkout ; cd ../..; fi; done);
+	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
+	   if [ $$i != dummy ] ; \
+	      then \
+		cd splus/$$i ; \
+	        echo '#### Doing checkouts in' `pwd` '####'; \
+	        $(MAKE) checkout ; cd ../..; fi ); fi;
+	 done);
+
+.DEFAULT:
+	@(found=; \
+	for i in $(SRCDIRS); do \
+	    if [ $$i = $@ ]; then \
+	        cd src/$$i; \
+		$(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) all; \
+		cd ../..;  \
+		found=yes; \
+		fi  \
+	done; \
+	for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then \
+	   if [ $$i != dummy -a $$i = $@ ] ; then \
+		cd splus/$$i ; \
+		$(MAKE) $(DEFINES) REL_DIR="splus/$$i/" DEP_NM=$(ARCH) all ; \
+		cd ../..; \
+		found=yes; \
+		fi; fi;  \
+	done; \
+	if [ ! "$$found" ]; then \
+		echo $@ is not a valid target.; \
+	fi);
+
+

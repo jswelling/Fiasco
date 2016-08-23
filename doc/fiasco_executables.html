@@ -1,0 +1,387 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <!--#include virtual="../std_header.shtml" -->
+    <title>Fiasco Parts Info</title>
+  </head>
+
+  <body>
+    <!--#include virtual="../std_body.shtml" -->
+      <h1>Fiasco Parts Info</h1>
+
+<h3>Some Fiasco shell scripts:</h3>
+
+<dl>
+<dt><a href="generated/afni_estireg3d.csh.html">afni_estireg3d.csh</a>
+<dd>may be substituted for estireg3d.csh to use AFNI's 3dvolreg.
+<dt><a href="generated/afni_tshift.py.html">afni_tshift.py</a>
+<dd>uses the AFNI tool 3dTshift to perform slice timing correction.
+<dt><a href="generated/align_by_permutation.py.html">align_by_permutation.py</a>
+<dd>changes a scan's data order to match a prototype, for example
+	converting saggital scans to axial layout.
+<dt><a
+       href="generated/build_model_matrix.py.html">build_model_matrix.py</a>
+<dd>uses R to produce a design matrix given a formula and a split file.
+<dt><a href="generated/calc_stats_over_roi.py.html">calc_stats_over_roi.py</a>
+<dd>produces a 5-number summary of selected voxels within an ROI
+<dt><a href="generated/color_by_phase.csh.html">color_by_phase.csh</a>
+<dd>produces a single image from a complex Pgh MRI dataset, showing
+    magnitude and phase as brightness and color.
+<dt><a href="generated/combine.csh.html">combine.csh</a>
+<dd>combines Tmaps to make group Pmaps using any of several methods.
+<dt><a href="generated/convert_ifiles.py.html">convert_ifiles.py</a>
+<dd>converts a directory full of GE image file subdirectories into
+a collection of Pgh MRI datasets.
+<dt><a href="generated/coregister.py.html">coregister.py</a> 
+<dd>implements automatic coregistration of functional and structural scans.
+<dt><a href="generated/coregister_inplane.py.html">coregister_inplane.py</a>
+<dd>is used to translate and rotate functional data to align with
+	inplane structural scans.
+<dt><a href="generated/coregister_makeps.py.html">
+	  coregister_makeps.py</a>
+<dd>is used to generate an overlaid image useful in checking that
+    coregistration was successful.
+<dt><a href="generated/coregister_struct_to_inplane.py.html">
+	  coregister_struct_to_inplane.py</a>
+<dd>is used to translate and rotate axial structural data to align with
+	inplane structural scans.
+<dt><a href="generated/cowarp_inplane.py.html">cowarp_inplane.py</a>
+<dd>is used to estimate a warp for structural scans to compensate
+        for distortion in functional data.
+<dt><a href="generated/customize_local.py.html">customize_local.py</a>
+<dd>is a project-specific script for setting up the .local.csh files
+	for individual Fiasco runs.
+<dt><a href="generated/dataset_matches_env.py.html">dataset_matches_env.py</a>
+<dd>checks that a dataset is compatible with the  Fiasco environment variables.
+<dt><a href="generated/epoch_subset.py.html">epoch_subset.py</a>
+<dd>uses a text table of block offsets to select blocks from a file
+<dt><a href="generated/FIASCO.html">FIASCO</a>
+<dd>is the master script which controls Fiasco processing of
+	individual fMRI datasets.
+<dt><a href="generated/false_discovery.py.html">false_discovery.py</a>
+<dd>calculates P score cutoffs for a given Fiasco Tmap for a specific
+	false discovery rate.
+<dt><a href="generated/groupcompare.csh.html">groupcompare.csh</a>
+<dd>performs comparisons between the response of two different groups
+	to experimental conditions.
+<dt><a href="generated/icbm_to_tlrc.py.html">icbm_to_tlrc.py</a>
+<dd>Warps and clips data in the MNI-standard ICBM version of Talairach
+space to roughly match the AFNI version of Talairach space.
+<dt><a href="generated/make_cine.csh.html">make_cine.csh</a>
+<dd>produces an MPEG animation from a Pgh MRI dataset.
+<dt><a
+       href="generated/make_group_anat.csh.html">make_group_anat.csh</a>
+<dd>produces group averages of structural anatomy datasets.
+<dt><a href="generated/make_P_P_plots.csh.html">make_P_P_plots.csh</a>
+<dd>produces a P-P plot from one or more Pmaps.
+<dt><a href="generated/make_phase_cine.csh.html">make_phase_cine.csh</a>
+<dd>produces an MPEG animation from a complex Pgh MRI dataset,
+    showing magnitude and phase as brightness and color.
+<dt><a href="generated/merge_fisher.csh.html">merge_fisher.csh</a>
+<dd>combines multiple Fiasco session results for the same subject
+	using 3D alignment and Fisher's Method.
+<dt><a href="generated/merge_detrend.csh.html">merge_detrend.csh</a>
+<dd>combines multiple Fiasco session results for the same subject
+	by aligning and concatenating the detrended session data.
+<dt><a href="generated/multi_runner.py.html">multi_runner.py</a>
+<dd>automatically runs batches of individual Fiasco runs.
+<dt><a href="generated/paste_split.py.html">paste_split.py</a>
+<dd>concatenates multiple split files
+<dt><a href="generated/pca.py.html">pca.py</a>
+<dd>performs principle value decomposition.
+<dt><a href="generated/physio_correct_triggered.py.html">
+   physio_correct_triggered.py</a>
+<dd>performs physio correction based on scanner trigger pulse data.
+<dt><a href="generated/pick_n_voxels.py.html">
+   pick_n_voxels.py</a>
+<dd>Finds threhsolds to select the N most active voxels in a Pmap or Tmap.
+<dt><a href="generated/plot_roi_event_response.py.html">
+plot_roi_event_response.py</a>
+<dd>plots the response of the voxels within an ROI to particular
+      stimulus events.
+<dt><a href="generated/plot_roi_time_series.py.html">plot_roi_time_series.py</a>
+<dd>plots the time series of a collection of voxels selected by an ROI mask.
+<dt><a href="generated/pooled_mean.csh.html">pooled_mean.csh</a>
+<dd>constructs the pooled mean of a group of means with associated
+	counts.
+<dt><a href="generated/pooled_stdv.csh.html">pooled_stdv.csh</a>
+<dd>constructs the pooled standard deviation of a group of stdvs with 
+	associated counts.
+<dt><a href="generated/pullback_roi_mask.py.html">pullback_roi_mask.py</a>
+<dd>pulls a binary mask in Talairach space back into the original head
+space of a specific subject.
+<dt><a href="generated/renumber_ifiles.py.html">renumber_ifiles.py</a>
+<dd>builds renumbered links to GE image file directories
+<dt><a href="generated/stats_to_floats.csh.html">stats_to_floats.csh</a>
+<dd>Generated single precision floating point versions of stats files.
+<dt><a href="generated/strip_skull.py.html">strip_skull.py</a>
+<dd>strips skulls from anatomical datasets.
+<dt><a href="generated/testingroup.csh.html">testingroup.csh</a>
+<dd>constructs T and P scores for response to a two-condition test 
+        for multiple subjects, all of whom are in the same group.
+<dt><a href="generated/tlrc_to_icbm.py.html">tlrc_to_icbm.py</a>
+<dd>Warps and clips data in the AFNI version of Talairach
+space to roughly match the MNI-standard ICBM of Talairach space.
+</dl>
+
+
+<h3>Compiled executables:</h3>
+
+<dl>
+<dt><a href="generated/affinemap.html">affinemap</a>
+      <dd>utility for performing 2D affine transformations on Pgh MRI images.
+<dt><a href="generated/baseline.html">baseline</a>
+ <dd> baseline correction
+<dt><a href="generated/baseline2.html">baseline2</a>
+ <dd>performs two-shot baseline correction and image merging.
+<dt><a href="generated/blind_minimize.html">blind_minimize</a>
+ <dd>searches for the minimum of a function computed in a shell script.
+<dt><a href="generated/buildhelp.html">buildhelp</a>
+<dd>converts .help file to .c, as a step in compiling in help
+	  facility.
+<dt><a href="generated/byte_extract.html">byte_extract</a>
+<dd>extracts segments from a cyclic file of raw bytes.
+<dt><a href="generated/cardiopeaks.html">cardiopeaks</a>
+<dd>finds peaks in cardiac physiological data.
+<dt><a href="generated/clip.html">clip</a>
+ <dd>is deprecated.  Please use mri_subset.
+<dt><a href="generated/colorize.html">colorize</a>
+ <dd>translate a scalar image to color using a color lookup table
+<dt><a href="generated/complex_to_scalar.html">complex_to_scalar</a>
+ <dd>is deprecated.  Please use mri_complex_to_scalar, which is
+	identical in all but name.
+<dt><a href="generated/cross.html">cross</a>
+ <dd> is deprecated.  Please use mri_subset followed by mri_paste.
+<dt><a href="generated/deghost.html">deghost</a>
+ <dd> remove k-space ghosting
+<dt><a href="generated/detrend.html">detrend</a>
+ <dd> detrending, pixel by pixel
+<dt><a href="generated/displace.html">displace</a>
+ <dd> used after motion correction to estimate average pixel
+    displacement.  Used for
+    summary stats.
+<dt><a href="generated/displace3d.html">displace3d</a>
+ <dd> used after motion correction to estimate average pixel
+    displacement in 3d.  Used for summary stats.
+<dt><a href="generated/estireg.html">estireg</a>
+ <dd> motion estimation in the slice plane.
+<dt><a href="generated/estireg3d.html">estireg3d</a>
+ <dd> motion estimation in 3D.
+<dt><a href="generated/estiwarp.html">estiwarp</a>
+ <dd> estimates Affine warp parameters to align data in 2D or 3D.
+<dt><a href="generated/extract.html">extract</a>
+ <dd>is deprecated.  Please use mri_subset.
+<dt><a href="generated/generate_vmpfx_in.html">generate_vmpfx_in</a>
+ <dd>reads info from the Fiasco environment and generates an
+	  appropriate vmpfx input file.
+<dt><a href="generated/gift.html">gift </a>
+<dd> tool for converting between fMRI file formats
+<dt><a href="generated/image_entropy.html">image_entropy </a>
+<dd> calculates the Shannon entropy of a time series of images
+<dt><a href="generated/imtops.html">imtops</a>
+ <dd> is deprecated.  Please use mri_to_img.
+<dt><a href="generated/intsplit.html">intsplit </a>
+<dd> takes a file with information on experimental conditions 
+    and converts it to a image-by-image condition specification for 
+    use in statistical processing.
+<dt><a href="generated/ireg.html">ireg</a>
+ <dd> motion correction
+<dt><a href="generated/ireg3d.html">ireg3d</a>
+ <dd> motion correction in 3D
+<dt><a href="generated/iwarp.html">iwarp</a>
+ <dd> implements Affine warps
+<dt><a href="generated/matte.html">matte</a>
+ <dd> overlays one image on another, with transparency.
+<dt><a href="generated/meanc.html">meanc</a>
+ <dd> mean correction
+<dt><a href="generated/morph.html">morph</a>
+ <dd> Perform mathematical morphology operations on Pgh MRI datasets
+	filled with 1's and 0's
+<dt><a href="generated/mri_anova.html">mri_anova</a>
+ <dd> perform anovas and generate F maps of pgh MRI files.
+<dt><a href="generated/mri_change_dims.html">mri_change_dims</a>
+ <dd> trivially change the dimensions of pgh MRI files.
+<dt><a href="generated/mri_complex_to_scalar.html">mri_complex_to_scalar</a>
+ <dd>takes a Pgh MRI file containing complex images and produces a
+	scalar file containing real, imaginary, magnitude, or phase
+	info.
+<dt><a href="generated/mri_counter.html">mri_counter</a>
+ <dd> Create a pgh MRI file containing a sequence of integers.
+<dt><a href="generated/mri_copy_chunk.html">mri_copy_chunk</a>
+ <dd> copies a Pgh MRI 1.0 file-format chunk from one file to another.
+<dt><a href="generated/mri_copy_dataset.html">mri_copy_dataset</a>
+ <dd> copies an entire Pgh MRI 1.0 dataset.
+<dt><a href="generated/mri_delete_chunk.html">mri_delete_chunk</a>
+ <dd> deletes a Pgh MRI 1.0 file-format chunk from a file.
+<dt><a href="generated/mri_describe.html">mri_describe</a>
+ <dd> prints a brief text description of a Pgh MRI 1.0 dataset.
+<dt><a href="generated/mri_destroy_dataset.html">mri_destroy_dataset</a>
+ <dd> destroys (rm's) an entire Pgh MRI 1.0 dataset.
+<dt><a href="generated/mri_esa.html">mri_esa</a>
+ <dd> performs eigen-system analysis on a Pgh MRI 1.0 dataset.
+<dt><a href="generated/mri_fft.html">mri_fft</a>
+ <dd> performs fast Fourier transforms on a Pgh MRI dataset.
+<dt><a href="generated/mri_from_ascii.html">mri_from_ascii</a>
+ <dd>reads ascii floating point numbers into a Pgh MRI dataset.
+<dt><a href="generated/mri_from_pdigm.html">mri_from_pdigm</a>
+ <dd>translates some components of a <b>pdigm</b> file into Pgh MRI format.
+<dt><a href="generated/mri_glm.html">mri_glm</a>
+ <dd>Fit a general linear model to Pgh MRI data.
+<dt><a href="generated/mri_history.html">mri_history</a>
+<dd>Display or add to the history information in a Pgh MRI file.
+<dt><a href="generated/mri_interp.html">mri_interp</a>
+ <dd>stretches dimensions of mri files by interpolation.
+<dt><a href="generated/mri_kalman.html">mri_kalman</a>
+ <dd>performs Kalman filtering on Pgh MRI datasets.
+<dt><a href="generated/mri_matmult.html">mri_matmult</a>
+ <dd>performs matrix multiplication on Pgh MRI datasets.
+<dt><a href="generated/mri_pad.html">mri_pad</a>
+ <dd>Enlarge one dimension of a Pgh MRI dataset by padding.
+<dt><a href="generated/mri_paste.html">mri_paste</a>
+ <dd>Paste together two or more Pgh MRI datasets.
+<dt><a href="generated/mri_permute.html">mri_permute</a>
+ <dd> permutes storage order of dimensions (XY ->YX, for example)
+<dt><a href="generated/mri_printfield.html">mri_printfield</a> 
+<dd>prints one field from a Pgh MRI dataset.
+<dt><a href="generated/mri_remap.html">mri_remap</a>
+ <dd> change dimensions of Pittsburgh File Format, for example 
+          changing a time dimension into a (smaller) time dimension
+          and a condition.
+<dt><a href="generated/mri_resample.html">mri_resample</a>
+ <dd> resamples one dimension of a Pgh MRI dataset.
+<dt><a href="generated/mri_rpn_math.html">mri_rpn_math</a>
+ <dd>Tool to do general math on Pgh MRI datasets.
+<dt><a href="generated/mri_scan_fold.html">mri_scan_fold</a>
+ <dd>Tool to convert a time sequence to a slice-time sequence, with
+ reordering.
+<dt><a href="generated/mri_setfield.html">mri_setfield</a>
+ <dd>sets or deletes one field from a Pgh MRI dataset.
+<dt><a href="generated/mri_smooth.html">mri_smooth</a>
+ <dd>Tool to smooth a Pgh MRI dataset.
+<dt><a href="generated/mri_sort.html">mri_sort</a>
+ <dd>Tool to sort a Pgh MRI dataset along one dimension.
+<dt><a href="generated/mri_subsample.html">mri_subsample</a>
+ <dd>Tool to subsample a Pgh MRI dataset, or produce sums, counts, or means.
+<dt><a href="generated/mri_subset.html">mri_subset</a>
+ <dd>Tool to extract a subset from a Pgh MRI dataset.
+<dt><a href="generated/mri_svd.html">mri_svd</a>
+ <dd>Tool to calculate singular value decompositions from a Pgh MRI file.
+<dt><a href="generated/mri_to_img.html">mri_to_img</a>
+ <dd>Tool to produce images (postscript or other) from a Pgh MRI dataset.
+<dt><a href="generated/mri_type_convert.html">mri_type_convert</a>
+ <dd>Tool to convert data types within Pgh MRI dataset chunks.
+<dt><a href="generated/mri_vector_extract.html">mri_vector_extract</a>
+ <dd>is deprecated.  Please use mri_subset.
+<dt><a href="generated/mutual_information.html">mutual_information</a>
+ <dd> computes the Shannon mutual information between pairs of images.
+<dt><a href="generated/nav_deghost.html">nav_deghost</a>
+      <dd>Tool to calculate deghosting parameters from navigator echo data.
+<dt><a href="generated/outlier.html">outlier</a>
+ <dd> outlier removal
+<dt><a href="generated/overlay.html">overlay</a>
+ <dd> threshholds an image, and overlays it onto another image
+    for display in anatomical context.
+<dt><a href="generated/par_translate.html">par_translate</a>
+ <dd> translate between different parameter file types.
+<dt><a href="generated/partialk.html">partialk</a>
+<dd>extends partial k-space data to full k.
+<dt><a href="generated/permute.html">permute</a>
+	<dd>is deprecated.  Please use mri_permute, which is identical 
+	in all but name.
+<dt><a href="generated/pfileorder.html">pfileorder</a>
+<dd> sorts lists of pfiles into appropriate order for processing
+<dt><a href="generated/pghtoafni.html">pghtoafni</a>
+<dd>converts pgh fMRI format files to AFNI format.
+<dt><a href="generated/pghtonifti.html">pghtonifti</a>
+<dd>converts pgh fMRI format files to NIfTI format.
+<dt><a href="generated/phadj.html">phadj</a>
+ <dd> implements global phase change over complex image, to match
+    global phase with other images in same collection.
+<dt><a href="generated/printmrifield.html">printmrifield</a>
+<dd>is deprecated.  Please use mri_printfield, which is identical in
+	all but name.
+<dt><a href="generated/pullback.html">pullback</a>
+<dd>uses a dataset of addresses to gather or shuffle data.
+<dt><a href="generated/reader.html">reader</a>
+<dd>puts header on raw data file, containing x, y, z, t, data
+    format, etc.
+<dt><a href="generated/recon.html">recon</a>
+ <dd> applies 2D Fourier trans.
+<dt><a href="generated/remap.html">remap</a>
+ <dd> is deprecated.  Please use mri_remap, which is identical
+	in all but name.
+<dt><a href="generated/resppeaks.html">resppeaks</a>
+<dd>finds peaks and cycle depths in respiratory physiological data.
+<dt><a href="generated/scripthelp.html">scripthelp</a>
+<dd>is called by scripts to provide their help information.
+<dt><a href="generated/sgrid.html">sgrid</a>
+<dd>spiral gridding
+<dt><a href="generated/slow_ft.html">slow_ft</a>
+<dd>reconstructs arbitrary k-space sampling patterns the hard way.
+<dt><a href="generated/smartreader.html">smartreader</a>
+<dd>converts a variety of file formats to Pittsburgh MRI files.
+<dt><a href="generated/smooth_missing.html">smooth_missing</a>
+<dd>linearly interpolates over missing data in time series.
+<dt><a href="generated/smregpar.html">smregpar</a>
+ <dd> smooth registration parameters
+<dt><a href="generated/smregpar3d.html">smregpar3d</a>
+ <dd> smooth registration parameters in three dimensions
+<dt><a href="generated/spiral.html">spiral</a>
+ <dd> process pfiles from spiral acquisitions
+<dt><a href="generated/spiral_reader.html">spiral_reader</a>
+ <dd> translates spiral pfiles to Pittsburgh MRI format
+<dt><a href="generated/srecon.html">srecon</a>
+<dd>spiral reconstruction
+<dt><a href="generated/stats.html">stats</a>
+ <dd> This is spm;  it calculates the mean and standard deviation for
+	  all experimental conditions, as well as all pair-wise, pooled 
+	  two-sample t-statistics.
+<dt><a href="generated/summary.html">summary</a>
+ <dd> calculates summary statistics for various parameter
+    outputs
+<dt><a href="generated/tsdeghost.html">tsdeghost</a>
+ <dd> performs baseline correction, deghosting, and merging on two shot images.
+<dt><a href="generated/vmpfx.html">vmpfx</a>
+ <dd>Bayesian neuro-imaging software component from Chris Genovese'
+	  BRAIN software set.
+<dt><a href="generated/watershed.html">watershed</a>
+<dd>divides an input dataset into regions based on the Watershed Transform.
+</dl>
+
+<h3>Fiasco's internal libraries</h3>
+
+<ul>
+<li>libacct.a and acct.h provide very simple elapsed time accounting 
+	  functions, enabled with compile time switch -DACCT .
+<li>libarray.a and array.h provide utility functions that allocate
+	  and deallocate 2D and 3D arrays.
+<li>libbio.a and bio.h provide binary IO utility functions.
+<li>libcdf.a and cdflib.h contain cumulative statistical distribution
+	functions.
+<li>libcrg.a and stdcrg.h contain a variety of routines by Chris Genovese,
+	  including help function interface.
+<li>libfmri.a and fmri.h provide random utilities- Fourier transforms,
+	  complex types, matrix operations.  Also included are
+	  a general linear model package (in glm.c), a smoothing
+	  package (in smoother.c), and a quaternions package
+	  (in quaternion.c).
+<li>libmdgb.a and mdbg.h look like memory management debugging
+	  functions- debug malloc, etc.
+<li>libmisc.a and misc.h are miscellaneous utility functions by Greg
+	  Hood- filename, environment, error message facilities.
+<li>libmri.a and mri.h contain routines for reading and writing
+	  Pittsburgh MRI format files.
+<li>libpar.a and (npar.h or par.h) contain parallel task distribution
+	  routines by Greg Hood.
+</ul>
+
+
+      <hr>
+      <address><a href="mailto:welling@stat.cmu.edu">Joel Welling</a></address>
+    <!-- Created: Mon Jul  7 12:56:25 EDT 1997 -->
+    <!-- hhmts start -->
+Last modified: Thu Sep 15 19:58:08 EDT 2005
+<!-- hhmts end -->
+    <!--#include virtual="../std_footer.shtml" -->
+  </body>
+</html>
