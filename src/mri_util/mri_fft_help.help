@@ -1,0 +1,115 @@
+*Overview
+
+  mri_fft takes a pgh MRI dataset of any type, and outputs
+  a dataset of floating point values containing a fast Fourier
+  transformed version of the same data.  The FFT operation acts on
+  all chunks in the dataset except the "missing" chunk, which
+  is not transformed.  1-D, 2-D, and 3-D FFTs can be performed,
+  but the FFT dimensions must be adjacent in the 2-D and 3-D cases.
+
+  mri_fft [-dimension Dimension] [-verbose] [-forward | -inverse] 
+	  [-complex | -modulus | -phase | -squared_modulus |-real |-imaginary] 
+	  infile outfile
+
+  mri_fft [-d dim] [-v] [-fwd | -inv] 
+          [-cpx | -mod | -pha | -sqr | -rea | -ima] infile outfile
+
+*Usage:dimension
+
+  [-dimension Dimension]			(-dim|d Dimension)
+
+  Ex: -d x
+
+  Specify dimension(s) over which to perform the FFT.  One, two,
+  and three character strings are acceptable.  Default is "t".
+
+  Data for a particular chunk will be transformed if its dimensions 
+  contain the given dimension string.  For example, a chunk of 
+  dimensions "vxyzt" could be transformed along dimensions "x" or 
+  "xy" (among others), but *not* along "yx" or "xz".  
+
+*Usage:forward
+
+  [-forward]				(-fwd)
+
+  Specifies that the forward transform should be used.  The default
+  is the inverse transform.
+
+*Usage:inverse
+
+  [-inverse]				(-inv)
+
+  Specifies that the inverse transform should be used.  This is the
+  default.
+
+*Usage:complex
+
+  [-complex]				(-cpx)
+
+  Specifies that the output data should be complex.  Only one of
+  -complex, -modulus, -phase, or -squared_modulus can be specified;
+  -modulus is the default.
+  
+*Usage:modulus
+
+  [-modulus]				(-mod)
+
+  Specifies that the output data should be the modulus.  Only one of
+  -complex, -modulus, -phase, -squared_modulus, -real, or
+  -imaginary  can be specified; -modulus is the default.
+  
+*Usage:phase
+
+  [-phase]				(-pha)
+
+  Specifies that the output data should be the phase. Only one of
+  -complex, -modulus, -phase, -squared_modulus, -real, or
+  -imaginary can be specified; -modulus is the default.
+  
+*Usage:squared_modulus
+
+  [-squared_modulus]			(-sqr)
+
+  Specifies that the output data should be the squared modulus. Only
+  one of -complex, -modulus, -phase, -squared_modulus, -real, or
+  -imaginary can be specified; -modulus is the default.
+  
+*Usage:real
+
+  [-real]				(-rea)
+
+  Specifies that the output data should be the real part of the
+  result.  Only one of -complex, -modulus, -phase, -squared_modulus,
+  -real, or -imaginary can be specified; -modulus is the default.
+  
+*Usage:imaginary
+
+  [-imaginary]				(-ima)
+
+  Specifies that the output data should be the imaginary part of the
+  result.  Only one of -complex, -modulus, -phase, -squared_modulus,
+  -real, or -imaginary can be specified; -modulus is the default.
+  
+*Usage:verbose
+
+  [-verbose]				(-ver|v)
+
+  Verbose mode; write debugging info to stderr.
+
+*Arguments:infile
+  infile
+
+  Ex: original_file
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Arguments:outfile
+  outfile
+
+  Ex: fftd_file
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+
+
+m4include(../fmri/fft3d_help.help)

@@ -1,0 +1,84 @@
+*Introduction
+
+  mri_complex_to_scalar takes a complex pgh MRI dataset and generates
+  a corresponding scalar dataset.  The output dataset is of type
+  float32.
+
+  To run mri_complex_to_scalar use: 
+    mri_complex_to_scalar [-rea|-ima|-mag|-pha|-phu] [-chunk Chunk_Name] 
+    [-v] infile outfile
+
+  or:
+    mri_complex_to_scalar -help
+
+*Arguments:real
+  [-real]			(-rea)
+
+  -real produces the real component of the input dataset.  Only one of
+  [-rea|-ima|-mag|-pha|-phu] may be present at a time.  The default is
+  -mag.
+
+*Arguments:i
+  [-imaginary]
+
+  -imaginary produces the imaginary component of the input dataset.
+  Only one of [-rea|-ima|-mag|-pha|-phu] may be present at a time.
+  The default is -mag.
+
+*Arguments:magnitude
+  [-magnitude]				(-mag)
+
+  -magnitude produces the magnitude of the input dataset. Only one of
+  [-rea|-ima|-mag|-pha|-phu] may be present at a time.  The default is
+  -mag.
+
+*Arguments:phase
+  [-phase]				(-pha)
+
+  -phase produces the phase of the input dataset.  Phase is reported
+  in the range of -PI to PI.  Only one of [-rea|-ima|-mag|-pha|-phu]
+  may be present at a time.  The default is -mag.
+ 
+*Arguments:phase_unwound
+  [-phase_unwound]			(-phu)
+
+  -phase_unwound produces the unwound phase of the input dataset.
+  Note that this operation is ambiguous; if the phase is changing
+  rapidly the results may not be what was expected or desired.  Phase
+  is unwound only over the first non-trial dimension.  For example on
+  a dataset with dimension order vtxyz the phase is unwound over the t
+  dimension but starts fresh for each new x, y, or z. Only one of
+  [-rea|-ima|-mag|-pha|-phu] may be present at a time.  The default is
+  -mag.
+
+*Arguments:chunk
+  [-chunk Chunk_Name]			(-chu|c Chunk_Name)
+
+  mri_complex_to_scalar will operate on the chunk of the given
+   name Chunk_Name.  Default is "images."
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  -v requests verbose operation.
+
+*Arguments:infile
+  infile
+
+  The input file from which to extract the complex field values
+
+*Arguments:outfile
+  outfile
+
+  The output file to which to write the results.
+
+*Details:Inputs and Outputs
+
+  The first dimension of the dataset must be v, which must have an
+  extent of 2.
+
+  If the -u (unwound phase) option is selected, at least one other
+  dimension must also be present.
+
+  This executable operates on the "images" chunk.
+

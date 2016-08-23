@@ -1,0 +1,98 @@
+*Introduction
+
+  baseline is used to correct for miscalibration of the
+  analog-to-digital converter. It can also be used to reverse lines,
+  as needed for standard EPI data collection.  Raw and smoothed
+  correction estimates are saved; see "smoother options" below for
+  further details.
+
+  To use baseline use:
+    baseline [-estimates Estimates-File]
+             [-smoothedestimates Smooth-Est-File] [-reverse Which-Lines]
+             [...smoother options...] infile outfile
+
+  or:  
+    baseline -help
+
+*Examples
+
+  baseline infile outfile
+
+  This use takes all the defaults:
+	 -est rawbaseline.par
+	 -sme baseline.par
+	 -rev odd
+
+  baseline -est baseline.par -sme sm.par -rev even infile outfile
+
+  This use puts the raw parameter estimates in file baseline.par (at 
+  odds with the default use) and puts the smoothed parameter estimates
+  in file sm.par.  Line reversal is for even lines only (typical for
+  coronal slices).
+
+*Arguments:estimates
+  [-estimates Estimates-File]      (-est Estimates-File)
+
+  Ex: -e b.par
+
+  Specifies that the location adjustment parameters should be written
+  to Estimates-file. Default is "rawbaseline.par".
+
+*Arguments:smoothedestimates
+  [-smoothedestimates Smooth-Estimates-File]      (-sme Smooth-Estimates-File)
+
+  Ex: -sme sb.par
+
+  Specifies that the smoothed location adjustment parameters should be
+  written to Smooth-Estimates-file. Default is "baseline.par".
+
+*Arguments:reverse
+  [-reverse even|odd|all|none]            (-rev|-r Which-Lines)
+
+  Ex: -r all
+
+  Specifies the lines whose order is to be reversed.
+  Values of Which-Lines accepted:
+       "none"      No line reversing.
+       "odd"       Odd lines are reversed.
+       "even"      Even lines are reversed.
+       "all"       All lines are reversed.
+  The default is to use any row flipping information in the input
+  dataset, or "none" if no such information is available.
+
+
+*Details:Inputs and Outputs
+
+  Baseline accepts only standard complex-valued images with dimension
+  order "vxyzt" or "vqyzt" as input.
+
+  The outfile is not allowed to have the same name as the infile.
+
+  The outfile consists of single-precision, complex-valued, floating-point
+  numbers.
+
+  The location adjustment parameters are written in ASCII format with
+  each line containing the real and the imaginary parts parameters.
+  The lines occur in "zt" dimension order.
+
+  Odd line reversing is typical for axial and sagittal slices; even
+  line reversing is typical for coronal slices.
+
+*Details:Calculation
+
+  Baseline adjustment is based on the fact that the k-space data
+  should (approximately) be oscillating around 0 at the highest frequencies.
+
+  Implementation calculates the mean of the k-space data at the
+  highest frequencies, in particular the left and right
+  quarters of k-space (where the kx-dimension corresponds to the
+  left/right axis).
+
+  Estimates are subject to noise, so the time series for each slice
+  is smoothed.  The smoothed value at each time is subtracted from all
+  of the k-space data for that time.
+
+m4include(../fmri/smoother_help.help)
+
+
+    

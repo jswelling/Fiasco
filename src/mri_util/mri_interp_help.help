@@ -1,0 +1,67 @@
+*Introduction
+
+  mri_interp takes a pgh MRI dataset of any type, and outputs
+  a dataset of the same type containing interpolated data.
+  The interpolated data spans the range of one of the dimensions
+  of the input data, but has a different extent than that of
+  the input dimension.  The interpolation operation acts on all 
+  chunks in the dataset.
+
+  To run mri_interp use:
+    mri_interp -dimension Dimension -length Length [-linear|-constant]
+	       [-v] [-V] infile outfile
+
+
+*Arguments:dimension
+  -dimension Dimension			(-dim|d Dimension)
+
+  Specifies the dimension to be interpolated.  Valid values are one
+  character long; case is ignored.  This argument is required.
+
+*Arguments:length
+  -length Length			(-len|l Length)
+
+  Specifies the output extent of that dimension.  This
+  argument is required.
+
+*Arguments:l/c
+   [-linear|-constant]			(-lin|con) 
+
+  -lin specifies linear interpolation
+  -con specifies constant interpolation based on the nearest input
+       point.  
+
+  Only one can be given at a time. -l is the default.
+
+*Arguments:v
+  [-v]
+
+  Sets verbose output
+ 
+*Arguments:V
+  [-V]
+
+  Sets *really* verbose output
+ 
+*Arguments:infile
+  infile
+
+  Specifies the input dataset.  This argument is required.
+    
+*Arguments:outfile
+  outfile
+
+  Specifies the output dataset.  This argument is required.
+
+*Details:Notes
+
+  Chunks not containing the selected dimension are copied verbatim.
+
+  All chunks containing the given dimension will be interpolated.
+  (Note that this can give confusing results if the extents of the
+  dimension vary between chunks!)  
+
+  The "missing" chunk is treated in a special way, as follows: if any
+  input datum which contributes to an output datum is missing, the
+  output datum is also marked missing.
+

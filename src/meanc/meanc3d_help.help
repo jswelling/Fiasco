@@ -1,0 +1,98 @@
+*Introduction
+
+  meanc3d is used to coerce all of the image volumes to have
+ (approximately) identical means, to adjust for global drifts in
+  signal intensity.  
+
+  To run meanc3d use:
+    meanc3d [-input Input-header-file] [-headerout Output-header-file]
+          [-parameters Parameter-file] [-fixed Fixed-image-number] 
+          [-allow_negative_means]
+
+  or:
+    meanc3d -help
+
+
+*Arguments:input
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -i baseline.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   meanc3d accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+*Arguments:headerout
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h meancorrect
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file.  Default value is "mnadj.mri".
+   Output-header-file is not allowed to have the same name
+   as Input-header-file.
+
+   The output dataset will consist of single-precision, floating-point
+   values of the same vector length as the input data.
+
+*Arguments:parameters
+   [-parameters Parameter-file]     (-p Parameter-file)
+
+   Ex: -p meanParam
+
+   Specifies that the mean adjustment parameters should
+   be written to Parameter-file. Default is "mnadj.par".
+
+   The mean adjustment parameters are written in ASCII
+   in "zt" dimension order.
+
+*Arguments:fixed
+   [-fixed Fixed-image-number]      (-f Fixed-image-number)
+
+   Ex: -f 34
+
+   Specifies that mean adjustments should be done with respect to the
+   image numbered Fixed-image-number (C numbering --- i.e. starting
+   with 0).  That is, image # Fixed-image-number will be unchanged and
+   all other images will be adjusted to match its mean. If any slices 
+   in the sampled region of image #Fixed-image-number are considered 
+   missing, the first following image for which all the sampled
+   slices are non-missing will be used as the fixed image.  If 
+   this search for a valid image runs off the end of the time
+   series, it starts searching at time 0 and proceeds back up
+   to the given Fixed-image-number.    The default value of 
+   Fixed-image-number is 0.
+
+*Arguments:allow_negative_means
+   [-allow_negative_means]          (-n)
+
+   If this flag is set, images for which the mean is negative are
+   not marked missing.  This never happens with fMRI k-space images
+   because the modulus of a complex number is positive by definition,
+   but negative means can be reasonable for image-space data.
+
+*Algorithm
+
+   The fixed image has been checked to make sure it has no missing
+   slices in the region of interest.  For each image other than the
+   fixed image, a mean is calculated over the non-missing slices
+   within the region of interest; this mean is a simple mean for
+   real-valued input and a mean of voxel modulus values for complex-
+   valued input.  A mean of the same set of slices is calculated
+   for the fixed image by the same method.  This means that the
+   mean of the fixed image used here excludes any slices marked
+   missing in the image to which it is being compared.
+
+   The image values are then scaled by the ratio of the fixed image
+   mean (calculated over matching slices) to the current image mean,
+   and the scaled values are written to the output file.  If all
+   slices of the current image are marked missing, a scale value
+   of 1.0 is used.  These scale values are also recorded to the
+   parameter file.
+
+   
+

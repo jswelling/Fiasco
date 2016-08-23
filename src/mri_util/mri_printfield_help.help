@@ -1,0 +1,54 @@
+*Introduction
+
+  mri_printfield.c is used to print out the contents of one field from 
+  a Pittsburgh MRI dataset.
+
+  To run mri_printfield use:
+    mri_printfield [-field Field] [-nofail] [-verbose] [-wildcard]
+		   infile
+
+  or:
+    mri_printfield -help [topic]
+
+*Arguments:field
+  [-field Field]			(-fld Field)
+
+     Specifies the MRI key field string name to extract and print.
+     The string may include the wildcard characters '*' (matches
+     any string) and '?' (matches any single character) if the 
+     -wildcard flag is set.  The default field is "images.dimensions"
+
+*Arguments:nofail
+  [-nofail]				(-nof)
+
+     Specifies that if the given field is not present, mri_printfield
+     should write a blank line and exit normally.  In the absence of
+     this flag, a request for a missing field causes an error exit.
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+     Specifies verbose output.  This produces key-value pairs in the
+     form "<key> = <value>" rather than simply emitting the value.
+
+*Arguments:wildcard
+  [-wildcard]				(-wld)
+
+     Specifies that the field string may contain wildcard characters.
+     The character '*' matches any string, and the character '?'
+     matches any single character.  There is no escape mechanism
+     for wildcards, so for example it is impossible to search for
+     an exact match for the character '?' if the -wildcard flag is
+     set.  The syntax supports only a single instance of '*' in the
+     field.  Don't forget that the shell will try to match these
+     characters against filenames if they aren't protected, for
+     example by wrapping the string in single quotes.
+
+*Arguments:infile
+  infile
+
+  Ex: Printfield_file
+
+  The value of infile specifies the input dataset. This argument is required.
+
+

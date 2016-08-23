@@ -1,0 +1,55 @@
+*Introduction
+
+  mri_sort sorts a Pgh MRI dataset of any type.
+
+  To run mri_sort use: 
+
+    mri_sort [-keyfield Keyfield] [-c Chunk] [-ascending] 
+	     [-verbose] infile outfile
+
+*Arguments:keyfield
+  [-keyfield Keyfield]			(-key Keyfield)
+
+  The given chunk must have a first dimension v; it is sorted on its
+  second dimension.  If the length of v is greater than 1, keyfield
+  specifies which v to use to sort the second dimension.  Counting
+  starts from 0.  Default value is 0.
+
+
+*Arguments:chunk
+  [-chunk Chunk]			(-chu|c Chunk)
+
+  Specifies which chunk to sort.  Default is "images". 
+
+  The given chunk must have a first dimension v; it is sorted on its
+  second dimension.
+
+  It is an error to try to sort the "missing" chunk.  Note that you
+  can use mri_rpn_math to replace all missing data with values that
+  will sort to one end of the output.
+
+*Arguments:ascending
+  [-ascending]				(-asc)
+
+  Causes sort to happen in ascending order.  Default is descending.
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  Requests verbose operation.
+
+*Arguments:infile
+  infile
+
+  Ex: ToBeSorted
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Arguments:outfile
+  outfile
+
+  Ex: SortedFile
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+

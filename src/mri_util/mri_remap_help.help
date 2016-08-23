@@ -1,0 +1,98 @@
+*Introduction
+
+
+  mri_remap is used to change the dimensions on a chunk of data within
+  an MRI dataset in Pittsburgh format.  The actual data is not changed.
+  This is useful to add dimensions (with extent 1) to the chunk or to
+  relabel the chunk's dimensions.  For instance, we may subdivide one
+  dimension into two others: assume we have 36 images in the t dimension
+  -- then we can redimension the chunk to have a c ("condition")
+  dimension of 4 and a t dimension of 9.
+
+  To run mri_remap use:
+    mri_remap [-chunk Chunk-name] [-order New-dimensions] 
+	      [-length New-extents] [-verbose] [-preserve] infile
+  or:
+    mri_remap -help [topic]
+
+*Defaults
+
+  Unless you define the following optional elements, mri_remap will use
+  these defaults:
+
+  Chunk name: "images"
+  Dimension order: vxyzt
+  Extent: (if not present in original chunk) 1
+
+*Arguments:chunk
+  [-chunk Chunk-name]		(-chu|c Chunk-name)
+
+  Ex: -chunk counts
+
+  Specifies that "counts" is the chunk that is to be operated on.
+  Default value is "images".
+
+
+*Arguments:order
+  [-order New-dimensions]      (-ord|o New-dimensions)
+
+  Specifies that the chunk should be rearranged to have the given
+  Dimension order "tzyxv".  Default value is "vxyzt".
+
+*Arguments:length
+  [-length New-lengths]		(-len|l New-extents)
+
+  Specifies the extents of the new dimensions.  These are given as a
+  list of integers, separated by commas, colons, or spaces.  If a
+  dimension is left out, like the second dimension in "2::3", then the
+  extent will be the same as the dimension in the existing chunk.  If
+  the dimension was not present in the existing chunk, the extent will
+  default to 1. 
+
+  Default is "", i.e. all extents will be copied from the dimension's
+  extent in the existing chunk, and if not found there, will be
+  assumed to be 1.
+
+  The total chunk size specified by the new set of dimensions and
+  extents must match the current size of the chunk.
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  Turning on the verbose option gives you more information about what
+  mri_remap is doing.
+
+*Arguments:preserve
+  [-preserve]
+
+  Turning on this option prevents mri_remap from deleting key-value 
+  pairs associated with the deleted dimensions.  In general these pairs
+  are irrelevant or invalid once their dimensions are gone, but
+  sometimes (for example if the dimensions will shortly be put back!)
+  one wants to keep them around.
+
+*Arguments:infile
+  infile
+
+  Ex: detrend
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Calculation
+
+  mri_remap just changes the header of the dataset to reflect the new
+  dimensions and extents.  It does not modify the actual data so it
+  should be an inexpensive operation no matter how large the chunk is
+  on disk.
+
+*Example
+
+  To reorganize the chunk named "chocolate", within a file named
+  "fudge", with the original dimension order "xyz", and original extents
+  "1:2:3", you would use the following command:
+
+  mri_remap -chunk chocolate -o zyx -l 2:3:1 -v fudge
+
+  In this case, the chunk "chocolate" (within "fudge") would now have
+  a dimention order of "zyx" and extents "2:3:1". How delicious.
+

@@ -1,0 +1,320 @@
+*Introduction
+
+  mri_glm takes a pgh MRI dataset of type t... or vt... (for
+  vector v of length 2) and performs multiple regression on
+  each group of data, treating it as a separate time series.
+  If the input dataset contains a 'z' dimension, that dimension
+  must appear last (that is, vary most slowly).
+
+  To run mri_glm use:
+    mri_glm [-verbose] [-variance] [-covariance] [-sum_of_squares] 
+	    [-orthogonality] [-debug] [-estimates EstimOut:Estimchunk]
+	    [-output Outfile] [-stdv Stdvfile:stdvchunk]
+            [-scale Scalefile:scalechunk] [-counts Countsfile:countschunk]
+            Infile:inchunk
+            File1:chunk1 [File2:chunk2 [... FileN:chunkN]] 
+ 
+  or:
+    mri_glm -help
+
+*Arguments:verbose
+   [-verbose]			(-ver|v)
+
+   This flag requests verbose output.
+
+*Arguments:variance
+   [-variance]			(-var)
+
+   A flag that if present tells mri_glm to compute the variances.
+
+*Arguments:covariance
+   [-covariance]		(-cov)
+
+   A flag that if present tells mri_glm to compute the covariances.
+
+*Arguments:sum_of_squares
+   [-sum_of_squares]           (-ssqr)
+
+   A flag that if present tells mri_glm to compute the sums of squares.
+
+*Arguments:orthogonality
+   [-orthogonality]		(-rth)
+
+   A flag that if present tells mri_glm to compute the orthogonality
+   measure for factors.  This value is 1.0 if the factors are
+   orthogonal and 0.0 if any factor can be expressed as a sum of the
+   others, with intermediate values showing that one or more 
+   factors have nonzero projections into the other factor directions.
+
+*Arguments:debug
+   [-debug]			(-deb)
+
+   This flag requests debugging output.
+
+*Arguments:output
+   [-output Outfile]		(-out Outfile)
+
+   Ex: -out residuals
+
+   Specifies the filename to which to write the output.  Each chunk
+   written to the file is a copy of the corresponding chunk from the
+   input file, except for the chunk that was specified in the [-input]
+   argument.  That chunk contains the residuals after regression of
+   the original input data.  If this switch is not given, no residuals
+   output file is produced.  It is an error to omit both the output
+   file name and the estimates file name (the -estimates switch) from
+   the command line.
+
+*Arguments:counts
+   [-counts FileN:chunkN]
+
+   Ex: -counts countsFile:countsChunk
+
+   Dimensions and extents must match those of Infile:inchunk, except that
+   if v is present its extent must be 1; that is, counts information must
+   be real.  This argument is required for logistic regression but
+   forbidden for linear least squares or Poisson regression.
+
+*Arguments:scale
+   [-scale FileN:chunkN]              (-sca FileN:chunkN)
+
+   Ex: -sca scaleFile:scaleChunk
+
+   This operand can be used to supply a scale value for each row of
+   the matrix equation for the general linear model (see Details).
+   A typical scale value would be sqrt(N)/sigma for each t value at
+   a given z (where N is the number of observations at that t and
+   sigma is the standard deviation of those observations).  It is 
+   never necessary to include a scale as the same effect can be
+   achieved by appropriately scaling the input data and factors, but
+   the use of a scale can sometimes greatly reduce the size of the
+   other input files.  If the chunk name is not given, "images" is
+   assumed.  The default scale is 1.0 (of course).  If residuals are
+   requested, they are un-scaled by dividing the scale value back out
+   before writing them.
+   
+   All scale values are assumed to be real.  The required dimensions
+   are (v)t(z) or (v)t...(z), where extent.v must be 1 if v is
+   present, and where the z dimension matches that of the input if
+   z is present.  If the (v)t(z) layout is used, each input slice
+   uses a constant scale.  If the (v)t...(z) layout is used, each
+   input voxel has its own scale and the number of scale values per
+   slice must match the number of input values per slice.
+
+*Arguments:stdv
+   [-stdv FileN:chunkN]      
+
+   Ex: -stdv stdvFile:stdvChunk
+
+   This operand can be used to supply standard deviations for the
+   input values (which are otherwise assumed to be exact).  These
+   standard deviations then affect the variances and covariances
+   produced as output.  If the chunk name is not given, "images" is
+   assumed.  The default stdv is 0.0 (of course).  
+
+   stdv values must match the input data in type- that is, these
+   values must be real if the input is real and complex if the
+   input is complex.  The required dimensions are thus (v)t(z),
+   where extent.v must be 1 if the input is real and 2 if the
+   input is complex.  extent.z must match that of the input if
+   z is present; otherwise the same values will be reused for 
+   all z.
+
+*Arguments:estimates
+   [-estimates EstimOut:EstimChunk]       (-est|e Estimout:EstimChunk)
+
+   Ex: -e glm_estim:glmChunk
+
+   Specifies the file to which the fitted estimates are to be written.
+   The EstimOut file defaults to be the same as the output file; the
+   EstimChunk defaults to "glm".  It is an error to omit both the
+   output file name (-output switch) and the estimates file name from
+   the command line. Contents of the parameter file are vectors
+   providing the following data for each voxel:
+
+   If the input data is real:
+
+    + (number of factors)+1 floats containing estimated "b" values for
+      the fit.  The first value is the constant term. 
+    + If the variance flag (-var) is given, (number of factors)+1
+      floats containing variances.  The first value is the variance of
+      the data about its mean.  If -istdv is present, those values
+      contribute to variance terms after the first.
+    + If the covariance flag (-cov) is given, (number of factors)^2
+      floats containing the covariance matrix.  The first row and
+      column of this matrix represent the covariances of the first
+      given factor, not those of the constant term (but note that the
+      variance of the mean is available via the -var flag).  If both
+      the -var and -cov flags are given, the variances appear a second
+      time as the diagonal elements of the covariance matrix
+      (including contributions from -istdv if applicable).
+    + If the sums of squares flag is given, (number of factors)+3
+      floats containing the number of samples (as a float), SSTO, SSE,
+      and the (number of factors) components of SSR.
+    + If the factor orthogonality flag is given, one float
+      containing the orthogonality measure.
+
+   If the input data is complex:
+
+    + 2*(number of factors+1) floats containing estimated real and imaginary 
+      components of the "b" values.  The first pair are the constant term.
+    + If the variances flag is given, 2*(number of factors+1) floats
+      containing variances.  The first pair is the variance of the data about  
+      its mean.  If -istdv is present, those values contribute to the 
+      real and imaginary parts of each variance pair after the first.
+    + If the covariance flag (-cov) is given, (2*number of factors)^2
+      floats containing the covariance matrix.  This can be thought 
+      of as (number of factors)^2 2x2 matrices, each containing the
+      real-real, real-imaginary, imaginary-real and imaginary-imaginary 
+      components of the (number of factors)^2 complex covariances.
+      The first two rows and columns of this matrix represent the 
+      covariances of the first given factor, not those of the constant 
+      term (but note that the variance of the mean is available via 
+      the -var flag).  If both the -var and -cov flags are given, the 
+      variances appear a second time as the diagonal elements of the 
+      covariance matrix (including contributions from -istdv if applicable).
+    + If the sums of squares flag is given, (number of factors)+3
+      floats containing number of samples (as a float), SSTO, SSE, and
+      the (number of factors) components of SSR.
+    + If the factor orthogonality flag is given, one float
+      containing the orthogonality measure.
+ 
+*Arguments:infile
+   Infile:inchunk
+
+   Ex: detrend:images
+
+   Specifies the file to be read as input.  If the optional chunkname is
+   not given, "images" is assumed.  This switch is required and must
+   have at least a filename component.  The dimensions of the input
+   chunk must be (v)t...(z), where the extent of v must be 1 or 2 if
+   it is present.  Other dimensions are allowed between t and z; for
+   example, txyz would be a valid dimension string.  Note that factors
+   and stdv values must be constant for a given z.
+
+*Arguments:factorfiles
+   File1:chunk1 [File2:chunk2 [..... FileN:chunkN]]            
+
+   Ex: respFile:respChunk
+
+   At least one of these files must be present in your
+   command. This specifies the file name and chunk for the n'th factor
+   for the general linear model.  If FileN is not specified, the file
+   is assumed to be the same as that given in the input argument. If
+   chunkN is omitted, "images" is assumed.  All factor values are
+   assumed to be real.  The required dimensions are (v)t(z), where 
+   the z dimension matches that of the input if z is present.  Each
+   v value represents a separate factor.
+
+   NOTE that factor values are treated as real even if the extent
+      of the v dimension is 2!
+
+*Details:Calculation
+
+  Factors are loaded, and "missing" elements of the time series are
+  compressed out.  Each factor is corrected to remove its mean value,
+  so that the factor values center at 0.0.  (Factors are reloaded for
+  each new slice if a non-trivial z dimension is given).
+
+  Voxel data is loaded, and "missing" elements of the time series are
+  compressed out.  The mean and variance about the mean of the voxel 
+  data is calculated, and the mean is subtracted from the data.
+
+  If scale data is provided, the scale factors for a given voxel
+  multiply the factor and voxel data after mean correction and 
+  before "missing" elements are compressed out.
+
+  For each voxel, the resulting general linear model is of the form:
+
+           Y = XB + E
+
+  where Y is the time series of input data, X is the factor matrix, B
+  is the vector of parameters to be estimated, and E is the residual
+  vector.  If scale data has been provided, X and Y are replaced by
+  SY and SX where S is a diagonal matrix of scale values for the given 
+  voxel.
+
+  The factor matrix is decomposed by singular value decomposition, and
+  the results are calculated from the components by standard methods
+  as per "Applied Linear Statistical Models" by Netter, Wasserman, and
+  Kumer chapter 7.  Specifically, the estimates of the parameters B are
+  given by:
+
+           B = V (1/W) U' Y
+
+  where Y are the input data, "'" denotes transpose, and the singular
+  value decomposition of the (real) factor matrix X is:
+
+           X = U W V'
+
+  For n samples and p factors, U is n*p, W is diagonal p*p, and V is
+  p*p in this notation.
+
+  A constant term is added to the array of parameter estimates B, 
+  compensating for the initial subtraction of the means from both
+  the factors and voxel data.  This constant term is calculated from
+  the data and factor means and the other parameter estimates so
+  as to properly reflect the contribution of the weighted factor 
+  means to the voxel data.
+
+  If residuals E are requested, they are calculated by:
+
+           E = Y - XB
+
+  Zero values are inserted appropriately to cover missing elements,
+  and the residuals are written to the output file.  If scale data is
+  provided, the residuals are un-scaled prior to output by dividing 
+  by the scale data.
+
+  If variances are requested, the covariance matrix S^2(B) is internally
+  calculated via:
+            2
+           S (B) = V (1/W^2) V'
+
+  where (1/W^2) is the diagonal matrix whose elements are the inverse
+  squares of the elements of W.
+
+  If sums of squares are requested, they are calculated as follows.
+  With means subtracted from the voxel data, 
+
+           (1/n)Y'JY = 0
+
+  where J is a matrix all the elements of which are 1.  With this 
+  identity, 
+
+           SSTO = Y'Y
+                         -1            2
+           SSR = Y'X(X'X)  X'Y = B' V W V' B
+
+           SSE = max(SSTO - SSR, 0.0)
+
+  where a ranges over the factors.  SSE is explicitly made
+  non-negative to avoid problems arising from numerical error.
+
+  The SSR is broken down by factors as follows.  Let a range from 1 to 
+  p, where p is the number of factors.  Let B*(a) be the vector
+  constructed by setting the first a elements to match those of B, and 
+  the remaining p-a elements to 0.  Let SSR(a) be the value of SSR 
+  computed from B*(a) computed from the rightmost formula above (using
+  the same un-starred V and W).  The component of SSR associated with
+  factor a is then SSR(a)-SSR(a-1), that is, the change in SSR caused
+  by the contribution of the estimated parameter value for that factor.
+
+  Complex input data is everywhere treated as two separate sets of
+  input, one for real components and one for imaginary.  Thus complex
+  input causes twice as many parameter estimates and variances to
+  be produced.  Only single sums-of-squares values are produced, 
+  using the norms of the appropriate terms.
+
+  The factor orthogonality measure is the product of the eigenvalues
+  of X'X, divided by the product of the diagonal elements of X'X.
+
+
+
+
+
+
+
+
+
+

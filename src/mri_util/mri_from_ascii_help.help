@@ -1,0 +1,63 @@
+*Usage
+
+  mri_from_ascii reads a stream of ascii data representing floats
+  from the standard input, and outputs a Pittsburgh MRI file 
+  containing the data.
+
+  mri_from_ascii [-verbose] [-order Dim-String] -length Lengths 
+		 [-chunk Chunk-Name] [-index Index-String] outfile
+
+
+*Examples
+
+  The following creates a Pgh MRI file with a time dimension
+  containing the 3 entries 1.7, 2.3, and 14.5:
+
+  echo 1.7 2.3 14.5 | mri_from_ascii -l 3 outfile.mri
+
+
+*Arguments:order
+  [-order Dim-String]			(-ord|o Dimstr) 
+
+  Specifies the dimension string of the output file, for example
+  "xyzt".  Default is "t".  
+
+*Arguments:length 
+  -length Lengths			(-len|l Lengths)
+
+  Specifies extents for the given dimensions, separated by colons.
+  Elided dimensions are given extent 1. For example, "10:3::7"
+  specifies extents of 10, 3, 1, and 7.
+
+*Arguments:chunk
+  [-chunk Chunk-Name]			(-chu|c Chunk-Name)
+
+  Specifies that data will be put in output data set in chunk
+  Chunk-Name.  The default is "images".
+
+*Arguments:index
+  [-index Index-String]			(-ind Index-String)
+
+  Specifies that the data should be read in indexed mode, and that the
+  indices (in order) are given by Index-String.  This string must
+  appear at the end of dimstr.  For example, if Dim-String is "vzt"
+  and Index-String is "zt", the first two elements of each data line
+  must be integers representing z and t values.  In indexed mode,
+  lines beginning with '#' are treated as comments.  Comments are not
+  recognized in non-indexed (stream) mode.
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  -v requests verbose operation.
+
+*Arguments:outfile
+  outfile
+
+  Ex: copyChunk
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+
+
+

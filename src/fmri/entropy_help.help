@@ -1,0 +1,16 @@
+*Details:ImageEntropyCalculation
+
+  See for example "Mutual-Information-Based Registration of Medical
+  Images: A Survey" by Pluim, Maintz, and Viergever, IEEE Transactions
+  on Medical Imaging, 22.8, August 2003.
+
+  If the bounds of the histogram are defined such that some counts fall
+  outside the range, those counts are dropped and a warning message
+  is produced.
+
+  Note that a few extreme values can strongly effect the entropy by
+  changing the range over which the histogram is binned.  To avoid
+  this problem, specify min and max bounds for the histogram.
+
+  When a mask is applied, samples outside the mask are simply excluded
+  from the histogram and the P scores.

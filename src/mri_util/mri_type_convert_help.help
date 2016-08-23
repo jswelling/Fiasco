@@ -1,0 +1,79 @@
+*Usage
+
+  mri_type_convert takes a pgh MRI dataset of any data type and
+  converts a given chunk to another datatype.  
+
+  The command line for mri_type_convert is:
+    mri_type_convert [-chunk chunkName] [-verbose]
+		     [-char | -short | -int | -float | -double] 
+		     infile outfile
+
+  or:
+    mri_type_convert -help
+
+*Arguments:chunk
+  -chunk chunkName			(-chu|c chunkName)
+
+  Specifies the chunk to be converted.  The default is "images".
+
+*Arguments:char
+  -char 
+
+  Specifies that this chunk should be converted to unsigned char data.
+  The various type switches are mutually exclusive.  The default is
+  float.
+
+*Arguments:short
+  -short				(-shr)
+
+  Specifies that this chunk should be converted to short (2 byte)
+  integer data.  The various type switches are mutually exclusive.
+  The default is float.  
+  
+*Arguments:int
+  -int 
+
+  Specifies that this chunk should be converted to long (4 byte)
+  integer data.  The various type switches are mutually exclusive.
+  The default is float.
+
+*Arguments:float
+  -float				(-flt)
+
+  Specifies that this chunk should be converted to 4 byte floating
+  point data.  The various type switches are mutually exclusive.  The
+  default is float.
+
+*Arguments:double
+    -double				(-dbl)
+
+  Specifies that this chunk should be converted to 8 byte floating
+  point data.  The various type switches are mutually exclusive.  The
+  default is float.
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  Requests verbose operation.
+
+*Arguments:infile
+  infile
+
+  Ex: detrend
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Arguments:outfile
+  outfile
+
+  Ex: convertedFile
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+
+*Details:Calculation
+
+  If a conversion occurs which produces a value which is out of range
+  for the new datatype, a warning message is given and conversion
+  continues.
+

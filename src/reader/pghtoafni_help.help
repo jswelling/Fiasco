@@ -1,0 +1,79 @@
+*Usage
+
+  pghtoafni is a program that converts pgh MRI format files to 
+    AFNI format.  
+
+  pghtoafni [-verbose] [-debug] [-anat|-func] [-head|-gen] Infile Outfile
+
+  pghtoafni -help [topic]
+
+*Arguments:help
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+*Arguments:verbose
+
+  [-verbose]   (-v)
+
+  Ex: -v
+
+  Produces verbose output.
+
+*Arguments:debug
+
+  [-debug]
+
+  Ex: -debug
+
+  Produces debugging output.
+
+*Arguments:Infile
+
+  The name of the Pittsburgh MRI file to be translated.  This argument
+  is required.
+
+*Arguments:Outfile
+
+  The name of the AFNI file to be generated.  This argument is
+  required.  If Outfile is "whatever", the files "whatever.BRIK"
+  and "whatever.HEAD" will be created.
+
+*Arguments:anat
+
+  [-anat]
+
+  AFNI distinguishes between anatomy and functional datasets.  Setting
+  this flag will force the output dataset to be of anatomy type;
+  otherwise pghtoafni will do its best to guess.
+
+*Arguments:func
+
+  [-func]
+
+  AFNI distinguishes between anatomy and functional datasets.  Setting
+  this flag will force the output dataset to be of functional type;
+  otherwise pghtoafni will do its best to guess.
+
+*Arguments:head
+
+  [-head]
+
+  AFNI distinguishes between head datasets and generic datasets.
+  Setting this flag will force the output dataset to be a head;
+  otherwise pghttoafni will do its best to guess.  (In all likelihood 
+  it will guess that it is a head).
+
+*Arguments:head
+
+  [-gen]
+
+  AFNI distinguishes between head datasets and generic datasets.
+  Setting this flag will force the output dataset to be generic;
+  otherwise pghttoafni will do its best to guess.  (In all likelihood 
+  it will guess that it is a head).
+
+
+
+
+

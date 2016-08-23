@@ -1,0 +1,42 @@
+*Introduction
+
+  mri_from_pdigm takes a stream of ascii data as input.  That 
+  stream consists of multiple lines, each of which starts with a 
+  monotonically increasing float (a time stamp).  This is the
+  output format produced by the "dmread" utility when it is used
+  with the "-s" option.  mri_from_pdigm reads the stream and
+  produces a Pittsburgh MRI dataset in "vt" format containing
+  the data.
+
+  To run mri_from_pdigm use:
+    mri_from_pdigm [-low Low_Time] -high High_Time 
+		   [-chunk Chunk-Name] outfile
+
+  or:
+    mri_from_pdigm -help
+
+*Arguments:low
+  [-low Low-Time]
+
+  Specifies the minimum time stamp that will get included in the file;
+  earlier values are dropped.  The default value is 0.0.
+
+*Arguments:high
+   -high High_Time
+
+   Specifies the maximum time stamp that will get included;
+   later values are dropped.  This argument is required.
+
+*Arguments:chunk
+   [-chunk Chunk-Name]			(-chu|c Chunk-Name)
+
+   Specifies that data will be written to chunk Chunk-Name in output
+   file.  The default value is "physio".
+
+*Arguments:outfile
+  outfile
+
+  Ex: PdigmFile
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.

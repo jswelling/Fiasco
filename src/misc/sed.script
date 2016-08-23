@@ -1,0 +1,7 @@
+s"^Z$"\
+0 1 0 1 Sg\
+1 Sd\
+/Helvetica-Bold findfont 40 scalefont setfont\
+100 5 moveto\
+(Stoplight) show\
+Z"

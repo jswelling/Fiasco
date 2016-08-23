@@ -1,0 +1,19 @@
+*Details:PraxisCalculation
+
+  Praxis is a minimization algorithm based on Powell's Method as
+  modified by Brent.  See for example "Numerical Recipes in C" section
+  10.5 for an introduction to Powell's Method, and "Algorithms for
+  Minimization without Derivatives" by Richard P. Brent, ch. 7 
+  (Prentice-Hall 1973) or Brent's 1971 thesis for details.  Praxis
+  is a contraction of "principal axis".
+
+  This particular implementation of praxis comes from the Fortran
+  version available from Netlib (http://www.netlib.org/).  It was
+  hand-translated into C, and the singular value decomposition
+  routine was replaced with a call to the LAPACK routine DGESVD.
+  Brent's "random()" routine was replaced with the standard
+  drand48().  The C version is reentrant.
+
+  This implementation has been modified to make a call to the "reset"
+  routine passed it at the beginning of each outer loop iteration.  
+  This routine implements the outer, slower alignment method.

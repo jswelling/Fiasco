@@ -1,0 +1,219 @@
+*Overview
+
+  mri_subsample takes a pgh MRI dataset of any type, and outputs
+  a dataset of the same type containing subsampled data.
+  The subsampled data spans the range of one of the dimensions
+  of the input data, but has a smaller extent than that of
+  the input dimension.  The output data is calculated by dividing
+  the input data up into zones, one zone per step in the output
+  extent.  Each zone thus contains one or more input data values.
+  The output value for the zone is calculated by one of several
+  methods;  see below.  The subsampling operation acts on all 
+  chunks in the dataset.
+
+  To run mri_subsample use:
+    mri_subsample -dimensions Dim -length Length [-window Window] 
+		  [-shift Shift] [-base base] 
+		  [-min | -max | -mean | -sum | -count | -closest | 
+		  -median | -q1 | -q3 | -iqr] 
+		  [-verbose] [-debug] infile outfile
+
+*Defaults
+
+  window: 1.0*base
+  shift: 0.0
+  base: 1
+  output zone: max
+
+
+*Arguments:dimension
+  -dimension Dim		(-dim|d Dim)
+
+  Ex. -d t
+
+  Specifies the dimension to be subsampled.  Valid values are one
+  character from the dimension string of the input data
+  (typically vxyzt).  This argument is required.
+
+*Arguments:length
+  -length Length		(-len|l Length)
+
+  Ex. -l 10
+
+  Specifies the output extent of the dimension used in -dimension.
+
+*Arguments:window
+  [-window Window]		(-win Window)
+
+  Ex. -win 100
+
+  Specifies the window to be considered within each sampling region.
+  This is a floating point number between 0.0 and 1.0*base; the
+  default is 1.0*base.  window, offset, and base are incompatible with
+  the "-closest" method.
+
+*Arguments:shift
+  [-shift Shift]		(-shi|s Shift)
+
+  Ex. -s 200
+
+  Specifies the offset of the beginning of the window within the
+  sampling region.  This is a floating point number between 0.0 and
+  ((1.0*base)-window); the default is 0.0.  window, offset, and base
+  are incompatible with the "-closest" method.
+
+*Arguments:base
+  [-base Base]
+
+  Specifies a base floating point number by which to divide the window
+  and offset; the default is 1.0.  This is useful for scaling for
+  times in milliseconds, for example.  window, offset, and base are
+  incompatible with the "-closest" method.
+
+*Arguments:max
+  -max 
+
+  Specifies that the output should be the maximum in each zone.  The
+  min, max, mean, sum, count, median, 1qr, 3qr, iqr, and closest flags
+  are mutually exclusive.  Max is the default.  The "missing" chunk is
+  treated specially, as described in "Details" below.
+
+*Arguments:min
+  -min 
+
+  Specifies that the output should be the minimum in each zone.  The
+  min, max, mean, sum, count, median, 1qr, 3qr, iqr, and closest flags
+  are mutually exclusive.  Max is the default.  The "missing" chunk is
+  treated specially, as described in "Details" below.
+
+*Arguments:mean
+  -mean 
+
+  Specifies that the output should be the mean in each zone.  The min,
+  max, mean, sum, count, median, 1qr, 3qr, iqr, and closest flags are
+  mutually exclusive.  Max is the default.  The "missing" chunk is
+  treated specially, as described in "Details" below.
+
+*Arguments:sum
+  -sum 
+
+  Specifies that the output should be the sum of all the elements in
+  each zone.  The min, max, mean, sum, count, median, 1qr, 3qr, iqr,
+  and closest flags are mutually exclusive.  Max is the default.  The
+  "missing" chunk is treated specially, as described in "Details"
+  below.
+
+*Arguments:count
+  -count			(-cnt)
+
+  Specifies that the output should be the number of elements in each
+  zone.  The min, max, mean, sum, count, median, 1qr, 3qr, iqr, and
+  closest flags are mutually exclusive.  Max is the default.  The
+  "missing" chunk is treated specially, as described in "Details"
+  below.
+
+*Arguments:closest
+  -closest			(-cls)
+
+  Specifies that the output should be the single input datum in each
+  zone closest to the output point.  This method is incompatible with
+  the window, offset, and base options.  The min, max, mean, sum,
+  count, median, 1qr, 3qr, iqr, and closest flags are mutually
+  exclusive.  Max is the default.  The "missing" chunk is treated
+  specially, as described in "Details" below.
+
+*Arguments:median
+  -median			(-med)
+
+  Specifies that the output should be the median value in each zone.
+  The min, max, mean, sum, count, median, 1qr, 3qr, iqr, and closest
+  flags are mutually exclusive.  Max is the default.  The "missing"
+  chunk is treated specially, as described in "Details" below.
+
+*Arguments:1st_quartile
+  -1st_quartile			(-1qr)
+
+  Specifies that the output should be the first quartile value in each
+  zone.  The min, max, mean, sum, count, median, 1qr, 3qr, iqr, and
+  closest flags are mutually exclusive.  Max is the default.  The
+  "missing" chunk is treated specially, as described in "Details"
+  below.
+
+*Arguments:3rd_quartile
+  -3rd_quartile			(-3qr)
+
+  Specifies that the output should be the third quartile value in each
+  zone.  The min, max, mean, sum, count, median, 1qr, 3qr, iqr, and
+  closest flags are mutually exclusive.  Max is the default.  The
+  "missing" chunk is treated specially, as described in "Details"
+  below.
+
+*Arguments:inter_quartile
+  -inter_quartile		(-iqr)
+
+  Specifies that the output should be the inter-quartile range value
+  of the values in each zone.  The min, max, mean, sum, count, median,
+  1qr, 3qr, iqr, and closest flags are mutually exclusive.  Max is the
+  default.  The "missing" chunk is treated specially, as described in
+  "Details" below.
+
+*Arguments:verbose
+  [-verbose]			(-ver|v)
+
+  Ex. -v
+
+  Sets the verbose flag to on, which displays output to the screen
+  showing progress.  (-V shows very verbose output.)
+
+*Arguments:debug
+  [-debug]                      (-V)
+
+  Ex. -debug
+
+  Requests debugging output.
+
+*Arguments:infile
+  infile
+
+  Ex: detrend
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Arguments:outfile
+  outfile
+
+  Ex: subsampledFile
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+
+
+*Details
+
+  The "missing" chunk is treated specially, as follows.  For min, max,
+  mean, sum, and count operations, missing data is excluded from the
+  calculation and a given result will be marked *not* missing if *any*
+  non-missing input datum contributes to the result.  For the closest
+  operation the result is the closest input datum, even if that value
+  is missing; the result will be missing if the closest input was missing.
+
+  Chunks not containing the selected dimension are copied verbatim.
+  All chunks containing the given dimension will be subsampled.
+  (Note that this can give confusing results if the extents of the
+  dimension vary between chunks!)  
+
+*Examples
+
+  The following will produce a dataset with 30 samples, each
+  representing the mean of 1/30th of the input data.  Subsampling
+  is done over time.
+
+  mri_subsample -d t -l 30 -mean infile outfile
+
+  Suppose an input dataset has 10000 samples in time, taken at 10ms
+  intervals.  The following command will produce a subsampled dataset
+  with 10 data values, each representing samples from within a 1000ms
+  interval.  The output samples will be taken from the third 100ms
+  sub-interval within each 1000ms interval.
+
+  mri_subsample -d t -l 10 -win 100 -s 200 -base 1000 -mean infile outfile

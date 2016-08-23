@@ -1,0 +1,86 @@
+*Introduction
+
+  mri_copy_chunk is used to copy a chunk from one Pittsburgh MRI
+  dataset to another (it can also be used to copy a chunk within a
+  dataset). 
+
+  To run mri_copy_chunk use:
+    mri_copy_chunk [-chunk Input-chunk-name] [-chunk_out Output-chunk-name] 
+                   [-replace] infile outfile
+
+  or:
+    mri_copy_chunk -help
+
+*Defaults
+
+  Unless you define the following optional elements, mri_paste will
+  use these defaults:
+
+  Chunk input name: images
+  Chunk output name: same as the input name
+
+
+*Arguments:chunk
+  [-chunk Input-chunk-name]         (-chu|c Input-chunk-name)
+ 
+  Ex: -c images
+
+  Specifies the name of chunk to be copied. Default value is "images".
+
+*Arguments:chunk_out
+  [-chunk_out Output-chunk-name]           (-cho Output-chunk-name)
+ 
+  Ex: -cho out_images
+    
+  Specifies the name of the chunk to copy to. Default value is the
+  same as the Input-chunk-name.
+
+*Arguments:replace
+  [-replace]                       (-rep)
+
+  Specifies that it is OK to overwrite an existing chunk in the output
+  dataset.  If this flag is not given, and the chunk already exists in
+  the output dataset, then an error message is printed and nothing is
+  changed.
+
+*Arguments:infile
+  infile
+
+  Ex: detrend
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Arguments:outfile
+  outfile
+
+  Ex: copyChunk
+
+  The value of outfile specifies the output dataset.  This argument is
+  required.
+
+*Examples
+
+  For the following examples, when the defaults are not used, the
+  original chunk to be copied is "star_bellied_sneetch", the new copy of
+  the chunk is "plain_bellied_sneetch", the infile is "horton" and the
+  outfile is "who".
+
+  ex.  mri_copy_chunk horton who
+
+  This example uses all the defaults: the chunk to be copied is
+  "images".  It will be copied from "horton" to "who", where it will
+  still be called "images".
+
+
+  ex.  mri_copy_chunk -chu star_bellied_sneetch -cho
+  plain_bellied_sneetch  -rep horton who
+
+
+  This example uses all the features of mri_copy_chunk.  The only
+  difference from the previous example is that the original chunk
+  (star_bellied_sneetch) and the copied chunk (plain_bellied_sneetch)
+  have different names.  Also, the "replace" option has been turned on.
+  If there happened to already be a chunk in the outfile named
+  "plain_bellied_sneetch" I've given the program permission to overwrite
+  it.
+

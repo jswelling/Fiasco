@@ -1,0 +1,81 @@
+*Introduction
+
+  mri_resample resamples a Pgh MRI dataset along one dimension,
+  producing a new dataset with the same angular alignment as the
+  original but with different starting and ending values and voxel
+  size in the given dimension.
+
+  To run mri_resample use:
+
+    mri_resample -v -debug -dimension Dimension -length Length 
+           -start Start  -end End [-interp interpMode] infile outfile
+
+*Arguments:dimension
+  -dimension Dimension			(-dim|d Dimension)
+
+  Specifies the dimension to be interpolated.  Valid values are one
+  character long; case is ignored.  This argument is required.
+
+*Arguments:length
+  -length Length			(-len|l Length)
+
+  Specifies the output extent of that dimension.  This
+  argument is required.
+
+*Arguments:v
+  [-v]
+
+  Sets verbose output
+ 
+*Arguments:debug
+  [-debug]
+
+  Sets debugging output
+
+*Arguments:start
+  [-start Start]
+
+  Specifies the starting coordinate for resampling, given as a
+  floating point number in voxels.  The position matching the
+  first voxel in the input is 0.0; the position matching the
+  last voxel is extent-1 .  Values outside the input bounds are
+  permitted.
+
+*Arguments:end
+  [-end End]
+
+  Specifies the ending coordinate for resampling, given as a
+  floating point number in voxels.  The position matching the
+  first voxel in the input is 0.0; the position matching the
+  last voxel is extent-1 .  Values outside the input bounds are
+  permitted.
+
+*Arguments:interp
+  [-interp interpMode]
+
+  Specifies interpolation mode.  Appropriate modes include
+  "closest", "linear", "catmullrom", "bspline", and "bezier";
+  the default is "linear".
+
+*Arguments:infile
+  infile
+
+  Specifies the input dataset.  This argument is required.
+    
+*Arguments:outfile
+  outfile
+
+  Specifies the output dataset.  This argument is required.
+
+*Details:General
+
+  Chunks not containing the selected dimension are copied verbatim.
+
+  All chunks containing the given dimension will be resampled.
+  (Note that this can give confusing results if the extents of the
+  dimension vary between chunks!)  
+
+  If interpolation produces a position outside the boundaries of
+  the input dataset, the nearest boundary value is used.
+
+m4include(../fmri/interpolator_help.help)

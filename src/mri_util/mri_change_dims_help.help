@@ -1,0 +1,42 @@
+*Introduction
+
+  mri_change_dims changes the dimensions of one chunk in a pgh MRI
+  file in a trivial way, adding or removing trivial dimensions.
+  Dimensions of extent 1 is added or removed from the dimensions
+  for the given chunk.
+
+  To run mri_change_dims use:
+    mri_change_dims [-c chunk] -d dimstr infile outfile
+
+  or:
+    mri_change_dims -help
+
+*Arguments:c
+   [-c chunk]
+ 
+   Ex: -c images
+
+   Specifies the name of the chunk to change. The default value is
+   "images". 
+
+*Arguments:d
+   -d dimstr
+
+   Specifies the dimension string that chunk is to have on output.
+   This parameter is required.
+
+*Arguments:infile
+   infile
+
+   Ex: detrend
+
+   The value of infile specifies the input dataset.
+   This parameter is required.
+
+*Arguments:outfile
+   outfile
+
+   Ex: dimsChanged
+   
+   The value of outfile specifies the output dataset.
+   This parameter is required.

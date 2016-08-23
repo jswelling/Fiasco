@@ -1,0 +1,16 @@
+*Details:fmin1DCalculation
+
+  Fmin1D is a one-dimensional minimization routine requiring the
+  function value but no derivatives.  It is transcoded from fmin.f,
+  available from Netlib.  The method used is a combination of golden
+  secion search and successive parabolic interpolation.  Convergence
+  is never much slower than that for a fibonacci search.  If f has a
+  continuous second derivative which is positive at the minimum, then
+  convergence is superlinear, and usually of the order of about
+  1.324...
+
+  This algorithm is identical or very similar to that described as
+  Brent's Method in "Numerical Recipes" (Press, Teukolsky, Vettering,
+  and Flannery) section 10.2.  It is a slightly modified version of
+  the Algol 60 procedure "localmin" by Richard Brent, "Algorithms for
+  Minimization Without Derivatives", Prentice-Hall (1973).

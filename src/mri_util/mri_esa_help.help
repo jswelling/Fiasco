@@ -1,0 +1,113 @@
+*Usage
+
+  mri_esa calculates the eigenvalues and optionally eigenvectors of
+  real symmetric matrices stored in Pgh MRI datasets.
+
+  The command line for mri_esa is:
+    mri_esa [-chunk Chunkname] [-verbose] [-debug] [-number nEigen] 
+	    [-upper] [-eigenvectors EvecFile] [-descend] 
+            Infile EigenvalFile
+
+  or
+    mri_esa -help [topic]
+
+*Examples
+
+  Suppose the input file infile.mri has dimensions xyz, with extents
+  100:100:30.  Each of the 30 z's represent a different 100x100 real
+  symmetric matrix.  The command:
+
+  mri_esa -n 10 -evec eigenvectors infile eigenvalues
+
+  will produce two new Pittsburgh MRI datasets; eigenvectors.mri and
+  eigenvalues.mri .
+
+  eigenvalues.mri will have dimensions yz, with extents 10:30 .  Each
+  of the 30 z's represents the largest 10 eigenvalues of the
+  corresponding 100x100 matrix.
+
+  eigenvectors.mri will have dimensions xyz, with extents 100:10:30.
+  Each of the 30 z's will contain the 10 eigenvectors (each of length
+  100) corresponding to the 10 eigenvalues in eigenvalues.mri .
+
+*Arguments:Infile
+
+  Infile is the input dataset.  It must have at least two dimensions,
+  and the extents of the first two dimensions must be the same.  These
+  two dimensions form a real symmetric matrix.  If more than two
+  dimensions are present, the dataset is treated as multiple different
+  real symmetric matrices and each is solved in turn.  The particular
+  letter names of the dimensions don't matter.
+
+*Arguments:EigenvalueFile
+
+  This output file contains the nEigen eigenvalues produced by each
+  solution.  By default the eigenvalues are arranged in ascending
+  order, that is, smallest to largest.  If the -descend flag is
+  present this order is reversed.
+
+
+*Arguments:EvecFile
+
+  -eigenvectors EvecFile	(-evc EvecFile)
+
+  If this output file is specified, eigenvectors will be calculated;
+  if not, only the eigenvalues are calculated.  nEigen eigenvectors
+  are produced for each solution.  If any of these eigenvectors fail
+  to converge, text error messages are generated, but the program will
+  not abort.  By default the eignevectors associated with the smallest
+  eigenvalues are delivered first.  If the -descend flag is present
+  this order is reversed.
+
+*Arguments:number
+  -number nEigen		(-num nEigen)
+
+  Specifies number of eigenvalues (and eigenvectors if requested) to
+  calculate.  Must be less than or equal to the rank of the input
+  matrix.  The default is the input rank.
+
+*Arguments:chunkname
+ -chunk Chunkname		(-chu|c Chunkname)
+
+ Specifies the chunk that is to be operated on.
+     Default value is "images".
+
+*Arguments:upper
+  -upper			(-upp)
+
+  The symmetry of the input matrix is not checked; the algorithm
+  simply uses one half of the matrix and ignores the rest.  The
+  default is to use the half below the diagonal; this switch causes
+  the upper half to be used instead.
+
+*Arguments:descend
+  -descend
+
+  By default the eigenvalues and eigenvectors are delivered in
+  ascending order, smallest eigenvalues and associated eigenvectors
+  first; this is the behavior of the underlieing LAPACK routine.  If
+  the -descend flag is given this order is reversed, and the largest
+  eigenvalues and associated eigenvectors appear first.  Note that the
+  set of eigenvalues and eigenvectors is not effected; only their
+  order in the output file changes.
+
+*Arguments:verbose
+  [-verbose]			(-ver|v)
+
+  Requests verbose operation.
+
+*Arguments:debug
+  [-debug]			(-deb)
+
+  Requests debugging output.
+
+*Usage:Details
+
+  This program is basically just a wrapper for the LAPACK routine
+  \<a href="http://gams.nist.gov/serve.cgi/Module/CLAPACK/DSYEVX.C/12646/"\>DSYEVX\</a\>.  All the math is carried out in double precision, with
+  conversion to and from double precision taking place on input and 
+  output as needed.
+
+  NOTE: Text error messages will be given if some of the
+  eigenvectors fail to converge, but the program will not abort.
+

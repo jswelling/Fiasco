@@ -1,0 +1,36 @@
+*Details:CoordinateSystems
+
+  This section describes the 3D coordinate system used by Fiasco.
+  The coordinate system is right handed, with the X-Y slices oriented
+  according to the "radiological convention".
+
+  As a specific example, consider a set of multi-slice axial scan
+  data.  When a slice is viewed, the right side of the image
+  corresponds to the patient's left side, and patient's nose is
+  at the top of the image.  This amounts to viewing the slice as
+  if one were standing at the patient's feet, looking toward the
+  head.
+
+  We choose the X axis to be horizontal, with the positive X direction
+  toward the image's right (the patient's left).  The Y axis is
+  vertical, with the nose pointing in the positive Y direction.  The
+  right hand rule then implies that the Z axis points out of the image,
+  toward the patient's feet.
+
+  The order of data in a Pittsburgh MRI file representing a scan is
+  such that low X values (image left, patient right) appear before 
+  high X values (image right, patient left), and low Z values
+  (the top of the head) appear before high Z values (slices closer to 
+  the patient's feet).  However, note that low Y values (the back of
+  the head for an axial scan) appear *after* high Y values (the nose).
+  Thus the coordinate system order for the Y direction is reversed
+  with respect to the data order.
+
+  With this coordinate system convention (still assuming an axial
+  scan), a positive rotation about the X axis corresponds to a nod- 
+  the nose moves in the direction of the patient's feet.  A positive
+  rotation about Y moves the patient's right ear (on the image's 
+  left) in the direction of the feet.  A positive rotation about Z
+  brings the nose in the direction of the right ear (on the image's
+  left).
+

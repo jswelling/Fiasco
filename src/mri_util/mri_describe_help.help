@@ -1,0 +1,26 @@
+*Introduction
+
+  mri_describe prints short text descriptions of one or more
+  Pittsburgh MRI datasets.
+
+
+  To run mri_describe use:
+    mri_describe [-verbose] [-debug] file1 [file2 [file3 ...]]
+
+  or:
+    mri_describe -help
+
+
+*Arguments:verbose
+  [-verbose]                            (-v)
+
+     Specifies verbose output.  This produces some additional information.
+
+*Arguments:debug
+  [-debug]
+
+     Specifies debugging output.
+
+*Arguments:fileN
+
+     Names of Pgh MRI files to be described.

@@ -1,0 +1,628 @@
+*Introduction
+
+  mri_rpn_math takes as arguments an expression in Reverse Polish
+  Notation and a list of pgh MRI datasets.  An output dataset is
+  produced by applying the expression element-by-element to the input
+  datasets.
+
+  To run mri_rpn_math use:
+    mri_rpn_math [-outfile Outfile] [-chunk Chunk_Name] [-seed Seed] 
+                 -expression Exprfl | Expr  [-v] [-debug] [-complex] 
+                 infile1 [infile2 ...[infileN]]
+
+  or:
+    mri_rpn_math -help
+
+*Default
+
+  Chunk_name: images
+
+*Arguments:outfile
+  [-outfile Outfile]                        (-out Outfile)
+
+  Ex: -out Ofile
+
+  Specifies the name of the output file.  If this option is not
+  given, no output file is generated.  (The command may still
+  produce output to the tty via 'if_print' commands, for example).
+  The output file dimensions will match those of the first input,
+  except that in complex mode the output is guaranteed to be complex.
+
+*Arguments:chunk
+  [-chunk Chunk_Name]                        (-chu|-c Chunk_Name)
+
+  Ex: -c images
+
+  Specifies which chunk data will be read from and written to.
+  Default chunk is "images".  This chunk must be present in all input
+  files.
+
+*Arguments:seed
+  [-seed Seed]
+
+  Ex: -seed 17
+
+  Uses Seed (an integer) as the seed value for the random number
+  generator.  If this switch is not used, the time in seconds since
+  midnight of January 1 1970 is used.
+
+*Arguments:expression
+  -expression Exprfl | Expr                 -exp Exprfl | Expr
+
+  Ex: '$1, $2, +'
+      -exp Expression_File_Name
+  
+  There are two options for this argument:
+
+  1.  The expression to be executed is given on the command line
+  (first example above), in which case it should consist of a
+  comma-separated list of operators (see below for details).
+
+  2.  The expression to be executed is read from a file (second
+  example above).  In this case, operators can be separated by any
+  combination of commas, blanks, and newlines.
+
+  Since this file can be read from standard input, a useful option is
+  to pass the file through a macro preprocessor like m4 before it
+  reaches mri_rpn_math.  This allows long expressions to be written in
+  somewhat-more-readable fashion.
+
+  Be careful of the "-":
+
+  Do not start an expression on the command line with "-".  The
+  following will cause a processing error:
+    mri_rpn_math -out junk "-1, $1, +" detrend
+
+  "-" following -exp means read from stdin.  For example: 
+    echo "-1, $1, +" > mri_rpn_math -out junk -exp - detrend
+
+*Arguments:verbose
+  [-verbose]                                (-ver|v)
+
+  Requests verbose output.
+
+*Arguments:debug
+  [-debug]
+
+  Requests debugging output.
+
+*Arguments:complex
+  [-complex]                                (-cpx)
+
+  Requests complex operation- see Details below.
+
+*Arguments:infile(s)
+  infile1 [infile 2 [infile3 ... [infileN]]]
+
+  Ex: Rpn_Infile
+
+  Specifies some number of files to be used as input.  At least one
+  file is required.
+
+*Details:Inputs and Outputs
+  The dimension order and extents of the output dataset the same as 
+  those of infile1, except that a leading 'v' dimension may have 
+  been added if the -complex flag is given (see ComplexMode below).
+  The datatype of the output will be double precision floats if
+  infile1 is double precision floats, or single precision floats
+  otherwise.
+
+  Input datasets need not be of the same length.  If the length
+  of infile1 is length1, and subsequent datasets are longer,
+  only the first length1 elements of those datasets are used.
+  If subsequent datasets are shorter, their values will be 
+  recycled until all elements of the first dataset have been
+  processed.  For example, if infile1 contains an entire
+  collection of slices, and infile2 contains only a single slice,
+  that slice will be repeated until all values in infile1 have
+  been processed.  
+
+  Input files must have matching dimension orders, however.
+  Specifically, file dimension strings and extents are scanned in an
+  effort to catch user errors in which some input files are permuted.
+  If the -complex flag is set, an input of scalar and complex input
+  files is allowed; if the flag is not set such a mixed set of inputs
+  will result in a dimension mismatch error.
+
+*Details:Operators
+
+  $n       loads data from dataset n.  In complex mode, two data
+           values are loaded and stack increases by 2; otherwise
+           one value is loaded and stack increases by 1
+
+  $x       loads the index of this voxel in the x direction (where
+           x is any of the dimensions of the chunk).  Indices are
+           based on the first input dataset.
+
+  $xdim    loads the dimension of the x direction (where x is any
+           of the dimensions of the chunk).  Indices are based on
+           the first input dataset.
+
+  nan,inf,ninf
+           the IEEE floating point values not-a-number, infinity, and
+           negative infinity
+
+  is_finite
+           1.0 if the top stack element is not NaN or infinity;
+           otherwise 0.0.  Stack depth is unchanged.
+
+  missing  1.0 if the current voxel is marked missing in the first
+           input dataset; 0.0 otherwise.  Stack depth increases by 1.
+           It is an error to use this operator on a chunk which does
+           not have z and t dimensions!
+
+  +,-,*,/  adds, subtracts, multiplies, divides top two elements on
+           stack;  stack decreases by 1
+
+  %        second element on stack modulo top element of stack (both
+           being first rounded to the nearest integer).  Stack depth
+           decreases by 1.
+
+  sqrt     square root of top element on stack; stack depth unchanged
+
+  ln       natural logarithm of top element on stack; stack depth
+           unchanged
+
+  exp      e is raised to the power of the top element on stack;
+           stack depth unchanged
+
+  pi       the value pi (3.14159...)
+
+  eps      the machine-dependent constant EPS, defined as the relative
+           machine precision.  This is the value computed by the 
+           LAPACK routine DLAMCH("e").
+
+  sfmin    the machine-dependent constant SFMIN, defined as the
+           smallest positive value the inverse of which does not 
+           overflow.  This is the value computed by the 
+           LAPACK routine DLAMCH("s").
+
+  rmax     the machine-dependent constant RMAX, defined as the
+           overflow threshold.  This is the value computed by the
+           LAPACK routine DLAMCH("o"), and the value returned in
+           lieu of infinity by some inverse cumulative distribution
+           functions.
+
+  sin,cos,tan,
+  asin,acos,atan
+           Sine, cosine, tangent, arcsin, arccos, and arctangent
+           of the top element on the stack; stack depth is
+           unchanged.  Angles are in radians.  asin and atan 
+           return values in the range -pi/2 to pi/2; acos returns
+           a value in the range 0.0 to pi.
+
+  abs      absolute value of top element on stack; stack depth
+           unchanged.
+
+  dup      duplicate top item on stack; stack increases by 1
+
+  swap     swap top two items on stack; stack depth unchanged
+
+  pop      throw away top item on stack; stack decreases by 1
+
+  rot_2, rot_-2, rot_3, rot_-3, ...
+           These operators rotate the stack.  rot_n brings the n'th
+           stack element to the top;  rot_-n sends the top element
+           to become the n'th element.  rot_2 and rot_-2 are thus
+           both equivalent to the "swap" operator.  Stack depth
+           is unchanged.
+
+  switch_2, switch_3, switch_4, ...
+           These operators implement a sort of "switch statement". 
+           switch_n rounds the topmost element of the stack to the
+           nearest integer to produce a depth D.  If D<n, the result 
+           is the D+2'nd element of the stack (counting from the top).
+           For example, if D is 0, the stack element immediately 
+           beneath the D value.  The stack depth decreases by n.  It 
+           is an error for D to be >= n.
+
+  >,<,==,
+  >=,<=,!= Compare top item on stack to next item down, and replace
+           both items by 1.0 if the comparison is true, 0.0 otherwise.
+           Comparisons are greater than, less than, equal to, 
+           greater than or equal to, less than or equal to, and not
+           equal to.  Stack decreases by 1.
+
+  min      Compare the top two items on the stack, and keep the one
+           which is lesser.  Stack decreases by 1.
+
+  max      Compare the top two items on the stack, and keep the one
+           which is greater.  Stack decreases by 1.
+
+  if_keep  This operator considers the top three items on the stack.
+           If the top item is non-zero, the next item down is kept;
+           otherwise the second item down is kept.  The top (tested)
+           item and the non-kept item are discarded.  Stack decreases
+           by 2.
+
+  if_print_1, if_print_2, if_print_3, ...
+           These operators consider the top n+1 items on the stack,
+           where n is an integer 1 or greater.  If the top item is 
+           non-zero, the next n elements are printed.  In any case, 
+           the stack decreases by n+1, so the item below the last 
+           item printed becomes the top of the stack.  Items are 
+           all printed on one line, with the topmost item last.
+           NOTE that only one if_print instruction is allowed per
+           script.
+
+  nnnn     (floating point number) loads that value as a constant;
+           stack increases by 1
+
+
+  rand     Place a random number in the range 0.0 < x < 1.0 on
+           the stack.  Stack depth increases by 1.  The random
+           number generator "drand48()" is used to implement this
+           function;  the seed value can be set from the command
+           line.
+
+  round    replaces the top element of the stack with the nearest
+           integer value in the direction of the prevailing rounding
+           mode, e.g. the C function rint().  Stack depth is unchanged.
+
+  floor    replaces the top element of the stack with the nearest
+           integer not greater than the original value, e.g. the C
+           function floor().  Stack depth is unchanged.
+
+  ceiling  replaces the top element of the stack with the nearest
+           integer not less than the original value, e.g. the C
+           function ceil().  Stack depth is unchanged.
+
+  signbit  replaces the top element of the stack with a non-zero
+           value if the sign bit is set in the original value,
+           as per the function signbit().  Stack depth is unchanged.  
+           This function can be used to distinguish between positive 
+           and negative floating point zero.
+
+  ct, inv_ct, cf, inv_cf, cchisqr, inv_cchisqr, 
+  cbeta, inv_cbeta, cbinom, inv_cbinom, cgamma, inv_cgamma, 
+  cnormal, inv_cnormal, cpoisson, inv_cpoisson
+
+           Cumulative distribution function for statistical
+           calculations.  See the CDFOperators section for details.
+
+  fct, inv_fct, fcf, inv_fcf, fcchisqr, inv_fcchisqr, 
+  fcbeta, inv_fcbeta, fcbinom, inv_fcbinom, fcgamma, inv_fcgamma, 
+  fcnormal, inv_fcnormal, fcpoisson, inv_fcpoisson
+
+           folded cumulative distribution function for statistical
+           calculations.  See the CDFOperators section for details.
+
+  cx_+, cx_-, cx_*, cx_/, cx_conj, cx_mag, cx_phase,
+  cx_tophase, cx_fmphase, cx_if_keep
+
+           Complex operators.  See ComplexOperators section for details.
+
+*Details:ComplexMode
+
+  When the -complex flag is given, mri_rpn_math operates in 'complex
+  mode'.  This changes the way data is read from and written to files,
+  but it doesn't change the meaning of the complex operators (cx_+ for
+  example).  Those operators are always available, even when the
+  -complex flag is not used.
+
+  In complex mode, all input files are assumed to represent complex
+  data.  By convention, this means that the first dimension of the
+  chunk being used must be 'v', and the extent of that dimension must
+  be 2.  If any input file has some other dimension 'v' or some 'v' 
+  extent other than 2, an error results.  A scalar input file is one
+  which has no 'v' dimension at all.
+
+  When reading data from a complex file in complex mode, mri_rpn_math
+  reads 2 data elements onto the stack at a time.  Every time a $n
+  operator (see Operators above), the stack depth increases by 2 as
+  the real and imaginary parts of the voxel are read onto the stack,
+  imaginary part topmost.  Thus the command:
+
+    mri_rpn_math -complex '$1' complexFile
+
+  has the same effect on the stack as the commands:
+
+    mri_complex_to_scalar -real complexFile reals
+    mri_complex_to_scalar -imag complexFile imaginaries
+    mri_rpn_math '$1,$2' reals imaginaries
+
+  When data is read from a scalar input file in complex mode, 
+  mri_rpn_math inserts a 0.0 value for the imaginary part on the
+  fly.  For example, the command:
+
+    mri_rpn_math -complex '$1' scalarFile
+
+  has the same effect on the stack as the command:
+
+    mri_rpn_math '$1,0.0' scalarFile
+
+  It is legal to mix complex and scalar files in the input to
+  mri_rpn_math in complex mode, as long as the usual rules about
+  file structure are obeyed.
+
+  When mri_rpn_math is in complex mode and an output file is created,
+  that file will have the same dimensions as the first input (as
+  usual) *except* that the output file will be complex.  For example,
+  the command:
+
+    mri_rpn_math -complex -out junk '$1' scalarFile
+
+  will produce a dataset named junk with a leading 'v' dimension and
+  an extent of 2.  Every second value in the file will be 0.0.
+
+*Details:CDFOperators
+
+  Each of the following operators and its inverse is available in
+  two forms; the standard form and the 'folded' form.  For example,
+  ct and inv_ct are the forward and inverse versions of the
+  cumulative T distribution; fct and inv_fct are the associated
+  folded versions.  The folded functions use folded versions of
+  the probability P.  For a given P, the folded probability fP
+  is given by:
+
+     if ( P <= 0.5 ) fP= P
+     else fP= -(1.0-P)
+
+  Thus -0.5 < fP <= 0.5, and both extrema of P correspond to
+  values very near 0.0 for fP.  Because of the vaguaries of
+  binary floating point numbers, values near zero can be stored 
+  with much greater precision than values near one.  Using 
+  folded cumulative distribution functions allows both tails
+  of a distribution function to be calculated with equal precision.
+  The special function "signbit" can be used to distinguish fP = 0.0,
+  corresponding to P = 0.0, and fP = -0.0, corresponding to P = 1.0.
+
+  NOTE: The folded cumulative beta function actually uses folded
+  versions of both the P statistic and the X statistic.
+
+  \<big\>\<b\>CAUTION: \</b\>Under circumstances where an inverse CDF should return
+  positive or negative infinity, these routines return the machine-
+  dependent large number "rmax" or its negative.  This value is
+  typically around 1.798E+308, or 3.403E+38 when converted to
+  single precision.  This substitution is made because it simplifies
+  scripts, but in the strict sense it is incorrect.  Note also that
+  some inverse CDFs will return rmax for an input P value of 0.0 or 
+  1.0, but may fail to produce meaningful output for some values very
+  near those P values.  Because of the details of their algorithms,
+  there is a failure region between the values computed in the body
+  of the interval 0.0<P<1.0 and the special cases at the boundaries.\</big\>
+
+  foldp, inv_foldp
+           These operators convert a P score (a value in the range
+           0.0 to 1.0 inclusive) to a folded P score and vice versa.
+           Stack depth is unchanged.  Note that, since a P score
+           cannot accurately store values near 1.0, any time you
+           have to use one of these operators you have already lost
+           the game.  
+
+           foldp is equivalent to "dup,1,swap,-,-1,*,swap,dup,0.5,>=,if_keep"
+           inv_foldp is equivalent to "dup,dup,1,+,swap,signbit,if_keep"
+
+  ct, inv_ct, fct, inv_fct
+           These operators implement the cumulative distribution
+           function for Student's T disribution and its inverse.
+           The top two elements of the stack are a number of degrees
+           of freedom DF (topmost) and a coordinate X.  Stack
+           decreases by 1 and the top item becomes the probability
+           P given by the integral from -infinity to X of T(DF).
+           For the inverse function P replaces X and vice versa.
+           The folded functions are analogous but use folded Ps.
+
+  cf, inv_cf, fcf, inv_fcf
+           These operators implement the cumulative distribution
+           function for the F disribution and its inverse.
+           The top three elements of the stack are the denominator
+           degrees of freedom DDF (topmost), numerator dof NDF,
+           and a coordinate X.  Stack decreases by 2 and the top
+           item becomes the probability P given by the integral
+           from 0.0 to X of F(NDF,DDF).  For the inverse function
+           P replaces X and vice versa.  The folded functions are 
+           analogous but use folded Ps.
+
+
+  cchisqr, inv_cchisqr, fcchisqr, inv_fcchisqr
+           These operators implement the cumulative distribution
+           function for the CHI-Square disribution and its inverse.
+           The top two elements of the stack are a number of degrees
+           of freedom DF (topmost) and a coordinate X.  Stack
+           decreases by 1 and the top item becomes the probability
+           P given by the integral from 0.0 to X of CHI-Square(DF).
+           For the inverse function P replaces X and vice versa.
+           The folded functions are analogous but use folded Ps.
+
+  cbeta, inv_cbeta, fcbeta, inv_fcbeta
+           These operators implement the cumulative distribution
+           function for the Beta disribution and its inverse.
+           The top three elements of the stack are the second
+           parameter of the distribution B (topmost), the first
+           parameter A, and a coordinate X.  Stack decreases by 2 
+           and the top item becomes the probability P given by the 
+           integral from 0.0 to X of Beta(A,B).  For the inverse 
+           function P replaces X and vice versa.  The folded functions
+           are analogous but use folded versions of both P and X.
+
+
+  cbinom, inv_cbinom, fcbinom, inv_fcbinom
+           These operators implement the cumulative distribution
+           function for the Binomial disribution and its inverse.
+           The top three elements of the stack are the probability
+           of success P of a single binomial trial (topmost), the
+           number of trials N, and a coordinate X.  Stack decreases 
+           by 2 and the top item becomes the probability P given by 
+           the integral from 0.0 to X of Binomial(N,P).  For the 
+           inverse function P replaces X and vice versa.  The folded 
+           functions are analogous but use folded Ps.
+
+
+  cgamma, inv_cgamma, fcgamma, inv_fcgamma
+           These operators implement the cumulative distribution
+           function for the Gamma disribution and its inverse.
+           The top three elements of the stack are the scale
+           parameter C (topmost), the shape parameter S, and
+           a coordinate X.  Stack decreases by 2 and the top 
+           item becomes the probability P given by the integral 
+           from 0.0 to X of Gamma(S,C).  For the inverse function 
+           P replaces X and vice versa.  The folded functions are 
+           analogous but use folded Ps.
+
+
+  cnormal, inv_cnormal, fcnormal, inv_fcnormal
+           These operators implement the cumulative distribution
+           function for the Normal disribution and its inverse.
+           The top three elements of the stack are the standard
+           deviation S (topmost), the mean M, and a coordinate X.
+           Stack decreases by 2 and the top item becomes the 
+           probability P given by the integral from -infinity to X of 
+           Normal(S,C).  For the inverse function P replaces X and 
+           vice versa.  The folded functions are analogous but use folded Ps.
+
+
+  cpoisson, inv_cpoisson, fcpoisson, inv_fcpoisson
+           These operators implement the cumulative distribution
+           function for the Poisson disribution and its inverse.
+           The top two elements of the stack are the mean M of
+           the distribution (topmost) and a coordinate X.  Stack
+           decreases by 1 and the top item becomes the probability
+           P given by the integral from 0.0 to X of Poisson(M).
+           For the inverse function P replaces X and vice versa.
+           The folded functions are analogous but use folded Ps.
+
+*Details:ComplexOperators
+
+  Complex operators treat pairs of stack values as the real and
+  imaginary parts of complex operators.  For each pair, the
+  imaginary part is topmost in the stack.  These operators are
+  always available, though it may be particularly convenient to use
+  them in complex mode.
+
+  As an example, the script '0.1,0.2,0.3,0.4,cx_*' multiplies the
+  complex numbers ( 0.1 + 0.2i ) and ( 0.3 + 0.4i ).
+
+  cx_+     complex addition.  Stack depth decreases by 2,
+           and the top two elements are replaced by the real and
+           imaginary parts of the complex sum.
+
+  cx_-     complex subtraction.  Stack depth decreases by 2,
+           and the top two elements are replaced by the real and
+           imaginary parts of the complex difference.
+
+  cx_*     complex multiplication.  Stack depth decreases by 2,
+           and the top two elements are replaced by the real and
+           imaginary parts of the complex product.
+
+  cx_/     complex division.  Stack depth decreases by 2,
+           and the top two elements are replaced by the real and
+           imaginary parts of the complex quotient.
+
+  cx_conj  complex conjugate.  Stack depth is unchanged, and
+           the top two elements are replaced by the real and imaginary
+           parts of the conjugate.  (Thus this operation is equivalent
+           to '-1,*').
+
+  cx_mag   complex magnitude.  Stack depth decreases by 1, and the
+           top element is replaced by the complex magnitude.
+
+  cx_phase complex phase.  Stack depth decreases by 1, and the
+           top element is replaced by the complex phase (arctangent
+           of imaginary/real).
+
+  cx_tophase
+           convert a complex pair to phase representation.  Stack
+           depth is unchanged, the second-to-top stack element 
+           is replaced by the complex magnitude, and the top
+           element is replaced by the complex phase.
+
+  cx_fmphase
+           convert a complex pair from phase representation.  Stack
+           depth is unchanged, the second-to-top stack element (the
+           magnitude) is replaced by the real part of the
+           corresponding complex number, and the top element (the
+           phase) is replaced by the imaginary part.
+
+  cx_if_keep
+           Like if_keep, but for complex numbers.  This operator 
+           considers the top five items on the stack.  If the top item
+           is non-zero, the next two items down (presumably a complex
+           pair) are kept;  otherwise the following two items down are
+           kept.  The top (tested) item and the non-kept pair are 
+           discarded.  Stack decreases by 3.
+
+*Details:Examples
+
+  In the examples which follow, operations are carried out on the
+  "images" chunk unless otherwise specified.
+
+  mri_rpn_math -out ofile '$1' ifile
+
+         copies ifile to ofile, converting to "image" chunk to float32
+
+  mri_rpn_math -out ofile '$1,$2,+' ifile1 ifile2
+
+         ofile produced is the voxel-by-voxel sum of ifile1 and ifile2
+                 
+  mri_rpn_math -out ofile '$1,$2,sqrt,/' ifile1 ifile2
+
+         divides the first input by the square root of the second
+                 
+  mri_rpn_math -out ofile '$1,dup,*,$2,dup,*,+,sqrt' ifile1 ifile2
+
+         produces square root of sum of squares of two inputs.
+
+  mri_rpn_math -out ofile '$1,dup,0.0,swap,0.0,>,if_keep' ifile
+
+         ofile produced has same value as input if input is greater
+         than or equal to zero, 0.0 otherwise.
+
+  mri_rpn_math -out ofile '$1,0.0,max' ifile
+
+         ofile produced has same value as input if input is greater
+         than or equal to zero, 0.0 otherwise.  This is a simpler
+         way of accomplishing the same task as the previous example.
+
+  mri_rpn_math -out ofile '$x,$xdim,2,/,-,dup,*,$y,$ydim,2,/,-,dup,*,+,
+                   15.0,/,-1.0,*,exp' ifile
+
+         ofile produced has a Gaussian centered in the X and Y
+         directions.
+
+  mri_rpn_math -out ofile '$1,dup,cos,1.0,if_print_2,0.0' ifile
+
+         For each voxel, print the value and the cosine of that value
+         in radians.  The value 1.0 is supplying a true value to
+         "if_print_2".  The final value of 0.0 is required so that
+         there is something left on the stack to write to the output
+         file "ofile".
+
+  mri_rpn_math -out ofile '$x,$y,$z,$1,dup,2.0,<,if_print_4,0.0' ifile
+
+         Print the x, y, and z coordinates and value for each
+         voxel with a value greater than 2.0 .  ofile contains
+         all 0.0's.
+
+  mri_rpn_math -out ofile '1.0,2.0,3.0,4.0,5.0,rot_4,dup,rot_-5' ifile
+
+         The 'rot_4,dup,rot_-5' sequence here brings the 4th
+         stack element (the value 2.0) to the top, duplicates
+         it, and sends one copy back.  The effect is to produce
+         the stack values 1.0, 2.0, 3.0, 4.0, 5.0, 2.0 (with
+         2.0 topmost).
+
+  mri_rpn_math -out ofile '$1,inf,missing,if_keep' ifile
+
+         Replace all missing input voxels with floating point infinity.
+
+  mri_rpn_math -out ofile -complex '$1,cx_tophase,2.0,*,cx_fmphase' ifile
+
+         Double the phase of the complex values in ifile.
+
+  mri_rpn_math -out ofile -complex '$1,cx_tophase,2.0,*,cx_fmphase' ifile
+
+         Double the phase of the complex values in ifile.
+
+  mri_rpn_math -out ofile -complex 
+      '$1,cx_tophase,swap,2.0,*,swap,cx_fmphase' ifile
+
+         Double the magnitude of the complex values in ifile.
+
+  mri_rpn_math -out ofile -complex '$1,2.0,0.0,cx_*' ifile
+
+         Another way to double the magnitude of the complex values 
+         in ifile.
+
+m4include(../libdcdf/libdcdf_help.help)
+

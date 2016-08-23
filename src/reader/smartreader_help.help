@@ -1,0 +1,513 @@
+*Introduction
+
+  smartreader is used to convert data to standard Pittsburgh
+  format.  It knows a variety of header formats and can parse them
+  for file structure information; alternately that information can
+  be given on the command line.
+
+  smartreader [-input In-file] [-out Out-file] [-ignoreheader]
+            [-dimorder abc...] [-dims a-dim:b-dim:c-dim:...] 
+            [-offset N-bytes] 
+            [-skip N-bytes] [-sliceskip N-bytes] 
+            [-skips xskip:yskip:zskip:tskip]
+            [-type Data-type] [-tag idtag] [-xchop] [-ychop] 
+            [-autoscale] [-autoscale_range range]
+            [-bigendian | -littleendian] [-phaseref Phaseref-file]
+            [-bandpass Bandpass-dir] [-rampfile Rampsample-file] 
+            [-auxfile Auxiliary-info-file]
+            [-debug] [-verbose] [-multi] [ -def key[=value] ]
+
+  smartreader -help [topic]
+
+  Command Line Options (see Arguments:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+          or starting the interactive help system otherwise.
+
+  Note: In-file and Out-file must differ.
+
+*Arguments:input
+
+  -input Old-data-file        (-i In-file)
+
+     Specifies that data should be read from In-file.
+     Default value is "input.dat".  
+
+     Note: If In-file and Out-file have identical names
+           an error results and the program exits.
+
+*Arguments:out
+
+  -output Header-file      (-out Out-file)
+
+     Specifies that output header should be written to Out-file;
+     any chunk files will be given names derived from this name.
+     Default value is "output.mri".
+
+*Arguments:def
+
+  -def key=value
+
+     Specifies that the given key-value pair is to be defined in
+     the output dataset.  Any pair defined in this way may be
+     overridden when the input file header is scanned.  The type
+     of the pair is determined from the type of the value, as
+     follows:  
+
+       If "=value" is omitted, key is defined to be a boolean and set 
+       to true.  
+
+       If the value is "TRUE" or "FALSE" or any common equivalent, 
+       the pair is defined to be boolean with the given value.  (Note 
+       that the values 1 and 0 will not work this way; see below).  
+
+       If the value contains only digits and the characters '+' and
+       '-', the pair is treated as having an integer value.
+
+       If the value contains only digits and the characters '+','-',
+       '.', 'e', or 'E', the pair is treated as having a double
+       precision floating point value.
+
+       Otherwise the pair is treated as having a string-type value.
+
+    Note that ill-formed integers or doubles will result in parsing
+    errors; trying to set a string-type pair with a value like
+    "123+45" will fail.
+
+*Arguments:dimorder
+
+  -dimorder abc...          (-do abc...)
+
+     Specifies the string of dimensions in the data array, left
+     varying fastest.  For complex data, this string should start
+     with "v".  Any string of unique characters is legal.  This
+     optional argument will override any dimorder information 
+     derived from the input file header. This argument
+     specifies the actual layout of data in the input file, and 
+     it will be identical to the layout of the data in the output 
+     dataset.
+
+*Arguments:dims
+
+  -dims A-Dim:B-Dim:C-Dim:...    (-di A-Dim:B-Dim:C-Dim:...)
+
+     Specifies length (extent) of each dimension of the data, given
+     in the same order as the dimensions defined by the -dimorder
+     argument.  This optional argument will override any dims
+     information derived from the input file header.  
+
+*Arguments:ignoreheader
+
+  -ignoreheader
+
+     By default, smartreader will try to identify the input data file
+     and process it accordingly, using command line values only when
+     necessary (though some command line arguments can override
+     information taken from the file).  This flag tells smartreader
+     not to scan the input file, but rather to treat it as raw data
+     and attempt to translate it based only on command line arguments.
+
+*Arguments:offset
+
+  -offset N-bytes             (-o N-bytes)
+
+     Specifies the number of bytes to be ignored at the beginning
+     of In-file.  This optional argument will override any offset
+     derived from the input file header.
+
+*Arguments:skip
+
+  -skip N-bytes               (-s N-bytes)
+
+     Specifies the number of bytes to skip (in In-file) between
+     cycles through the second-to-last dimension.  For example,
+     If dimorder is vxyzt, this number of bytes is skipped between 
+     each image read (i.e. each read of X-Dim*Y-Dim*Z-Dim values).  If 
+     dimorder is vxytz, this number of bytes is skipped after each 
+     group of T-Dim images. This optional argument will override any 
+     offset derived from the input file header, and can in turn
+     be overridden by the -skips argument.
+
+*Arguments:sliceskip
+
+  -sliceskip N-bytes               (-ss N-bytes)
+
+     Specifies the number of bytes to skip (in In-file)
+     between cycles through the third-to-last dimension.  For 
+     example, if dataorder is vxyzt, the bytes are skipped after 
+     each slice (vxy) is read.  This optional argument will override 
+     any offset derived from the input file header, and can in turn
+     be overridden by the -skips argument.
+
+*Arguments:skips
+
+  -skips a-skip:b-skip:c-skip:... 
+
+     Specifies the number of bytes to skip (in In-file) between
+     cycles of each dimension.  Dimensions can be omitted (leaving
+     the ':' separators), in which case no skip will be set for
+     the corresponding dimension.  Note that these values are
+     skipped after the corresponding run of data is read, not before;
+     adjust the -offset value to compensate if necessary.  This
+     argument has no default and can override all other mechanisms
+     of setting skip lengths.
+
+*Arguments:type
+
+  -type Data-type             (-t Data-type)
+
+     Specifies the binary storage type of the data in Old-data-file.
+     The possible values of Data-type are:
+        "uchar"  (or "u" or "MRI_UINT8")           :  unsigned char
+        "short"  (or "s" or "MRI_INT16")           :  short int
+	"ushort" (or "us" or "SRDR_UINT16")        :  unsigned short int
+        "long"   (or "l" or "MRI_INT32" or "int")  :  long int
+        "float"  (or "f" or "MRI_FLOAT32")         :  float
+        "double" (or "d" or "MRI_FLOAT64")         :  double
+     Default value is "short".  
+
+     Note: The datatype of the output Pgh MRI dataset may not match
+           this datatype, because of filtering computations which
+           may be performed.
+
+
+*Arguments:tag
+
+  -tag idtag
+
+     Specifies that the given string is to be associated with the
+     data by including it in the Pittsburgh MRI file produced.  The
+     tag will become the value of the key "images.scan.id".  
+     This is typically used to attach a unique scan ID to the file. 
+
+*Arguments:xchop
+
+  -xchop
+
+     Specifies that the boolean key-value pair (chunkname).xchop 
+     should be set to true for the dataset read from the input file.
+     This flag is used to specify that the zero frequency data in the 
+     frequency encoding direction comes first in each k space row of 
+     input data, rather than in the middle of the row.  This will
+     cause downstream processing steps to phase shift the
+     data by pi/2, putting the zero frequency component in mid-row
+     in keeping with the Fiasco convention.
+
+*Arguments:ychop
+
+  -ychop
+
+     Specifies that the boolean key-value pair (chunkname).ychop 
+     should be set to true for the dataset read from the input file.
+     This flag is used to specify that the zero frequency data in the 
+     phase encoding direction comes first in each k space row of 
+     input data, rather than in the middle of the row.  This will
+     cause downstream processing steps to phase shift the
+     data by pi/2, putting the zero frequency component in mid-row
+     in keeping with the Fiasco convention.
+
+*Arguments:autoscale
+
+  -autoscale
+
+     Specifies that the boolean key-value pair (chunkname).autoscale
+     should be set to true for the dataset read from the input file.
+     This will cause downstream processing steps to scale their output
+     to a type-specific range (specified by the key-value pair
+     (chunkname).autoscale_range ).
+
+*Arguments:autoscale_range
+
+  -autoscale_range range
+
+     Specifies that the boolean key-value pair (chunkname).autoscale_range
+     should have the given value for the dataset read from the input file.
+     This will cause downstream processing steps to scale their output
+     to the given range, if (chunkname).autoscale is also set (see
+     -autoscale)
+
+*Arguments:phaseref
+
+  -phaseref Phaseref-file
+
+     Specifies the GE LX2 phase reference file for use with this
+     data.  This file typically is named "ref.dat".  There is no
+     default; absense of this flag means that phase reference
+     correction is not carried out.  If In-file is found to be of an
+     appropriate type, smartreader reads this data file and saves the 
+     values in the "phaseref_const" and "phaseref_linear" chunks in 
+     the output dataset.  If In-file is not of an appropriate type,
+     the -phaseref flag is ignored.
+
+*Arguments:bandpass
+
+  -bandpass Bandpass-dir
+
+     Specifies the directory in which GE LX2 bandpass correction
+     files are to be found.  There is no default; absense of this
+     flag means that bandpass correction is not carried out.
+     These files have names like "bcrcvs1.dat", "bcrcvs2.dat", etc.
+     If In-file is found to be of an appropriate type, smartreader 
+     reads this data file and saves the values in the "bandpass" 
+     chunk in the output dataset.  If In-file is not of an appropriate 
+     type, the -phaseref flag is ignored.
+
+*Arguments:rampfile
+
+  -rampfile Rampsample-file
+
+     Specifies the GE LX2 ramp sampling correction data file for
+     use with this data.  This file is typically named "vrgf.dat".  
+     There is no default; absence of this flag means that ramp
+     sampling correction is not carried out.  If In-file is found to 
+     be of an appropriate type, smartreader reads this data file and 
+     saves the values in the "rampsample" chunk in the output dataset.
+     If In-file is not of an appropriate type, the -phaseref flag is 
+     ignored.
+
+*Arguments:auxfile
+
+  -auxfile Auxiliary-info-file
+
+     Specifies the name of a file containing additional
+     format-specific information about the dataset.  For example,
+     Siemens "meas.out" k-space data files have an associated
+     "meas.asc" file containing additional information.  The format
+     and processing of this file depends on the format of the input
+     data file.
+
+*Arguments:bigendian
+
+  -bigendian
+
+     Specifies that the input is in bigendian order.  This is only
+     of concern if the input comes from a foreign machine.  The
+     default is to expect bigendian input data (since all the MRI
+     scanners we know of produce data in that order) unless parsing
+     the input file header indicates otherwise.
+
+*Arguments:littleendian
+
+  -littleendian
+
+     Specifies that the input is in littleendian order.  This is only
+     of concern if the input comes from a foreign machine.  The
+     default is to expect bigendian input data (since all the MRI
+     scanners we know of produce data in that order) unless parsing
+     the input file header indicates otherwise.
+
+*Arguments:debug
+
+  -debug
+
+     Causes debugging output to be written to stderr.
+
+*Arguments:verbose
+
+  -verbose
+
+     Causes verbose output.
+
+*Arguments:multi
+
+  -multi
+
+     Causes wildcard expansion of the input filename, where the
+     characters '#' or '?' in the root filename are used to match 
+     any letter, and the characters '*' or '^' are used to match any 
+     sequence.  Only one '*' or '^' per filename is supported.  All 
+     matching files are processed collectively; see the examples. This
+     option can be used to cause multiple 1-slice images to be read to
+     form a data volume, or to use multiple single volumes to form a
+     time series.  NOTE that if you're not careful the shell will expand
+     your wildcard characters before smartreader ever sees them!
+
+
+*Details:KnownFileTypes
+
+  smartreader can identify the following data file types:
+
+    AFNI .HEAD files and the associated .BRIK 
+
+    ANALYZE format files (.hdr and .img pairs)
+
+    DICOM format files as generated by Siemens or GE scanners
+
+    FIFF tagged image files
+
+    GE LX data files for several EPI pulse sequences, 2dfast, and for 
+      spiral sequences with pulse sequence ID strings "splx1" and later.
+
+    GE LX images in GEMS format
+
+    Pittsburgh MRI (.mri and .dat pairs)
+
+    PNG image files
+
+    TIFF image files, with many exceptions
+
+    Zeiss LSM image files (via the TIFF reader with some extra features)
+
+    Siemens internal k-space data files with MDH information
+
+    Windaq binary data files
+
+  Several custom file formats are also supported.  smartreader can 
+  also read raw data files, given appropriate command line arguments.  
+  If it can't identify the format of a particular file it will treat 
+  the file as raw data and "do its best".
+
+*Details:ByteOrder
+
+  Data files contain the data, stored in binary format.  By default,
+  the input is assumed to be in bigendian byte order; this is the
+  format produced by scanners (to our knowledge).  Output data is
+  written in the native byte order of the machine running "smartreader".
+  Since Pittsburgh MRI format includes information about the byte
+  order of its data, the user should not need to be concerned with the
+  byte order of "smartreader"'s output.
+
+  For input data with a structure recognized by smartreader, the
+  program can generally infer the byte order of the input.  For raw
+  data, the user may need to specify the input data order (the default
+  being bigendian).
+
+*Details:DataType
+
+  For input data with a structure recognized by smartreader, the
+  program can generally infer the data type of the input.  For raw
+  data, the user may need to specify the input data order (the default
+  being short ints).
+
+  Recognized data types are:
+
+    "uchar"  -  8-bit ints
+    "short"  - 16-bit ints
+    "int"    - 32-bit ints
+    "float"  - 32-bit floats
+    "double" - 64-bit floats
+  
+  The output datatype will match the input datatype, unless the
+  details of an input operation force "smartreader" to convert 
+  to floating point.  Since the Pittsburgh MRI format includes 
+  information about the stored datatype, it is not usually necessary
+  for the user to be concerned with the output data type.  If
+  necessary, the utility program "mri_type_convert" can be used to
+  convert the output dataset to another format.
+
+*Details:DifferencesFromReader
+
+  The older "reader" program supported some options which smartreader
+  does not support.  In particular, smartreader never reorders data,
+  and so there is no -reorder flag.  If you want to reorder the output
+  of reader, use mri_permute or mri_scan_fold as appropriate.
+
+*Details:Algorithm
+
+  Smartreader is a very modular program, consisting of a series of
+  plug-in format recognizers and associated header-parsing and data-
+  reading routines.  The routines that parse the header and read
+  the data for a given file format make up a FileHandler for that
+  routine.  The various FileHandler types make up a shallow object-
+  oriented hierarchy.
+
+  Smartreader maintains a list of datasets to be read.  Each dataset
+  will produce one Pittsburgh MRI "chunk" in the output file.  The
+  list starts empty; after a bit of pre-processing the input file will
+  become the first element on the list.
+
+  Smartreader accumulates information about each dataset as a set of
+  key-value pairs, like "datatype=short" or "dz=27".  When reading
+  the algorithm below, remember that there is one set of key-value
+  pairs for every dataset, and that each dataset produces one chunk.
+  The pairs associated with a given dataset are called the associated
+  Info.
+
+  Starting with an empty list of datasets, smartreader runs the
+  following algorithm:
+
+  1) Set up some key-value pairs for the dataset which will contain
+     the actual data from the input file.  This is done by:
+
+    a) Certain default key-value pairs are defined.
+    b) Definitions are added from the command line.  Almost all
+       command line arguments are implemented this way.
+
+  2) The input file is scanned, and it is associated with a
+     FileHandler.  If its type can be identified, a clever FileHandler
+     which can read its header information is used.  If not,
+     a FileHandler which simply reads raw data files is used.
+
+  3) The Info and FileHandler for the input file are appended to the
+     list of input datasets.
+
+  4) A loop then begins, and continues until the list of inputs is
+     empty.  The steps of the loop are:
+
+    a) The active dataset is the first one in the list.
+    b) The active FileHandler processes the dataset header,
+       adding more key-value pairs to the active Info.  It
+       may also append more datasets to the list.  This mechanism
+       allows one dataset to force another to be loaded.  For
+       example, ramp-sampled EPI data forces the ramp sampling
+       information to be loaded this way.
+    c) If present, certain command-line pairs override other pairs.
+       The overriding pair names begin with the prefix "cl_" and
+       override the similary-named pairs derived from the header.
+    d) The resulting Info is checked for consistency.  If it is 
+       inconsistent or insufficient to load the dataset, a fatal
+       error results.  (These errors can be overcome by adding
+       the needed definitions from the command line).
+    e) The reader mechanism of the active FileHandler is used to
+       actually transfer the data for this dataset to the output
+       file.
+    f) The active dataset is popped off the list.       
+
+  Try setting the -verbose flag to see the key-value pairs associated
+  with each dataset.  Additional key-value pairs are used to associate
+  definitions and external names with each of the main pairs.
+
+*Examples
+
+  To convert a GE LX Pfile (EPI or spiral) to an appropriate
+  Pittsburgh MRI dataset, use:
+
+   smartreader -input Pfilename -output outfile
+
+  Of course, this is limited by our knowledge of the peculiarities of
+  particular Pfile formats.
+
+  To convert a whole set of GE LX Image files (with names like I.001,
+  I.002, etc.) to an appropriate Pittsburgh MRI dataset, use:
+
+   smartreader -input I.### -output outfile -multi
+
+  To convert a raw file containing 128x64 k-space images in the form
+  of short ints, with 27 slices, 162 times, and no extra bytes to be
+  skipped, use:
+
+   smartreader -input fname.raw -dimorder vxyzt -dims 2:128:64:27:162
+      -output outfile -type short
+
+  (all on one line, of course).  This assumes that all slices for one
+  time appear before the first slice for the next time, which is the
+  most common case.  The -type flag could be omitted, as short is the
+  default.
+
+  To convert an AFNI dataset to Pittsburgh MRI format, use:
+
+   smartreader -input fullafniname.HEAD -output outfile
+
+  To read a Siemens k-space "meas.out" dataset and its associated
+  auxiliary file "meas.asc", use:
+
+   smartreader -input meas.out -auxfile meas.asc -output outfile
+
+
+
+
+
+
+
+
+

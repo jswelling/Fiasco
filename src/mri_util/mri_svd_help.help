@@ -1,0 +1,124 @@
+*Usage
+
+  mri_svd calculates the eigenvalues and optionally eigenvectors of
+  real symmetric matrices stored in Pgh MRI datasets.
+
+  The command line for mri_svd is:
+    mri_svd [-chunk Chunkname] [-verbose] [-debug] [-complex]
+            [-dimensions AB] [-umatrix UName] [-vmatrix VName] [-wvector] 
+            Input
+
+  or
+    mri_svd -help [topic]
+
+*Defaults
+
+  chunk: images
+  dimensions: for 2 of the input file (excluding "v" if complex)
+
+*Arguments:Infile
+
+  Infile is the input dataset.  It must have at least two dimensions,
+  and if the -dims flag is given those two dimensions must appear
+  contiguously and in order in its dimension string.  If the -complex
+  flag is given there must be a dimension v in addition to those two
+  dimensions, and the v dimension must be first and have an extent of
+  two.  Singular value decomposition is performed on those two
+  dimensions.
+
+*Arguments:chunkname
+ -chunk Chunkname		(-chu|c Chunkname)
+
+ Specifies the chunk that is to be operated on.
+     Default value is "images".
+
+*Arguments:verbose
+  [-verbose]			(-ver|v)
+
+  Requests verbose operation.
+
+*Arguments:debug
+  [-debug]			(-deb)
+
+  Requests debugging output.
+
+*Arguments:complex
+  [-complex]                    (-cpx)
+
+  Specifies that the input file is to be treated as complex.  If
+  this flag is not given, the 'v' dimension is treated like any
+  other dimension.
+
+*Arguments:dimensions
+  [-dimensions ab]              (-dim|-d ab)
+
+  Specifies the dimensions over which to solve.  The dimensions ab
+  must be a substring of the input data dimensions, and must not
+  include the 'v' dimension if the -complex flag is given.  Exactly
+  two dimensions must be given.  The default is the first two
+  dimensions of the input data (excluding the 'v' dimension if
+  -complex is specified).
+
+*Arguments:umatrix
+  [-umatrix U]                  (-umt U)
+
+  The U matrix resulting from the singular value decompositions.  If
+  this argument is not specified, no U matrix is produced.  At least
+  one of -umatrix, -vmatrix, and -wvector must be specified.
+
+*Arguments:vmatrix
+  [-vmatrix V]                  (-vmt V)
+
+  The V-transpose matrix resulting from the singular value
+  decompositions.  Note that this is the transpose of V.  If
+  this argument is not specified, no V matrix is produced.  At least
+  one of -umatrix, -vmatrix, and -wvector must be specified.
+
+*Arguments:wvector
+  [-wvector W]                  (-wvc W)
+
+  The W vector containing the singular values of the input.
+  If this argument is not specified, no W vector is produced.  At 
+  least one of -umatrix, -vmatrix, and -wvector must be specified.
+
+*Usage:Details
+
+  This program is basically just a wrapper for the LAPACK routines
+  \<a href="http://gams.nist.gov/serve.cgi/Module/LAPACK/DGESVD/9350/"\>DGESVD\</a\> and \<a
+  href="http://gams.nist.gov/serve.cgi/Module/LAPACK/ZGESVD/9352/"\>ZGESVD\</a\>.
+  All the math is carried out in double precision, with
+  conversion to and from double precision taking place on input and 
+  output as needed.
+
+  Output files are stored as double precision floats if the input was
+  double precision floats, and as single precision floats otherwise.
+
+*Examples
+
+  Suppose the 'images' chunk of the infile 'input' has dimensions 
+  qxt with extents 3:5:10.  The command:
+
+    mri_svd -umatrix u -vmatrix vt -wvector w input
+
+  will produe 3 output files:
+
+    u,  with dimensions qxt, extents 3:3:10
+    vt, with dimensions qxt, extents 5:5:10
+    w,  with dimensions xt,  extents 3:10
+
+  The x extent of w is the smaller of the extents of q and x in the
+  original input, since that is the number of singular values.  Each
+  of the 10 sets of 3 values in w holds the singular values of one
+  of the 10 3x5 matrices in the original input dataset.
+
+  Each of the 10 3x3 matrices in u, and each of the 10 5x5 matrices in
+  vt, hold the orthonormal matrices from one of the 10 3x5 matrices in
+  the input.  For example, to see that the matrices of u are
+  orthonormal, construct the transpose and multiply:
+
+    mri_permute -order xqt u ut
+    mri_remap -order xwt -len 3:3:10 ut
+    mri_matmult -out uut u ut
+    mri_rpn_math '$q,$w,$t,$1,1,if_print_4' uut
+
+

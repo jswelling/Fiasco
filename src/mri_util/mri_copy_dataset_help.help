@@ -1,0 +1,43 @@
+*Introduction
+
+  mri_copy_dataset is used to copy an entire Pittsburgh MRI dataset.
+  It is provided for convenience in situations where multiple chunk
+  files are associated with a single dataset.
+
+  To run mri_copy_dataset use:
+    mri_copy_dataset [-verbose] infile outfile
+
+  or:
+    mri_copy_dataset -help
+
+*Arguments:verbose
+  [-verbose]				(-ver|v)
+
+  Turning on the verbose option displays the progress of 
+  mri_copy_dataset on the screen.
+
+*Arguments:infile
+   infile
+
+   Ex:Detrend
+
+   infile specifies the input dataset. No "-" is necessary, just
+   the name of the file.  This parameter is required.
+   
+*Arguments:outfile
+   outfile
+
+   Ex: copy_of_detrend
+ 
+   outfile specifies the output dataset. No "-" is necessary, just
+   the name of the file.  This parameter is required.
+
+*Example
+
+
+  mri_copy_dataset camera1 camera2
+
+  It is sometimes helpful to have more than one copy of a dataset. In
+  this case, we could hypothetically flip back and forth between
+  "camera1" and "camera2" and see exactly the same thing, just in a
+  different location.

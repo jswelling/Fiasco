@@ -1,0 +1,76 @@
+*Introduction
+
+  mri_setfield.c is used to set the contents of one field from 
+  a Pittsburgh MRI dataset, or to delete that field
+
+  To run mri_setfield use:
+    mri_setfield -field Field [-all012] [-allxyz] 
+         -value Valstring Input-file
+
+  or:
+    mri_setfield -field Field [-all012] [-allxyz] -delete Input-file
+
+  or:
+    mri_setfield -help [topic]
+
+*Arguments:field
+  -field Field				(-fld Field)
+
+     Specifies the MRI key field string name to modify or insert.
+     This parameter is required.
+
+*Arguments:delete
+  -delete				(-del)
+
+     Specifies that the given field should be deleted from the
+     Pittsburgh MRI file, leaving nothing in its place.
+
+*Arguments:value
+  -value Valstring			(-val Valstring)
+
+     Specifies the new value for the field.  This value is handled as
+     a string; if the field is to have a numerical value it is the
+     user's responsibility to make sure that the given string is
+     parsable as a number. If -all012 or -allxyz are used, the string
+     must be a colon-separated list of substrings.
+
+*Arguments:all012
+  -all012
+
+     Specifies that three fields should be set or deleted,
+     with the names field.0, field.1, and field.2.  If the -delete
+     option is not given,  values are taken from successive 
+     comma- or colon-separated parts of the value string.  In
+     this case the value string must be a colon-separated list,
+     for example "17.2:12.4:-3".  This option saves multiple commands
+     when manipulating 3D data tags.  Quotes and spaces (and other
+     chars for which ispunct() or isspace() returns true) are stripped from
+     the beginning and end of the string.
+
+*Arguments:allxyz
+  -allxyz
+
+     Specifies that three fields should be set or deleted,
+     with the names field.x, field.y, and field.z.  If the -delete
+     option is not given,  values are taken from successive 
+     comma- or color- colon-separated parts of the value string.  In
+     this case the value string must be a colon-separated list,
+     for example '17.2,12.4,-3'.  This option saves multiple commands
+     when manipulating 3D data tags.  Quotes and spaces (and other
+     chars for which ispunct() or isspace() returns true) are stripped from
+     the beginning and end of the string.
+
+*Arguments:infile
+  infile
+
+  Ex: Input_file
+
+  The value of infile specifies the input dataset. This argument is required.
+
+*Notes
+
+  Do not use this tool to delete chunks, or to change the names of
+  chunks.  mri_delete_chunk and mri_copy_chunk should be used for 
+  these tasks.
+
+  

@@ -1,0 +1,16 @@
+*Details:LINROT3DCalculation
+
+  Rotation and translation by linear interpolation are implemented in
+  a straightforward way.  For each grid location in the output,
+  a corresponding input point is found by applying the inverse
+  transformation.  The value of the input at that point is found by
+  trilinear interpolation, and the output grid location is set to that 
+  value.
+
+  This algorithm fails if the input point corresponding to a given
+  output grid location does not fall within the input grid.  In this
+  case, the output location is set to 0.0.  A grid of boolean flags
+  is maintained showing whether any given output location is invalid for
+  this reason.
+
+

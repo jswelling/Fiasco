@@ -1,0 +1,69 @@
+*Introduction
+
+  mri_counter creates a pgh MRI file with one dimension, and stores
+  a sequence of integers in that dimension.  The integers simply count
+  upward from 0 to the maximum extent given.  This program is useful
+  for a variety of tricks in combination with other utilities like
+  mri_rpn_math and mri_subsample.
+
+  To run mri_counter use:
+    mri_counter [-v] [-chunk Chunk-Name] [-dimension Dimension] 
+    -length Length outfile
+
+  or:
+    mri_counter -help
+
+*Defaults
+
+  Chunk name: images
+  Dimension: t
+
+
+*Arguments:chunk
+   [-chunk Chunk-Name]				(-chu|c Chunk-Name)
+
+   Ex: -c missing
+
+   Specifies the chunk name to be constructed, in this case "missing".
+  The default value is "images".
+
+
+*Arguments:dimension
+   [-dimension Dimension]			(-dim|d Dimension)
+
+   Ex: -d z
+
+   Specifies the dimension to be constructed, in this case
+   "z". mri_counter will only work on one dimension.  The default value is "t".
+   
+*Arguments:length
+   -length Length				(-len|l Length)
+
+   Specifies the extent of the dimension constructed. The numbers
+   generated will range from 0 to the value of Length minus 1.  This
+   argument is required.
+
+*Arguments:verbose
+   [-verbose]					(-ver|v)
+
+   Shows the progress of mri_counter on your screen.
+
+*Arguments:outfile
+
+   outfile
+
+   The name of the Pittsburgh MRI file to which output is to
+   be written.  This argument is required.
+
+*Examples
+
+  mri_counter -len 867 kitchen
+
+  This example uses all the defaults. In the outfile "kitchen",
+  mri_counter will take the chunk "images" with dimension "t", and give
+  is a length of 867.
+
+    mri_counter -v -c up -dim x -len 5 folder
+
+  In this case, the x dimension of the "up" chunk will be copied into a
+  new file, "folder", with a length of 5.

@@ -1,0 +1,71 @@
+*Usage
+
+  recon applies the 2-D (inverse) Fourier transform
+    to a set of images
+
+  recon [-input Input-header-file] [-headerout Output-header-file]
+        [-dataout Output-data-file] [-direction Which-transform]
+        [-recon Output-form]
+
+  recon -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+*Usage:input
+
+  -input Input-header-file        (-i Input-header-file)
+
+     Specifies that the header for the input dataset is located
+       in Input-header-file.
+     Default value is "input.mri".
+     Input-header-file is not allowed to have the same name
+       as Output-header-file.
+
+     recon.m accepts only standard complex-valued images with
+       dimension order "vxyzt" as input.
+
+*Usage:headerout
+
+  -headerout Output-header-file  (-h Output-header-file)
+
+     Specifies that the header for the output dataset should
+       be written to Output-header-file.
+     Default value is "recon.mri".
+     Output-header-file is not allowed to have the same name
+       as Input-header-file.
+
+*Usage:dataout
+
+  -dataout Output-data-file      (-d Output-data-file)
+
+     Specifies that the output data should be written to Output-data-file.
+     Default value is ".dat".
+
+     The output dataset will consist of single-precision, floating-point
+       numbers of vector length 2 if Output-form is "complex" or vector
+       length 1 otherwise.
+
+*Usage:direction
+
+  -direction Which-transform       (-dir Which-transform)
+
+     Specifies which Fourier transform (forward or inverse) should
+       be used.
+     If the value of Which-transform is "forward" or 1, then the
+       forward transform is used, otherwise the inverse transform.
+     Default value is "inverse".
+
+*Usage:recon
+
+  -recon Output-form             (-r Output-form)
+
+     Specifies whether output should be complex-valued or the 
+       modulus or phase of the Fourier transformed images.
+     Acceptable values for Output-form are "complex", "phase",
+       and "modulus".
+     Default value is "modulus".
+
+m4include(../fmri/fft2d_help.help)

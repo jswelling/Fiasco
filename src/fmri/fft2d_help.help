@@ -1,0 +1,25 @@
+*Details:FFTAlgorithm
+
+  The FFTW package (available from http://www.fftw.org/) is
+  used to implement the fast Fourier transforms used in this routine.
+  FFTW (Fastest Fourier Transform in the West) is distributed under
+  the Gnu General Public License.
+
+*Details:FFTEnvironment
+
+  If the environment variable F_WISDOM_FILE is set, its value will be
+  used as the basis for the name of a file in which FFTW will store
+  "wisdom".  This is machine-specific information about what precise
+  FFT algorithm is fastest on the specific hardware.  This information
+  can then be reused, saving a couple of seconds the next time a
+  program using FFTW runs.
+
+  Because this information is machine specific, an architecture-
+  specific string (usually the same as $PVM_ARCH) is appended to
+  the value of F_WISDOM_FILE in forming the filename.
+
+  In parallel runs, FFTW will create one wisdom file per processor,
+  by appending processor numbers to the file name.  This is necessary
+  to avoid errors due to multiple processes reading and writing the same
+  file.
+

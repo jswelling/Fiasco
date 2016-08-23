@@ -1,0 +1,170 @@
+*Introduction
+
+  mri_scan_fold reorders the slices of a Pgh MRI dataset from the
+  order in which they are acquired to their proper spatial order
+  (z values), or vice versa.  Various reordering patterns are
+  supported, to appropriately cope with the scan acquisition patterns
+  of various scanners.
+ 
+  To run mri_scan_fold use:
+
+    mri_scan_fold [-zdm nslices] [-verbose] [-debug] [-reorder PatternName] 
+         [-direction ZeroOrOne] [-force] infile outfile
+
+  or:
+
+    mri_scan_fold -help
+
+
+*Defaults
+
+  Defaults depend on reordering information in the input file; see below
+
+*Arguments:zdm
+
+  [-zdm nslices]
+
+     If a chunk of the input file contains the dimension t but not
+     the adjacent dimensions zt, this option specifies the number of
+     slices into which the chunk will be folded.  The option has no
+     effect on other chunks, and exists primarily for backward 
+     compatibility.  The chunk's t extent modulo nslices must be zero.
+    
+*Arguments:reorder
+
+  [-reorder Pattern]  (-reo Pattern)
+
+    This option specifies the reordering pattern.  The default is to
+    use the pattern specified in the chunk's 'reorder_pattern' tag.
+    If the chunk has no such tag, but the "images" or "samples" chunk
+    does (checked in that order), that pattern becomes the default
+    pattern.  If after checking the chunk itself and both the
+    "images" and "samples" chunks there is still no default pattern,
+    'even/odd' becomes the default.  This is the pattern used for
+    functional scans on GE scanners.  If a pattern is specified on 
+    the command line or the "images" or "samples" chunk but it
+    disagrees with that of the 'reorder_pattern' tag of the chunk
+    being folded, mri_scan_fold aborts unless the -force flag is set, 
+    in which case the specified pattern is applied.
+
+    For backward compatibility, the following special values of
+    Pattern are supported:
+     -reo TRUE or 1 implies pattern 'even/odd'
+     -reo FALSE or 0  implies pattern 'none'
+
+*Arguments:direction
+
+ [-direction 0|1]    (-dir 0|1)
+
+   This option specifies the reordering direction, where '1' specifies
+   reordering from acquisition order to spatial order and '0'
+   specifies the opposite.  The default is to use the direction
+   specified in the chunk's 'reorder' tag.  If the chunk has no such
+   tag, but the "images" or "samples" chunk does (checked in that
+   order), that direction becomes the default.  If after checking the
+   chunk itself and both the "images" and "samples" chunks there is
+   still no default direction, '1' becomes the default.  This
+   correponds to the usual direction of processing, where data from
+   the scanner is put in spatial order for analysis.  If a direction
+   is specified on the command line or the "images" or "samples" chunk
+   but it disagrees with that of the 'reorder' tag of the chunk being
+   folded, mri_scan_fold aborts unless the -force flag is set, in
+   which case the specified pattern is applied.
+
+*Arguments:force
+
+ [-force]
+
+  Causes chunks to be reordered according to the pattern and direction
+  on the command line or in the "images" or "samples" chunks
+  regardless of the chunk's own "reorder_pattern" and "reorder" tags.
+
+
+*Arguments:verbose
+
+ [-verbose]		(-ver|v)
+
+  Displays the progress of mri_scan_fold.
+
+*Arguments:debug
+
+ [-debug]		(-dbg)
+
+  Displays debugging information.
+
+*Arguments:infile 
+
+  Specifies the input file name.  This parameter is required.  All
+  chunks within the file which have dimensions ...zt..., or ...t... 
+  with an appropriate extent if the -zdm argument is given, will be
+  folded.  Other chunks are copied to the output just as they are.
+
+     
+*Argumenets:outfile 
+
+  Specifies the output file name.  This parameter is required.
+
+*Details
+
+  Scanners often acquire slices in an order other than their spatial
+  order.  Sometimes the images will automatically be reordered by
+  smartreader, but even in those cases information about the
+  acquisition order must be retained to properly match slices to the
+  times when they were acquired.  Fiasco stores this information in
+  the Pgh MRI tags '<chunk>.reorder' and '<chunk>.reorder_pattern',
+  where <chunk> is typically 'images' or 'samples'.  '<chunk>.reorder
+  is 1 if the slices are in acquisition order and 0 if the slices are
+  in spatial order.  <chunk>.reorder_pattern is a string specifying
+  the reordering pattern.  For example, GE scanners typically use the
+  'even/odd' pattern; Siemens scanners typically use
+  'reversed_odd/even'.  The full list of strings recognized by
+  mri_scan_fold is given in the section on 
+  \<a  href="http://www.stat.cmu.edu/~fiasco/index.php?ref=overview/pff_keymeanings4.shtml"\>Customary  Meanings of Keys\<a\> of the Pgh MRI documentation on the 
+  \<a href="http://www.stat.cmu.edu/~fiasco"\>Fiasco Home Page\<a\>.
+
+  mri_scan_fold first attempts to establish an 'expected' reordering
+  direction and pattern, by the following algorithm.  If a direction
+  or pattern is specified on the command line, it becomes the expected
+  pattern or direction.  Failing that, the chunks "images" and
+  "samples" in that order are checked for '<chunk>.reorder' and
+  '<chunk>.reorder_pattern' tags, and any tag found becomes the
+  expected direction or pattern.
+
+  The program than proceeds chunk by chunk through the input file,
+  checking to see if the given chunk should be folded.  It will be
+  folded if its dimension string includes the substring 'zt', or if
+  the -zdm command line option is given, the chunk dimension string
+  includes 't', and the extent of t is a multiple of the value of
+  zdm.  (This last is for backward compatibility).  If a chunk is not
+  to be folded it is copied to the output unchanged.
+
+  If a chunk is to be folded, it is checked for <chunk>.reorder and 
+  <chunk>.reorder_pattern tags.  If they are found but either differs
+  from the 'expected' values, the program aborts unless the -force
+  flag is set.  If the chunk has no such tags or they are in agreement
+  with the 'expected' values, the 'expected' values are used.  If
+  there are no 'expected' values, the chunk's values are used, or
+  failing that, default values of 'even/odd' for the pattern and '1'
+  for the direction are used.  The chunk is appropriately folded, and
+  the <chunk>.reorder and <chunk>.reorder_pattern tags are set in the
+  output chunk.  Note that if the reordering direction was 1, the
+  <chunk>.reorder tag will be set to 0, and vice versa.  Thus repeated
+  applications of mri_scan_fold will repeatedly shuffle and un-shuffle
+  the slices.
+
+*Examples
+
+  mri_scan_fold input output
+
+  This will reorder the data of 'input' according to it's reordering
+  tags.  Note that if the data has already been folded to spatial
+  order, this will unfold it again!  
+
+  mri_scan_fold -zdm 15 -reo 'reversed_odd/even' -dir 1 may pole
+
+  If may has a t dimension of 630=15*42 images and no z dimension,
+  this will produce 15 slices in the z dimension of "may" and put them
+  in "pole".  The z and t dimensions of "pole" will be 15 and 42.  The
+  'reversed_odd/even' reordering pattern will be used, and "may" will
+  be assumed to have its data in acquisition order.
+

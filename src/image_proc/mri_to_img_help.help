@@ -1,0 +1,131 @@
+*Overview
+
+  mri_to_img produces pictures from appropriate Pittsburgh MRI 
+  format files.  Output can be in postscript or "png" (the Portable
+  Network Graphics raster format).
+
+  to run mri_to_img use:
+    mri_to_img [-brighten] [-date_created] [-darken] [-gray_scale]
+           [-level level] [-black_min min] [-date_printed] [-reverse] 
+	   [-title] [-window_width window] [-black_max max] [-gamma gval] 
+	   [-subsample ssval] [-xorig xoval] [-yorig yoval] 
+	   [-image_height imhtval] [-image_width imwval] [-all] [-mosaic] 
+	   [-ps | -png] infile outfile
+
+  or:
+    mri_to_img -help [topic]
+
+*Examples
+
+  mri_to_img infile outfile
+
+  This use takes all the defaults:
+         -ps
+	 -gamma 1
+	 -subsample 1
+	 -xorig 144
+	 -yorig 144
+	 -image_height 400
+	 -image_width 400
+
+  mri_to_image -png -rev infile outfile
+
+  This use produces a png image whose colors are reversed (generally,
+  one wants colors to be reversed).  png automatically turns on
+  -mosaic, so all slices for the time are on the same page.  png turns
+  off -all_times, so the input file should only have one time.
+
+  mri_to_image -rev -mos -all -dtp -dtc -scg
+
+  This use produces a ps image whose colors are reversed.  All slices
+  for each time are on the same page.  All times are printed.  Each
+  page will have a gray scale bar on the left, and the creation and
+  print dates on the bottom left hand corner.
+
+*Arguments:mosaic
+  -mosaic|mos
+
+  This option puts all the slices for a given time in one image,
+  as a square mosaic.
+
+*Arguments:columns
+  -columns this_many		(-col this_many)
+
+  This option puts all the slices for a given time in one image, as a
+  rectangular mosaic with this_many columns.
+
+*Arguments:all
+  -all_times|all
+
+  This option requests output pictures for all times.  If this 
+  option is not given, the input file must contain only one time.
+
+*Arguments:OutputFormatOptions
+
+  Only one of the following options may be present:
+
+  [-ps]   - postscript output.  This is the default output format.
+  [-png]  - PNG raster image format.  This option turns on -mosaic and
+	     turns off -all.
+
+*Arguments:Annotation
+
+  [-date_created|dtc]		- adds created date from environment 
+				  variable F_CREDATE, or the input file's 
+				  creation time if the environment variable
+				  is not set.
+  [-date_printed|dtp]		- adds printed date from environment 
+				  variable F_PRTDATE, or the current time 
+				  if the environment variable is not set.
+  [-title|ttl]			- adds title contained in shell variables 
+				  F_PS_TITLE1, F_PS_TITLE2, and F_PS_TITLE3, 
+				  making up appropriate text for unset
+				  environment variables.
+  [-no_logo|nol]		- removes Fiasco logo from bottom left corner
+ 
+  The environment variable FIASCO_VERSION is used in making the
+  FIASCO logo on Postscript output.
+
+*Arguments:Options
+
+  [-black_max|bmx max]		- maximum (black) level (default is max pixel val)
+  [-black_min|bmn min]		- minimum (black) level (default is min pixel val)
+  [-brighten|bri]		- brightens image
+  [-darken|dar]			- dims image
+  [-gamma|gam gval]		- sets gamma correction value for the image
+				  (default 1.0)
+  [-gray_scale|scg]		- puts a gray scale along the side of the image
+  [-image_height|imh imhtval]	- sets the height of the image for Postscript
+		     		  output.  The default is 400 "points".
+  [-image_width|imw imwval]	- sets the width of the image for Postscript
+				  output.  The default is 400 "points".
+  [-level|lev level]		- level (alternate scheme for min and max)
+  [-reverse|rev|r]		- reverses black and white
+  [-subsample|sub ssval]	- sets subsampling value.  This is useful for
+				  very large images.  Appropriate values range 
+				  between 1 and 16;  the default is 1.
+  [-window_width|wwt window]	- window width (alternate scheme for min and max)
+  [-xorig|xor xoval]		- sets the X origin of the image for Postscript
+				  output.  The default is 144 "points".
+  [-yorig|yor yoval]		- sets the Y origin of the image for Postscript
+				  output.  The default is 144 "points".
+
+
+*Details:Inputs and Outputs
+
+  The input file name is required.  
+
+  The input file must be in Pittsburgh MRI format and must have the
+  extension ".mri" or no extension.
+
+  The input file must have the leading dimensions "xyz...", "vxyz...",
+  "xy...", or "vxy...".  If the v dimension is present, its extent
+  must be 1.  If the z dimension is absent, the file is treated as if
+  it had a z extent of 1.  Any dimensions following these must all
+  have an extent of 1, unless the "-all" flag is given.
+
+  The outfile is not allowed to have the same name as the infile.
+
+  The filename for outfile should include the appropriate extension
+  (.ps for Postscript files, .png for PNG files).
+

@@ -1,0 +1,50 @@
+*Overview
+
+  mri_smooth takes a pgh MRI dataset of any type, and outputs
+  a dataset of floating point values containing a smoothed
+  version of the same data.  The smoothing operation acts on
+  all chunks in the dataset except the "missing" chunk, which
+  is not smoothed.
+
+  mri_smooth [-dimension Dim] [-bandwidth Band] [-kernel Ktype]
+	     [-threshold Thresh] [-verbose] [-debug] [...smoother options...]
+	     infile outfile
+
+*Usage:dimension
+  [-dimension Dim]			(-dim|d Dim)
+
+  Specify dimension over which to smooth.  Default is "t".
+
+*Usage:bandwidth
+  [-bandwidth Band]			(-bdw Band)
+
+  Short form of smoother "-smoother_bandwidth" switch; see
+  below.  Default is 3.0 .
+
+*Usage:threshold
+  [-threshold Thresh]			(-thr Thresh)
+
+  Short form of smoother "-smoother_threshold" switch; see
+  below.  Default is 0.0 .
+
+*Usage:kernel
+  [-kernel Ktype]			(-ker Ktype)
+
+  Short form of smoother "smoother_kernel" switch; see below.
+  Keywords for this option are "gaussian", "triangular",
+  "exponential", and "median"; default is "gaussian".  (Median 
+  smoothing is not a kernel-smoothing operation, but it is still
+  selected via the "-kernel" option.
+
+*Usage:verbose
+  [-verbose]				(-ver|v)
+
+  Verbose mode; write verbose info to stderr.
+
+*Usage:debug
+
+  -debug
+
+  Debug mode; write debugging info to stderr.
+
+m4include(../fmri/smoother_help.help)

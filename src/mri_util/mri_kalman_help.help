@@ -1,0 +1,313 @@
+*Usage
+
+  mri_kalman performs one full pass of a Kalman filter on a Pgh MRI
+  dataset.
+
+  The command line for mri_kalman is:
+
+    mri_kalman [-chunk Chunkname] [-verbose] [-debug]
+            -transition transMatrix -observation obsMatrix
+            -proccov procCovMatrix -obscov obsCovMatrix
+            [-errcov errCovOut] [-loglikelihood logLikelihoodOut]
+            [-out xOut] zIn
+
+  or
+    mri_kalman -help [topic]
+
+*Defaults
+
+  chunk: images
+
+*Arguments:chunkname
+ -chunk Chunkname		(-chu|c Chunkname)
+
+ Specifies the chunk that is to be operated on.
+     Default value is "images".
+
+*Arguments:verbose
+  [-verbose]			(-ver|v)
+
+  Requests verbose operation.
+
+*Arguments:debug
+  [-debug]			(-deb)
+
+  Requests debugging output.
+
+*Arguments:transition
+  -transition transMatrix                    (-trn transMatrix)
+
+  Specifies the hidden process transition matrix (required input).  
+  This is a square matrix, possibly varying with slice and time, 
+  with row and column extents equal to the dimension of the hidden 
+  state.  See the FileStructure section below for details.  NOTE that 
+  time k of transMatrix contains the transition matrix traditionally
+  subscripted (k-1), while time k of zIn contains the observation
+  traditionally subscripted k.
+
+*Arguments:observation
+  -observation obsMatrix                    (-obs obsMatrix)
+
+  Specifies the observation matrix (required input).  This is a
+  rank 2 matrix, possibly varying with slice and time, with extents
+  equal to that of the hidden state and the observation.  See the
+  FileStructure section below for details.
+
+*Arguments:proccov
+  -proccov procCovMatrix                    (-pcv procCovMatrix)
+
+  Specifies the process covariance matrix (required input).  This
+  is the estimated covariance of the hidden state.  See the 
+  FileStructure section below for details.
+
+*Arguments:obscov
+  -obscov obsCovMatrix                      (-ocv obsCovMatrix)
+
+  Specifies the process covariance matrix (required input).  This
+  is the estimated covariance of the observation.  See the
+  FileStructure section below for details.
+
+*Arguments:errcov
+  [-errcov errCovOut]                         (-ecv errCovOut)
+
+  Specifies the filename for the error covariance matrix data
+  (output).  If this parameter is not specified, error covariance
+  data is not saved.  See the FileStructure section below for details.
+
+*Arguments:loglikelihood
+  [-loglikelihood logLikelihoodOut]           (-lgl logLikelihoodOut)
+
+  Specifies the filename for the per-voxel log likelihood data
+  (output).  If this parameter is not specified, log likelihood
+  data is not saved.  See the FileStructure section below for details.
+
+*Arguments:xOut
+  [-out xOut]
+
+  Estimated values of the hidden time series values (output).  This is
+  the estimated hidden state.  If this parameter is not specified,
+  estimates of the hidden state are not saved.  See the FileStructure
+  section below for details.
+
+*Arguments:zIn
+
+  Input time series data file to be filtered (required input).  This
+  is the time series of observations.  See the FileStructure section
+  below for details.  NOTE that time k of transMatrix contains the
+  transition matrix traditionally subscripted (k-1), while time k of
+  zIn contains the observation traditionally subscripted k.
+
+*Usage:FileStructure
+
+  The matrix operations which implement the Kalman filter imply a set
+  of relationships between the dimensions of the various input and 
+  output files.  This section describes those relationships.
+
+  Recall that the leftmost dimension of a Pgh MRI dataset varies
+  fastest, while matrix elements are traditionally labeled in
+  row-column order in matrix algebra.  This means that the Pgh MRI
+  dataset corresponding to a matrix will have data elements ordered
+  like the transpose of the matrix.  For example, suppose that the
+  matrix elements F00 through F22 of a 3x3 matrix are stored in
+  Pgh MRI files of the same names.  One could assemble the appropriate
+  matrix F with the commands:
+
+    mri_paste -d s -out F F00 F10 F20 F01 F11 F21 F02 F12 F22
+    mri_remap -order ab -len 3:3 F
+
+  Assume that zIn has dimensions aXzt, where X is any combination
+  of letters, and that the extent of a is L.  The dimensions X and z
+  enumerate the voxels in the input dataset; each voxel is filtered
+  separately.  The program will iterate the Kalman filter a number of
+  times equal to the extent of t.
+
+  The dimension string for obsMatrix must be either two characters or
+  four characters; if the string is four characters long the last two
+  must be zt in that order.  The second dimension must match the first
+  dimension of zIn in name and extent, so for the current example
+  it must be a and have extent L.  The first dimension may be any
+  unique character.  For the sake of this example, assume it is b and
+  that it has extent M.  M will be the dimensionality of the hidden
+  state of the Kalman process.
+
+  The dimension string of transMatrix must be either two characters or
+  four characters; if the string is four characters long the last two
+  must be zt in that order.  The first two dimensions must have the
+  same extent, and that extent must be M, the extent of the second
+  dimension of obsMatrix.  Remember that the leftmost index in a Pgh
+  MRI datafile varies fastest, and that this is contrary to the
+  convention for writing down algebraic matrices.  Thus the sequence
+  of values in transMatrix is the same sequence (reading left-right
+  then up-down) as that in the transpose of the transition matrix as
+  it is usually written algebraically.
+
+  If the last two dimensions of obsMatrix and/or transMatrix are zt in
+  that order, they must match the corresponding dimensions in zIn
+  in extent.  In this situation the corresponding matrix can be made
+  to vary by slice and time.  If the last two dimensions are not zt, a
+  constant matrix will be used for all times.  Varying the matrixes by
+  voxel is not supported.
+
+  The procCovMatrix and obsCovMatrix inputs must have two-character
+  dimension strings, and the extent of both dimensions must match the
+  corresponding values of transMatrix and obsMatrix respectively.
+  Thus for the current example, the extent of both dimensions for
+  procCovMatrix must be M and the extent of both dimensions for
+  obsCovMatrix must be L.  Varying these quantities by time (with
+  additional dimensions zt) is not supported.
+
+  The output dataset xOut will contain a chunk with dimensions
+  matching zIn, except that the extent of the first dimension will
+  be M.  xOut will contain no 'missing' chunk, even if zIn contains
+  one.
+
+  The error covariance output errCovOut will only be produced if it is
+  specified on the command line.  If so, it will have dimensions
+  matching those of xOut, with an additional leading dimension of
+  extent M and all in-plane dimensions set to extent 1.  (Since the
+  error covariance does not depend on the sample data it does not vary
+  by sample).  errCovOut will contain no 'missing' chunk, even if zIn
+  contains one.
+
+  The log likelihood output logLikelihoodOut will only be produced if
+  it is specified on the command line.  If so, it will have dimensions
+  matching those of xOut, but with the leading dimension and the t
+  dimension both having extent 1.  logLikelihoodOut will contain no
+  'missing' chunk.
+
+*Usage:Details
+
+  This discussion follows "An Introduction to the Kalman Filter" by
+  Greg Welch and Gary Bishop, with some minor modifications including
+  time dependence for the process matrix A and measurement matrix H.  
+  See \<a href=http://www.cs.unc.edu/~welch/kalman\>The Kalman Filter\<a\>
+  for this document and many others.
+
+  mri_kalman performs the iterations of the Kalman filter, solving
+  the linear stochastic difference equation:
+
+   x  = A   x  +  w
+    k    k-1 k-1   k-1
+
+   z  = H x  + v
+    k    k k    k
+
+  where the process noise w and observation noise v are assumed to be
+  white and independent with normal probability distributions
+
+   p(w) = N(0, Q)
+
+   p(v) = N(0, R)
+
+  for covariance matrices Q and R.  The current implementation does
+  not support varying Q and R between iterations.  Thus while the
+  following description carries the subscripts of Q and R, in the
+  implementation both are constant for all k.
+
+  The variables involved and their corresponding datasets are as
+  follows.  (Matrix dimensions are for a single sample).
+ 
+
+     variable   dataset          matrix dims     conventional name
+     --------   -------          -----------     -----------------
+
+       x          xOut               Mx1           hidden state
+
+       z          zIn                Lx1           measurement
+
+       A       transMatrix           MxM           process matrix
+
+       P        errCovOut            MxM           error covariance
+
+       K          (none)             MxL           Kalman gain
+
+       H        obsMatrix            LxM           observation matrix
+
+       Q        procCovMatrix        MxM           process covariance
+
+       R        obsCovMatrix         LxL           observation covariance
+
+     (none)    logLikelihoodOut      1x1           log likelihood
+
+  In the notation that follows, a karat (^) denotes the expectation
+  value of a quantity.  A minus sign superscript denotes a Bayesian
+  prior; for example:
+
+     -
+    P  = (prior estimate of P at time k) 
+     k
+
+       = (estimate of P at time k given k-1)
+
+       = P
+          (k|k-1)
+
+  The steps performed are as follows.  First, 'prior' estimates are
+  calculated at time k based on data at time k-1:
+
+    ^-        ^
+    x  = A    x
+     k    k-1  k-1
+
+     -            T
+    P  = A   P   A     +  Q
+     k    k-1 k-1 k-1      k-1
+
+  where T denotes the matrix transpose.  Posterior estimates are then 
+  calculated at time k:
+
+           -  T      -  T       -1
+    K  =  P  H [ H  P  H  +  R ]
+     k     k  k   k  k  k     k
+
+    ^     ^-              ^-
+    x  =  x  + K ( z  - H x  )
+     k     k    k   k    k k
+
+                     -
+    P  = ( I - K  H ) P
+     k          k  k   k
+
+  At this point the process repeats, calculating priors for time k+1
+  via the expressions above.  Note that the values at time k are
+  calculated based on the value of the matrix A at time k-1; this
+  implies that the first input value for A is from the time step
+  before that of the first input for z.
+
+  The log likelihood is calculated as the sum over all times of 
+  contributions dL at time k, where:
+
+         -1             L         -  T        
+    dL = --- log{ (2 pi)  det( H P  H  + R ) } 
+      k   2                     k k  k    k                       
+
+           1         ^  T      -  T       -1         ^
+        - ---( z - H x )  ( H P  H   + R )   ( z - H x )
+           2    k   k k      k k  k     k       k   k k
+
+  In this expression det() denotes the matrix determinant and pi is 
+  of course 3.1415...
+
+  NOTE that because the k'th value of A provided in the transMatrix
+  input dataset gives the value of A at time k-1, while the k'th
+  values of the quantities in all other datasets give their values at
+  time k.  This is a result of the convention that the first A used in
+  the Kalman iteration is identified with time k-1.
+                                                                 ^
+  The first step of the iteration also requires values for P and X at
+  time k-1.  The following initial values are used:
+
+
+     P   = Q
+      k-1
+
+     ^                  T
+     x   = ( 1 1 1 ... )      (that is, a vector of 1's)
+      k-1
+
+  Missing information in the ZIn file is applied if present; the
+  Kalman weight is set to zero for missing input data.  Because of the
+  definition of the missing data chunk, missing information must
+  change only by slice and by time.  Missing information in other
+  input files is ignored.
+ 

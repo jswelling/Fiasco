@@ -1,0 +1,88 @@
+*Usage
+
+  image_entropy calculates the time series of Shannon entropies 
+  for a time series of images in Pgh MRI format.  
+
+    image_entropy [-debug] [-estimates parfile] [-nbins nBins]
+          [-max MaxVal] [-min MinVal] [-mask maskFile] infile
+
+  or
+
+    image_entropy -help [subtopic]
+
+*Usage:estimates
+
+  -estimates parfile             (-e parfile)
+
+  Ex: -estimates entropy.par
+
+  specifies that the calculated Shannon entropy values are to be 
+  written to parfile.  The default is "image_entropy.par".
+
+  The format of the parameter estimates file is:
+
+    image# val
+
+  where image# is the sequential image number (counting from 0) and
+  val is the calculated entropy.  Standard Fiasco parameter file
+  header information is included.
+
+*Usage:nbins
+
+   -nbins N
+
+   Specifies the number of bins to use for the histogram used to
+   calculate the Shannon entropy.  The default is calculated using
+   Sturges' rule, nbins= ceil(log2(nsamples)+1) .
+
+*Usage:min
+
+   -min MinVal
+
+   Specifies the value assigned to the center of the lowest bin of
+   the histogram.  The default is the minimum sample value.
+
+*Usage:max
+
+   -max MaxVal
+
+   Specifies the value assigned to the center of the highest bin of
+   the histogram.  The default is the maximum sample value.
+
+*Usage:mask
+
+   -mask maskFile
+
+   Specifies the name of a file containing a mask dataset.  The
+   values in the file must be either 0.0 or 1.0; only voxel locations
+   corresponding to non-zero mask values will be included in the
+   entropy calculation.  The mask dataset dimensions must be
+   (v)xyz..., where the extent of v must be 1 if it is present.
+   If there are dimensions after z, they will be cycled through,
+   so a different mask can be used at each time point in a series
+   of images.
+
+*Usage:infile
+
+   Specifies the name of the input dataset.  This parameter is
+   required.  The input dataset must be in (v)xyz... format,
+   where the extent of v must be 1 if it is present.  Any
+   dimensions after z are treated as separate times. The most
+   common input dataset would have dimensions xyzt, and a
+   separate Shannon entropy would be calculated for each value
+   of t.
+
+*Usage:debug
+
+  -debug
+
+  This flag causes debugging output to be written.
+
+*Usage:verbose
+
+  -verbose                  (-v)
+
+  This flag causes verbose output to be written.
+
+m4include(../fmri/entropy_help.help)
+

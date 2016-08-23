@@ -1,0 +1,67 @@
+*Details:Interpolator
+
+  The Interpolator package supports a number of interpolation
+  algorithms.  All are implemented in a 'seperable' fashion, meaning
+  that for multi-dimensional interpolation the different dimensions
+  are interpolated in separate steps.  Each step interpolates a series
+  of samples taken at regular intervals along a grid line.
+
+  \<table border cellpadding=5 \>
+  \<caption\>\<b\>Characteristics of Interpolators\</b\>
+  \<tr\>\<td\>\<b\>name\</b\>\</td\>
+        \<td\>\<b\>N\</b\>\</td\>
+        \<td\>\<b\>continuity\</b\>\</td\>
+        \<td\>\<b\>interpolates input pts\</b\>\</td\>
+        \<td\>\<b\>tension\</b\>\</td\>
+  \</tr\>
+  \<tr\>\<td\>closest\</td\>\<td\>1\</td\>\<td\>none\</td\>
+        \<td\>yes\</td\>\<td\>no\</td\>
+  \</tr\>
+  \<tr\>\<td\>linear\</td\>\<td\>2\</td\>\<td\>C0\</td\>
+        \<td\>yes\</td\>\<td\>no\</td\>
+  \</tr\>
+  \<tr\>\<td\>catmullrom\</td\>\<td\>4\</td\>\<td\>C1\</td\>
+        \<td\>yes\</td\>\<td\>0.5\</td\>
+  \</tr\>
+  \<tr\>\<td\>bspline\</td\>\<td\>4\</td\>\<td\>C2\</td\>
+        \<td\>no\</td\>\<td\>no\</td\>
+  \</tr\>
+  \<tr\>\<td\>bezier\</td\>\<td\>4\</td\>\<td\>C1\</td\>
+        \<td\>every 3rd\</td\>\<td\>no\</td\>
+  \</tr\>
+  \</table\>
+
+  N is the number of sample points which contribute to a given output
+  value; for example, the output of the "closest" method depends only
+  on the value of the nearest input sample.
+
+  Continuity is the number of continuous derivative.  The "closest"
+  method produces discontinuous output and thus has no continuous
+  derivatives.  The "linear" method performs linear interpolation
+  between the nearest two input points, and thus is continuous but
+  has no continuous derivatives.
+
+  Note that the "bspline" method is the smoothest with two continuous
+  derivatives, but that the price of this is that the input values 
+  are not interpolated.  What this means is that if you ask this
+  interpolation method to return the values at the locations of the
+  input points, the output values will *not* be equal to the input 
+  values.  Nevertheless, this is the interpolation method recommended
+  by Unser et al. (see below) for implementing rotation with this 
+  order of interpolant.
+
+  Methods listed as having a 'tension' support an additional degree
+  of freedom corresponding vaguely to the stiffness of a natural 
+  spline.  If a tension is supported, the default value is given.
+  The specific application in use may or may not support changing 
+  this value.
+  
+*Details:InterpolatorReferences
+
+  For a nice treatment of interpolation in the context of rotation,
+  see Unser, Thevenaz, and Yaroslavsky, IEEE Transactions on Image 
+  Processing, 4.10, 1995
+
+  Computer Graphics Principles and Practice by Foley, van Dam, Feiner,
+  and Hughes provides a good introduction to spline curves, including
+  the weight functions used by the spline interpolators in this package.

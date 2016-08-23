@@ -1,0 +1,70 @@
+*Introduction
+
+  mri_anova takes a pgh MRI dataset of type txyz and information 
+  about an experimental design, and produces a number of datasets
+  of type xyz containing F statistics for the various design
+  parameters.  vt... datasets are also acceptable, so long as
+  the vector length of v is 1.  The output datasets are of type float32.
+
+  To run mri_anova use:
+    mri_anova [-voxel_address i j k ] [-mse] [-split Split-File] 
+	      [-condition Condition-File] infile
+
+  or:
+    mri_anova -help
+
+
+*Arguments:voxel_address
+   [-voxel_address i j k]		(-vxa i j k)
+
+   Ex: -vxa 32 32 5
+
+   Produces a printed table of statistics for the i,j,k'th voxel of a
+   txyz dataset.  Voxel indices count from zero.
+
+*Arguments:mse
+   [-mse]      
+
+   Flag that causes a dataset to be written containing the MSE of the fit.
+   This option has no effect if -voxel_address is specified.
+
+*Arguments:split 
+   [-split Split-File]			(-spl Split-File)
+
+   Ex: -split mySplitfile
+
+   The image-by-image split file that is output by the intsplit program. 
+   The default value is "newsplit".
+
+*Arguments:condition
+   [-condition Condition-File]		(-cnd Condition-File)
+  
+   The condition file as output by intsplit. The default value is
+   "conditions". 
+
+*Arguments:infile
+   infile
+
+   Ex: detrend
+
+   The name of the PGH MRI file to be used as input.  This
+   parameter is required.
+
+*Details:Comments  
+
+   The program's output will depend on factor order if the
+   factors are not orthogonal.  
+
+   The number of cross terms generated depends on the value 
+   of MAX_SOURCES, a compile-time parameter (generally set to 10).
+
+   If all data for a given voxel are identical, that voxel is
+   given an F value of 0.0 in the output files.
+
+   When the -voxel_address option is given, a "factor orthogonality
+   measure" is produced.  This value is 1.0 when the factors are
+   orthogonal and 0.0 when one factor can be expressed in terms of the
+   others.  Specifically, this is the product of the eigenvalues of
+   X'X divided by the product of the diagonal elements of X'X, where X
+   is the factor matrix and ' denotes transpose.
+

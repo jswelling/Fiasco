@@ -1,0 +1,19 @@
+*Details:NelminCalculation
+
+  Nelmin and nelmin_t are minimization algorithms based on the Nelder-
+  Mead simplex algorithm.  See for example "Numerical Recipes in C"
+  section 10.4.  These versions of the code are based on Applied 
+  Statictics algorithm AS 47 (J.R.STATIST.SOC C), (1971) VOL.20, NO.3 
+  by R. O'Neill, as modified in remark AS R28 by I. D. Hill.  This
+  Fortran code was translated to C using "f2c" and cleaned up by hand.
+
+  Both versions have been modified to include a "reset" routine which
+  is called periodically.  The calling pattern of this routine forms
+  the "outer loop" in a minimization procedure.
+
+  Nelmin is the straight version of this routine.  Nelmin_t uses a
+  T-test to determine when to exit, on the hypothesis that the bottom
+  of the function to be minimized is "noisy".  When the likelyhood
+  that the minimization criterion has been reached exceeds 95%, the
+  routine exits.
+ 

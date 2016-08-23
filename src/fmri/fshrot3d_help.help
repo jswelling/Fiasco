@@ -1,0 +1,71 @@
+*Details:FSHROT3DCalculation
+
+  Fourier Shifts and rotations in 3D are implemented using the 
+  "fshrot3d" package.  This package decomposes a requested 
+  rotation and translation into three or more shear operations
+  in 3D, and implements those shears using 1D Fourier transforms.
+  The elementary operations implement a shear, plus a translation
+  in the shear direction.
+
+  If the operation is a simple translation (no rotation component),
+  three shearing operations implement it- one in each direction.
+  Hereafter rotations R may include a translation T.  Pure rotations
+  will be denoted by lowercase r, such that 
+
+         R = T r
+
+
+  If an axis-aligned rotation is requested, three shears are used.
+  A fourth shear adds a translation along the rotational axis if
+  necessary.
+  Specifically, 
+
+         Rz = Sz Sy Sx Sy
+
+  where Rz is a rotation about Z, Sx is a shear in the X direction,
+  and etc.  Rotations about other axes can be found by permutation
+  of coordinates.
+
+  A non-axis-aligned rotation can be implemented as four shears:
+
+        R = Si Sj Sk Si
+
+  where i, j, and k represent distinct (but not necessarily cyclical)
+  axes X, Y, and Z.  There are 3*2*1*1=6 possible such decompositions.
+  See Cox et. al., "Real-Time 3D Image Registration for Functional",
+  Magnetic Resonance in Medicine 42(1999) or Welling, Eddy, and Young
+  (2000) (in preparation) for details.
+
+  The necessary coefficients for these shears are singular or 
+  near-singular in some regions, however.  If this situation is
+  found to occur, a correcting (pure) rotation "rc" is found which 
+  shifts the rotation out of the bad region, and the rotation is 
+  implemented as follows (bars denote the conjugate rotation):
+
+        R = T r 
+              __
+          = T rc rc r
+
+          = Sy Sz Sx Sy Sz Sx Sy
+                                  __
+  by decomposing ( rc r ) and ( T rc ) each into four shears,
+  resulting in 8 shears overall.
+
+  Note that the Fourier methods used here assume that the volume
+  being treated is periodic.  As a result of this, if any shear
+  carries the "interesting" part of the data beyond the edge of
+  the volume, that data will reappear on the opposite edge and
+  produce strange artifacts.  Thus this method is best used with
+  data confined to the region near the center of the volume, and
+  rotation and translation parameters that do not carry that
+  data to the boundary.
+
+  If the input data is real or is the Fourier transform of pure real
+  data, and one or more of the data dimensions is even, a special
+  condition applies.  The phase of the highest frequency signal along
+  an even dimension cannot be calculated from the input, so that
+  component of the input signal cannot be translated or rotated.  
+  
+
+m4include(../fmri/fft3d_help.help)
+

@@ -1,0 +1,77 @@
+*Usage
+
+  pghtonifti is a program that converts pgh MRI format files to 
+    Neuroimaging Informatics Technology Initiative NIfTI format.  
+
+  pghtonifti [-verbose] [-debug] [-nii] Infile Outfile
+
+  pghtonifti -help [topic]
+
+*Arguments:help
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+*Arguments:verbose
+
+  [-verbose]   (-v)
+
+  Ex: -v
+
+  Produces verbose output.
+
+*Arguments:debug
+
+  [-debug]
+
+  Ex: -debug
+
+  Produces debugging output.
+
+*Arguments:nii
+
+  [-nii]
+
+  Ex: -nii
+
+  Produces a single output file with the extension .nii, rather than
+  separate .hdr and .img files.
+
+*Arguments:Infile
+
+  The name of the Pittsburgh MRI file to be translated.  This argument
+  is required.
+
+*Arguments:Outfile
+
+  The name of the NIfTI file to be generated.  This argument is
+  required.  If Outfile is "whatever" and the -nii flag is not set, 
+  the files "whatever.hdr" and "whatever.img" will be created.  If
+  the -nii flag is set, the single output file "whatever.nii" will
+  be created.
+
+*Details
+
+  Pghtonifti does not normally write scaled datasets, instead writing
+  NIfTI datasets in which the datatype corresponds as closely as
+  possible to the datatype in the input Pgh MRI file.  However, the
+  user can force the data to be written as a scaled dataset by
+  including  the tags 'nifti_scl_slope' and 'nifti_scl_inter'. For
+  example, given a dataset containing floats with an approximate
+  range of 0.0 to 8000.0, one could write a scaled dataset using
+  signed shorts (range -32768 to 32767) as follows:
+
+  mri_rpn_math -out scaled_floats '$1,0.0,-,8000.0,/,65535,*,32768,-' infile
+  mri_type_convert -short scaled_floats scaled_shorts
+  mri_setfield -field images.nifti_scl_slope -val 0.12207 scaled_shorts
+  mri_setfield -field images.nifti_scl_inter -val 4000.0 scaled_shorts
+  pghtonifti scaled_shorts nifti_out
+
+  Note that 0.12207 = ((8000.0 - 0.0)/(32767 - -32768))
+   and that 4000.0 = (-32768*0.12207)
+ 
+
+
+
+
+
