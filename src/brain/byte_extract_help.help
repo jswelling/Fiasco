@@ -1,0 +1,40 @@
+*Introduction
+
+   byte_extract takes a file of raw bytes, assumed to represent a
+   series of subgroups of identical length.  From each subgroup it
+   emits a specified contiguous subset of the bytes.  Input is
+   from stdin; output is to stdout.
+
+   To run byte_extract use:
+     byte_extract -cycle cycle_len -from start -n nbytes
+
+   or:
+     byte_extract -help
+
+
+*Arguments:cycle
+   -cycle cycle_len
+
+   Ex: -cycle 230
+
+   The value of cycle_len specifies the number of bytes in each
+   cycle. This flag is required.
+
+*Arguments:from
+   -from start
+
+   Ex: -from 16
+
+   The value of start specifies the offset to start from within each cycle
+   (counting from 0). This falg is required.
+
+*Arguments:-n
+   -n nbytes
+
+   Ex:-n 256
+
+   The value of nbytes specifies the number of bytes from the given cycle to
+   be output. This flag is required.
+
+
+

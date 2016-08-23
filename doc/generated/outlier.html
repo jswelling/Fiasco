@@ -1,0 +1,174 @@
+# $Id: outlier.c,v 1.10 2004/01/16 19:18:18 welling Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>outlier_help</title>
+  </head>
+  <body>
+    <h1>outlier_help</h1>
+<h2>Overview</h2>
+<pre>
+
+  outlier is used to identify and "pull in" outliers
+
+  outlier [-input Input-header-file] [-headerout Output-header-file]
+          [-dataout Output-data-file] [-parameters Parameter-file]
+          [-cutoff Stdvs] [-badimage Proportion]
+          [-mean mean-header-file | -median median-header-file ]
+          [-stdv stdv-header-file | -iqr iqr-header-file ]
+
+  outlier -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+</pre>
+<h2>Usage</h2>
+<h3>input</h3>
+<pre>
+
+  -input Input-header-file        (-i Input-header-file)
+
+     Specifies that the header for the input dataset is located
+       in Input-header-file.
+     Default value is "input.mri".
+     Input-header-file is not allowed to have the same name
+       as Output-header-file.
+
+     outlier.m accepts only standard real- or complex-valued images
+       with dimension order "vxyzt" or "xyzt" as input.
+
+</pre>
+<h3>headerout</h3>
+<pre>
+
+  -headerout Output-header-file  (-h Output-header-file)
+
+     Specifies that the header for the output dataset should
+       be written to Output-header-file.
+     Default value is "outlier.mri".
+     Output-header-file is not allowed to have the same name
+       as Input-header-file.
+
+</pre>
+<h3>dataout</h3>
+<pre>
+
+  -dataout Output-data-file      (-d Output-data-file)
+
+     Specifies that the output data should be written to Output-data-file.
+     Default value is ".dat".
+
+     The output dataset will consist of single-precision, floating-point
+       values of the same vector length as the input dataset.
+
+</pre>
+<h3>parameters</h3>
+<pre>
+
+  -parameters Parameter-file     (-p Parameter-file)
+
+     Specifies that the counts of identified outliers should be written
+       to Parameter-file.
+     Default value is "outlier.par".
+
+     The counts of identified outliers are written in ASCII in "zt"
+       dimension order.
+
+</pre>
+<h3>cutoff</h3>
+<pre>
+
+  -cutoff Stdvs                  (-c Stdvs)
+
+     Specifies the minimum number of standard deviations that a value
+       must be from the mean to be identified as an outlier.  Note
+       that this value is always specified in standard deviations,
+       even if -iqr is specified (see below).
+     Default value is 3.5.
+
+</pre>
+<h3>badimage</h3>
+<pre>
+
+  -badimage Proportion           (-b Proportion)
+
+     Specifies that any image whose proportion of pixels declared as
+       outliers is higher than Proportion shall be declared missing.
+     Default value is 0.02.
+
+</pre>
+<h3>mean</h3>
+<pre>
+
+  -mean mean-header-file
+
+     Specifies an *input* file containing mean values to be used in
+       place of the computed means in the outlier calculation.  This
+       flag is equivalent to the "median" flag.
+     The default is to use computed means.
+
+</pre>
+<h3>median</h3>
+<pre>
+
+  -median median-header-file
+
+     Specifies an *input* file containing median values to be used in
+       place of the computed means in the outlier calculation.  This
+       flag is equivalent to the "mean" flag.
+     The default is to use computed means.
+
+</pre>
+<h3>stdv</h3>
+<pre>
+
+  -stdv stdv-header-file
+
+     Specifies an *input* file containing standard deviation values to 
+       be used in place of the computed standard deviations in the 
+       outlier calculation.  This flag and the -iqr flag are mutually
+       exclusive.
+     The default is to use computed standard deviations.
+
+</pre>
+<h3>iqr</h3>
+<pre>
+
+  -iqr iqr-header-file
+
+     Specifies an *input* file containing interquartile range values
+       to be used in place of the computed standard deviations in the 
+       outlier calculation.  These values are scaled by the program to
+       produce estimates of the standard deviation, based on a normal
+       distribution.  This flag is mutually exclusive with -stdv.
+       Note that -cutoff is always specified in standard deviations!
+     The default is to use computed standard deviations.
+
+</pre>
+<h2>Calculation</h2>
+<pre>
+
+  For real-valued datasets, simple means and standard deviations are
+    calculated on a pixel-wise basis.  Then, if any particular pixel
+    lies further than Stdvs standard deviations from the mean, it is
+    identified as an outlier, and its value is changed to equal the
+    mean plus/minus Stdvs standard deviations for high/low outliers,
+    respectively.
+
+  For complex-valued datasets, means and standard deviations are
+    calculated on a pixel-wise basis, for the real and imaginary
+    portions separately.
+
+  By first finding the median image and IQR image of the input dataset
+    and supplying those values via the -median and -iqr flags, the
+    user can avoid the sensitivity to extreme values in the
+    calculation of the mean and standard deviation.
+
+</pre>
+    <hr>
+    (automatically generated by outlier_help version of Sat Jan  2 22:50:24 2010)
+  </body>
+</html>

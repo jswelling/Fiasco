@@ -1,0 +1,25 @@
+Bayesian Reponse Analysis and Inference for Neuroimaging (BRAIN) 
+
+Beta Version 0.1  Distribution Notes
+------------------------------------
+
+This is a Beta distribution of the BRAIN software system.  This includes
+the maximum posterior analysis module only; there are several other modules
+forthcoming that extend the analysis and the queries that can be made.  The
+name and acronym of the software are working titles and may be changed in
+future releases.  Also included in the distribution are the libcrg and
+mrilib functions needed to run the software.  Both of these (particularly
+the latter) need will be updated before the final release.  Another
+weakness is that the required spline functions are not yet implemented, so
+the file ramps.txt is included.  A sample input file is also provided.
+
+Currently, you need the IMSL and LAPACK/BLAS library to compile the
+maximization module.
+
+To make the code, edit the makefile headers, entering the correct paths.
+Make the mrilib and libcrg independently and install these in an accessible
+location.  Then, make vmpfx using the principle makefile.
+
+Let me know if you have further questions.
+
+

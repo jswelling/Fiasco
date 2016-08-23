@@ -1,0 +1,68 @@
+   Syncpeaks takes a pgh MRI dataset containing data with sync
+   markers from the MRI scan and creates a new MRI file containing 
+   a chunk with a ramping function corresponding to the event peaks 
+   in the original file.  Specifically, the output file values run 
+   linearly from 0.0 immediately following one marker up to the 
+   number of time points before the next one.  Estimates are made 
+   for the values before and after the first and last peaks.  The 
+   input chunk must be a pure time series; that is, its dimensions 
+   must be "t" or all other dimensions must have a length of 1.
+	
+   The command line for eventpeaks is:
+     syncpeaks [-chunk chunk] [-window window_size] [-threshold threshold] 
+		 [...smoother options...] infile outfile
+
+   or:
+     syncpeaks -help
+
+*Examples
+
+   syncpeaks infile outfile
+
+   This use takes all the defaults:
+	-c   physio
+	-win 20
+	-thr 20
+
+   syncpeaks -c images -win 40 -thr 150 infile outfile
+
+   This use reads the data from the images chunk with a window of 40
+   and a threshold of 150.
+	
+
+*Arguments:chunk
+   [-chunk chunk]	(-chu|c chunk)
+ 
+   Ex: -c chunk1
+
+   Specifices the name of the chunk to use. The default value is
+   "physio."
+
+*Arguments:window
+   [-window window_size]	(-win window_size) 
+
+   Ex: -win 9  
+
+   Specifies the size of the window to use for filtering the data when
+   looking for peaks. The default value is 20 samples.
+
+*Arguments:threshold
+   [-threshold threshold]	(-thr threshold)
+
+   Ex: -thr 25
+
+   Specifies the threshold to use for deciding whether a peak is
+   significant or not. The default value is 20.
+
+*Arguments:infile
+   infile
+
+   The given value of infile specifies the input dataset. 
+
+*Arguments:outfile
+   outfile
+
+   The given value of outfile specifies the file name to which to
+   write the output dataset.
+
+

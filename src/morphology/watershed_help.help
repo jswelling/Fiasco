@@ -1,0 +1,100 @@
+*Introduction
+
+  watershed applies a watershed algorithm to its input, over the
+  entire 3D volume or within an optional mask.  Note that this is an
+  inverted watershed, flooding downward from peaks rather than upward
+  from minima.
+
+  The command line for watershed is:
+
+    watershed [-v] [-debug] [-mask MaskFile] [-algorithm algstring] 
+         InFile OutFile
+
+  or 
+
+    watershed -help [topic]
+
+*Arguments:verbose
+
+  [-verbose]                    (-v)
+
+  Requests verbose output.
+
+*Arguments:debug
+
+  [-debug]
+
+  Requests debugging output.
+
+*Arguments:algorithm
+
+  [-algorithm algstring]         (-alg algstring)
+
+  The elements of the algorithm string constrol the details of the
+  watershed algorithm; the string is a comma-separated list of those
+  elements.  Supported elements are:
+
+    "markboundaries" specifies that boundaries between watershed
+                regions should be marked with the special value -1.
+    "nomarkboundaries" is the opposite of "markboundaries".
+    "fatboundaries" only effects runs for which "markboundaries" is requested.
+                If set, voxels for which the highest neighbor is a
+                boundary will be considered boundaries themselves.
+                In flat regions this can result in wide fields of
+                boundary voxels.
+    "nofatboundaries" is the opposite of "fatboundaries".  This results in
+                boundary regions one voxel wide, but because the
+                boundary voxels are of finite extent they still
+                effect the future course of the algorithm.  Thus
+                under this algorithm non-boundary regions may be
+                assigned to different watersheds depending on 
+                whether or not -boundaries is specified.
+    "alwaysflood" causes flat regions around each newly identified voxel
+                to be flood filled.  This is technically correct, but
+                slower than the "minflood" option.
+    "floodmaxima" is the opposite of "alwaysflood".  Under this option 
+                only newly-identified maxima are flooded.  Voxels in
+                flat regions which are not local maxima have ties
+                broken by treating the voxels toward the (0,0,0)
+                corner of the array as if they were slightly lower
+                than their neighbors.
+
+  The default algorithm is "nomarkboundaries,thinbounds,floodmaxima".
+
+*Arguments:mask
+
+  [-mask MaskFile]               (-m MaskFile)
+
+  Specifies a mask for the watershed transform.  The mask dataset must
+  have dimensions matching those of the input dataset; any voxel for 
+  which the mask value is non-zero is considered to be within the
+  mask.  The default (no MaskFile provided) is equivalent to supplying
+  a mask of all 1's.
+
+*Arguments:InFile
+
+  Specifies the input dataset, which must have dimensions (v)xyz(t).
+  If v or t dimensions are present, their extent must be 1.  The
+  program operates on the "images" chunk.  This argument is required.
+
+*Arguments:OutFile
+  
+  Specifies the output dataset.  This argument is required.  The
+  dimensions of the output will match those of the input; the output
+  data type will be int32.  Voxels outside the mask will have the
+  value 0; those inside the mask will be assigned integer values
+  increasing from 1 depending on the watershed region with which they
+  are associated.  If boundaries are requested, the boundary voxels
+  are assigned a value -1.
+  
+*Details
+
+  This is approximately algorithm 4.3 from "The Watershed Transform:
+  Definitions, Algorithms and Parallelization Strategies", Roerdink
+  and Meijster, Fundamenta Informaticae 41 (2001) 187-228, modified
+  to use a flood fill in constant regions. The 'images' chunk is
+  always used.
+
+  Note that requesting boundaries causes changes to the watershed 
+  structure in low-gradient regions, because the boundary voxels
+  themselves take up space and distort the 'flow'!

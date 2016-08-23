@@ -1,0 +1,183 @@
+*Introduction
+
+  ireg3d is used to perform 3-D motion correction on a set
+  of images, given estimates of the motion.  If the input images
+  are in image space, the specified rotation and translation are
+  carried out.  If the input images are in k-space, the rotation
+  is carried out and the phases of the result are set such that
+  the in-plane translation will be carried out by the FFT that 
+  transforms the images to image space. (Scalar data is assumed 
+  to be in image space, complex data (v.extent=2) is assumed to be 
+  in k-space).  Note that this convention assumes that images are
+  acquired slicewise, so that complex data is reconstructed using
+  FFTs in the X and Y directions only.  Input data must be organized
+  as (v)xyz(t).  It is best to use this algorithm on data that 
+  is confined to the central region of the volume;  see the 
+  "Calculation" section below for details.  Specifically, applying
+  this algorithm to equivalent image space and k space data may
+  not produce equivalent results because of these boundary effects.
+
+  To run ireg3d use:
+    ireg3d -xvoxel xv -yvoxel yv -zvoxel zv
+           [-input Input-header-file] [-headerout Output-header-file]
+           [-parameters Registration-parameter-file] [-debug] [-verbose]
+           [-real] [-qualmeasure cox|sabs|ssqr|ucell]
+           [ -interp fourier|closest|linear|catmullrom|bspline|bezier]
+           [-shear4 | -shear7 | -shear13 ]
+
+  or:
+    ireg3d -help 
+
+*Arguments:xvoxel
+   -xvoxel xv                      (-x xv)
+
+   Specifies the voxel edge length in the x direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:yvoxel
+   -yvoxel yv                      (-y yv)
+
+   Specifies the voxel edge length in the y direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:zvoxel
+   -zvoxel zv                      (-z zv)
+
+   Specifies the voxel edge length in the z direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:input
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -input partialk.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   ireg3d accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+*Arguments:headerout
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h 3dOutput.mri
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file. Default value is
+   "ireg3d.mri. Output-header-file is not allowed to have the same
+   name as Input-header-file. 
+
+*Arguments:parameters
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+ 
+   Specifies that the motion correction parameters are to be
+   read from Registration-parameter-file. Default value is "reg3d.par".
+
+   The format of the Registration-parameter-file is a series of
+   ASCII numbers of the form:
+         image# q_x q_y q_z q_w shift_x shift_y shift_z mse
+   where the q_ elements compose a unit quaternion specifying
+   the rotation.  These 9 numbers must be separated by spaces
+   or tabs, but NOT carriage returns- all nine numbers must reside
+   on the same line.  The mse entry is ignored;  it is given for
+   compatibility with other utilities.  Lines beginning with '#'
+   are considered to be comments and are ignored.
+
+*Arguments:debug
+   [-debug]                               [-dbg]
+  
+   Causes debugging output to be produced.
+
+*Arguments:verbose
+   [-verbose]                              [-v]
+
+   Causes verbose output to be produced.
+
+*Arguments:real
+   [-real]
+
+   Set this option if the input data is complex but represents the
+   (forward) Fourier transform of a pure real function.  The output is 
+   then guaranteed also to represent the Fourier transform of purely
+   real data.
+
+*Arguments:shear4
+   [-shear4]
+
+   Causes a minimum number of Fourier transforms to be applied.  The
+   exact pattern is controlled by the -qualmeasure flag.  Four shear
+   operations are used to implement general 3D rotations and
+   translations;  some special cases use fewer.  This is the default
+   method of implementing the rotation.  This flag is incompatible
+   with the -shear7, -shear13, and -trilinear flags.
+
+
+*Arguments:shear7
+   [-shear7]
+
+   Causes a pattern of Fourier transforms to be performed which is 
+   symmetrical for small rotation angles.  The exact pattern is 
+   controlled by the -qualmeasure flag.  Seven shear operations are
+   used to implement general 3D rotations and translations;  some
+   special cases use fewer.  This flag is incompatible with the
+   -shear4, shear13, and -trilinear flags.
+
+*Arguments:shear13
+   [-shear13]
+
+   Causes a fully symmetric series of Fourier transformations to be
+   applied.  This means that an odd number of shearing operations
+   will be done.  The first will be identical to the last, the second
+   will be identical to the second-from-last, etc.  This flag is 
+   incompatible with the -shear4, -shear7, and -trilinear flags.
+
+*Arguments:interp interpMode
+   [ -interp fourier|closest|linear|catmullrom|bspline|bezier]
+
+   Specifies the interpolation mode to be used.  Fourier interpolation
+   is the default, and the only interpolation mechanism supported for
+   complex data.  See the section below on interpolation methods for
+   information on the other options.  The -shear4, -shear7, and
+   -shear13 flags are complatible only with Fourier interpolation, and
+   the -qualmeasure options effect only Fourier interpolation.
+
+*Arguments:qualmeasure
+   [-qualmeasure cox|sabs|ssqr|ucell]
+
+   Sets the method used to calculate the quality measure for a given
+   decomposition of a rotation into shears.  This in turn effects 
+   which decomposition is chosen for any given rotation.  Valid
+   parameters are "cox" (which uses the maximum of the absolute values
+   of the shear parameters), "sabs" (which uses the sum of absolute
+   values) "ssqr" (which uses the sum of squares of shear
+   parameters), and "ucell" (which means a measure of the volume of
+   the unit cell which the rotation carries out of the unit cell).
+   Default is "ssqr".
+
+*Details:Calculation
+
+  The requested operation is performed using Fourier methods, as
+  described below.  Note that the periodic nature of these methods
+  means that data carried beyond the edge of the volume will "wrap
+  around" and reappear on the other side.  This means that 
+  geometrically incorrect results can occur for large rotations
+  or translations (typically larger than about 30 degrees' rotation).
+  It is best to use this algorithm on data that is confined to the
+  central region of the volume.
+
+  For more details on this algorithm, see Eddy, Fitzgerald, Noll ---
+  "Improved Image Registration Using Fourier Interpolation", 
+  Magnetic Resonance in Medicine 36-6 (Dec 1996)
+
+m4include(../fmri/coordsys_help.help)
+
+m4include(../fmri/fshrot3d_help.help)
+
+m4include(../fmri/interpolator_help.help)

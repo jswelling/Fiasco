@@ -1,0 +1,65 @@
+*Introduction
+
+  affinemap is a fiarly stupid little program for warping one image
+  onto another based on 3 points identified in both images.
+
+  affinemap -p protofile -i infile -h outfile -[verbose] [-fourier]
+
+  Only the "images" chunk is mapped.  Images must be real and one
+  slice, so their dimension string is xy.
+
+*Arguments:p
+
+  -p protofile
+
+  This dataset provides the "shape" of the output.  It may be the same
+  as "infile".
+
+*Arguments:i
+
+  -i infile
+
+  This is the input dataset.
+
+*Arguments:h
+
+  -h outfile
+
+  This is the output dataset.
+
+*Arguments:verbose
+
+  -verbose                     (-v)
+
+  Produces verbose output.
+
+*Arguments:fourier
+
+  -fourier
+
+  Causes Fourier interpolation to be used, instead trilinear
+  interpolation.  Trilinear interpolation is much faster.
+
+*Details
+
+  The (X,Y) coordinates of the points to be matched are based on
+  the origin being at the first pixel in the image file, so that
+  the pixel position increases as either X or Y increase.  Looking
+  at a typical Postscript representation of a Fiasco image, the
+  origin of these coordinates is the top left corner of the image.
+  Note that this is not the same as the standard 3D spatial coordinate
+  system in Fiasco, which has its origin at the bottom left. The
+  use of the top left corner for pixel (0,0) is intended to simplify
+  point selection in 2D.
+
+  Note also that the Fourier interpolation method can cause multiple
+  copies of the input image to appear if the affine mapping is chosen
+  poorly.  The duplicate images are from other parts of Fourier
+  transform space, which is tiled with an infinite square array of
+  copies of the image.  To avoid these images, avoid picking mappings
+  which contract the image or pad up the original image with mri_pad.
+
+  For Fourier interpolation, things will run more quickly if the image
+  edge dimensions are powers of 2.  Padding the input image up with 0.0's
+  may actually speed up the mapping process.
+

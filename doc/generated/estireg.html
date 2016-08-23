@@ -1,0 +1,163 @@
+# estireg: version 4.0
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>estireg_help</title>
+  </head>
+  <body>
+    <h1>estireg_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  estireg estimates the parameters of within-slice, 2-D, rigid-body
+  motions of a sequence of images with respect to a given fixed
+  image.  The image pixels are assumed to be square in the x-y
+  direction.
+
+
+  To run estireg use:
+    estireg [-input Input-Header-File] [-parameters Parameter-File]
+            [-fixed Fixed-Image-Number] [-align Target-Header-File]
+
+  or:
+    estireg -help
+
+
+</pre>
+<h2>Arguments</h2>
+<h3>input</h3>
+<pre>
+   [-input Input-Header-File]    (-i Input-Header-File)
+
+   Ex: -i Detrend.mri
+
+   Specifies the header file (.mri file) for the input dataset is
+   Input-Header-File. Default value is "input.mri".
+
+   estireg accepts only standard real-valued images with dimension
+   order "vxyzt" or "xyzt" as input. 
+
+</pre>
+<h3>parameters</h3>
+<pre>
+   [-parameters Parameter-File]    (-p Parameter-File)
+
+   Ex: -p Estimate.par
+
+   Specifies that the estimated registration parameters should be
+   written to Parameter-file. Default is "reg.par".
+
+   Parameter-File is written as a sequence of ASCII numbers, with each
+   line containing six space-delimited numbers corresponding to a
+   single image. The format is: 
+        image# slice# x-shift y-shift rotation mse
+  
+   The final output form is written in "zt" dimension order.
+
+     Note: While executing, estireg writes out estimates to 
+       Parameter-File to allow for progress checks, and so that
+       some results can be obtained even if the program does not
+       finish properly.  These are written in "tz" dimension
+       order.  This intermediate-stage file is identified by the
+       words "Temporary storage:" at the top of the file.
+
+</pre>
+<h3>fixed</h3>
+<pre>
+   [-fixed Fixed-Image-Number]    (-f Fixed-Image-Number)
+
+   Ex: -f 4
+   Ex: -f middle
+
+   Specifies that the image to be considered the fixed image (the
+   image to which all others are registered) is the image that is
+   numbered with the value of Fixed-Image-Number (images numbered
+   starting with 0).  
+   
+   Acceptable values are "middle", "center", or any integer from 0 to
+   the extent of the t-dimension minus 1.  "middle" and "center"
+   assign Fixed-Image-Number to half of the extent of the
+   t-dimension. If the image with the number Fixed-Image-Number is
+   considered missing, the first non-missing image following it in the
+   sequence (wrapped around to the beginning of the sequence) will be
+   considered the fixed image.
+
+   Default value is 0.
+
+</pre>
+<h3>align</h3>
+<pre>
+   [-align Target-Header-File]    (-a Target-Header-File)
+
+   Specifies the header name of the Pittsburgh MRI file from which 
+   the target image is to be taken.  Obviously, this file must have
+   the same number of slices as Input-Header-File.  The default is
+   to use Input-Header-File.  The image number given by
+   Fixed-Image-Number is used as the target for alignment.
+
+</pre>
+<h2>Details</h2>
+<h3>Calculation</h3>
+<pre>
+
+    estireg attempts to estimate the 2-D registration parameters 
+    (two rotation parameters [x-shift, y-shift] and a rotation parameter)
+    of an image with respect to some fixed image by finding the x-shift,
+    y-shift, and rotation that minimize the mean squared error (MSE) 
+    between the shifted, rotated image and a version of the fixed image.
+
+    A version of the Nelder-Mead simplex algorithm is used to find the
+    MSE-minimizing registration parameters.
+
+    The shifted, rotated image is defined by bilinear interpolation from
+    the true, shifted, rotated image back onto the fixed Cartesian grid.
+
+    Due to biases in the estimation when this bilinear interpolation is 
+    used (which occur primarily with respect to the rotation parameter),
+    the version of the fixed image which is used to calculate the MSE
+    is actually a rotation of the fixed image, where Fourier interpolation,
+    using shearing, is used to calculate the rotated image.  The angle of
+    rotation corresponds to the current best MSE-minimizing rotation.
+    The bilinearly interpolated registered image is thus rotated by a
+    correspondingly smaller angle.
+
+    For more details on this algorithm, see Eddy, Fitzgerald, Noll ---
+    "Improved Image Registration Using Fourier Interpolation", 
+    Magnetic Resonance in Medicine 36-6 (Dec 1996)
+
+</pre>
+<h3>FFTAlgorithm</h3>
+<pre>
+
+  The FFTW package (available from http://www.fftw.org/) is
+  used to implement the fast Fourier transforms used in this routine.
+  FFTW (Fastest Fourier Transform in the West) is distributed under
+  the Gnu General Public License.
+
+</pre>
+<h3>FFTEnvironment</h3>
+<pre>
+
+  If the environment variable F_WISDOM_FILE is set, its value will be
+  used as the basis for the name of a file in which FFTW will store
+  "wisdom".  This is machine-specific information about what precise
+  FFT algorithm is fastest on the specific hardware.  This information
+  can then be reused, saving a couple of seconds the next time a
+  program using FFTW runs.
+
+  Because this information is machine specific, an architecture-
+  specific string (usually the same as $PVM_ARCH) is appended to
+  the value of F_WISDOM_FILE in forming the filename.
+
+  In parallel runs, FFTW will create one wisdom file per processor,
+  by appending processor numbers to the file name.  This is necessary
+  to avoid errors due to multiple processes reading and writing the same
+  file.
+
+
+
+</pre>
+    <hr>
+    (automatically generated by estireg_help version of Sat Jan  2 22:50:29 2010)
+  </body>
+</html>

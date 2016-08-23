@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>iwarp_help</title>
+  </head>
+  <body>
+    <h1>iwarp_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  iwarp is used to perform 3-D Affine or projective warping on a 
+  set of images, given estimates of the warp.  The input images must
+  be in image space (v.extent=1), not k-space. Input data must be organized
+  as (v)xyz(t).  
+
+  To run iwarp use:
+    iwarp -xvoxel xv -yvoxel yv -zvoxel zv
+           [-input Input-header-file] [-headerout Output-header-file]
+           [-parameters Registration-parameter-file] [-verbose] [-debug]
+           [-interp interpMode]
+
+  or:
+    iwarp -help 
+
+</pre>
+<h2>Arguments</h2>
+<h3>xvoxel</h3>
+<pre>
+   -xvoxel xv                      (-x xv)
+
+   Specifies the voxel edge length in the x direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>yvoxel</h3>
+<pre>
+   -yvoxel yv                      (-y yv)
+
+   Specifies the voxel edge length in the y direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>zvoxel</h3>
+<pre>
+   -zvoxel zv                      (-z zv)
+
+   Specifies the voxel edge length in the z direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>input</h3>
+<pre>
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -input partialk.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   iwarp accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+</pre>
+<h3>headerout</h3>
+<pre>
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h 3dOutput.mri
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file. Default value is
+   "iwarp.mri. Output-header-file is not allowed to have the same
+   name as Input-header-file. 
+
+</pre>
+<h3>parameters</h3>
+<pre>
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+ 
+   Specifies that the motion correction parameters are to be
+   read from Registration-parameter-file. Default value is "warp.par".
+
+   The format of the Registration-parameter-file is a series of
+   ASCII numbers of the form:
+         image# v00 v01 v02 v03 v10 v11 v12 v13 ... mse
+   where there are 16 'v' entries in all, representing the 16 entries 
+   in a 4x4 homogeneous transformation matrix.  All non-singular
+   transformations are supported, including projective as well as
+   affine transformation.
+
+   These 18 numbers must be separated by spaces or tabs, but NOT
+   carriage returns- all 18 numbers must reside on the same line.  The
+   mse entry is ignored; it is given for compatibility with other
+   utilities.  Lines beginning with '#' are considered to be comments
+   and are ignored.
+
+</pre>
+<h3>verbose</h3>
+<pre>
+   [-verbose]                              (-v)
+  
+   Causes verbose output to be produced.
+
+</pre>
+<h3>debug</h3>
+<pre>
+   [-debug]
+  
+   Causes debugging output to be produced.
+
+</pre>
+<h3>interp</h3>
+<pre>
+  [-interp interpMode]
+
+  Specifies interpolation mode.  Appropriate modes include
+  "closest", "linear", "catmullrom", "bspline", and "bezier";
+  the default is "linear".
+
+</pre>
+<h2>Details</h2>
+<h3>CoordinateSystems</h3>
+<pre>
+
+  This section describes the 3D coordinate system used by Fiasco.
+  The coordinate system is right handed, with the X-Y slices oriented
+  according to the "radiological convention".
+
+  As a specific example, consider a set of multi-slice axial scan
+  data.  When a slice is viewed, the right side of the image
+  corresponds to the patient's left side, and patient's nose is
+  at the top of the image.  This amounts to viewing the slice as
+  if one were standing at the patient's feet, looking toward the
+  head.
+
+  We choose the X axis to be horizontal, with the positive X direction
+  toward the image's right (the patient's left).  The Y axis is
+  vertical, with the nose pointing in the positive Y direction.  The
+  right hand rule then implies that the Z axis points out of the image,
+  toward the patient's feet.
+
+  The order of data in a Pittsburgh MRI file representing a scan is
+  such that low X values (image left, patient right) appear before 
+  high X values (image right, patient left), and low Z values
+  (the top of the head) appear before high Z values (slices closer to 
+  the patient's feet).  However, note that low Y values (the back of
+  the head for an axial scan) appear *after* high Y values (the nose).
+  Thus the coordinate system order for the Y direction is reversed
+  with respect to the data order.
+
+  With this coordinate system convention (still assuming an axial
+  scan), a positive rotation about the X axis corresponds to a nod- 
+  the nose moves in the direction of the patient's feet.  A positive
+  rotation about Y moves the patient's right ear (on the image's 
+  left) in the direction of the feet.  A positive rotation about Z
+  brings the nose in the direction of the right ear (on the image's
+  left).
+
+
+
+</pre>
+<h3>Interpolator</h3>
+<pre>
+
+  The Interpolator package supports a number of interpolation
+  algorithms.  All are implemented in a 'seperable' fashion, meaning
+  that for multi-dimensional interpolation the different dimensions
+  are interpolated in separate steps.  Each step interpolates a series
+  of samples taken at regular intervals along a grid line.
+
+  <table border cellpadding=5 >
+  <caption><b>Characteristics of Interpolators</b>
+  <tr><td><b>name</b></td>
+        <td><b>N</b></td>
+        <td><b>continuity</b></td>
+        <td><b>interpolates input pts</b></td>
+        <td><b>tension</b></td>
+  </tr>
+  <tr><td>closest</td><td>1</td><td>none</td>
+        <td>yes</td><td>no</td>
+  </tr>
+  <tr><td>linear</td><td>2</td><td>C0</td>
+        <td>yes</td><td>no</td>
+  </tr>
+  <tr><td>catmullrom</td><td>4</td><td>C1</td>
+        <td>yes</td><td>0.5</td>
+  </tr>
+  <tr><td>bspline</td><td>4</td><td>C2</td>
+        <td>no</td><td>no</td>
+  </tr>
+  <tr><td>bezier</td><td>4</td><td>C1</td>
+        <td>every 3rd</td><td>no</td>
+  </tr>
+  </table>
+
+  N is the number of sample points which contribute to a given output
+  value; for example, the output of the "closest" method depends only
+  on the value of the nearest input sample.
+
+  Continuity is the number of continuous derivative.  The "closest"
+  method produces discontinuous output and thus has no continuous
+  derivatives.  The "linear" method performs linear interpolation
+  between the nearest two input points, and thus is continuous but
+  has no continuous derivatives.
+
+  Note that the "bspline" method is the smoothest with two continuous
+  derivatives, but that the price of this is that the input values 
+  are not interpolated.  What this means is that if you ask this
+  interpolation method to return the values at the locations of the
+  input points, the output values will *not* be equal to the input 
+  values.  Nevertheless, this is the interpolation method recommended
+  by Unser et al. (see below) for implementing rotation with this 
+  order of interpolant.
+
+  Methods listed as having a 'tension' support an additional degree
+  of freedom corresponding vaguely to the stiffness of a natural 
+  spline.  If a tension is supported, the default value is given.
+  The specific application in use may or may not support changing 
+  this value.
+  
+</pre>
+<h3>InterpolatorReferences</h3>
+<pre>
+
+  For a nice treatment of interpolation in the context of rotation,
+  see Unser, Thevenaz, and Yaroslavsky, IEEE Transactions on Image 
+  Processing, 4.10, 1995
+
+  Computer Graphics Principles and Practice by Foley, van Dam, Feiner,
+  and Hughes provides a good introduction to spline curves, including
+  the weight functions used by the spline interpolators in this package.
+
+</pre>
+    <hr>
+    (automatically generated by iwarp_help version of Sat Jan  2 22:50:35 2010)
+  </body>
+</html>

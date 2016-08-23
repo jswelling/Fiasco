@@ -1,0 +1,330 @@
+*Introduction
+
+  estireg3d is used to perform 3-D motion estimation on a set
+  of images, producing estimates of the motion.  Estimation must be
+  performed on image-space data (v.extent=1).  Input data must be 
+  organized as vxyzt or xyzt.  It is best to use this algorithm on 
+  data that is confined to the central region of the volume;  see 
+  the "Calculation" section below for details.  
+
+  To run estireg3d use:
+    estireg3d -xvoxel xv -yvoxel yv -zvoxel zv
+           [-input Input-header-file] [-align Align-header-file]
+           [-stdv stdv-header-file]
+           [-parameters Registration-parameter-file] [-debug] [-DEBUG]
+           [-algorithm alg-string]
+	   [...smoother options...]
+
+  or:
+    estireg3d -help 
+
+*Arguments:xvoxel
+   -xvoxel xv                      (-x xv)
+
+   Specifies the voxel edge length in the x direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:yvoxel
+   -yvoxel yv                      (-y yv)
+
+   Specifies the voxel edge length in the y direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:zvoxel
+   -zvoxel zv                      (-z zv)
+
+   Specifies the voxel edge length in the z direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:input
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -input partialk.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Align-header-file or Stdv-header-file.
+
+   estireg3d accepts only align real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+*Arguments:align
+   [-align Align-header-file]        (-a Align-header-file)
+
+   Ex: -align oneimage.mri
+
+   Specifies that the header for the align dataset is located
+   in Input-header-file. Default value is "align.mri".
+   Align-header-file is not allowed to have the same name
+   as Input-header-file or Stdv-header-file.  This is the 
+   "standard" data against which input images are aligned.
+
+   estireg3d accepts only single align real- or complex-valued images
+   with dimension order "vxyzt", "vxyz", "xyz" or "xyzt" for this
+   purpose.  If the t dimension is given, its extent must be 1.
+
+*Arguments:stdv
+   [-stdv Stdv-header-file]        (-s Stdv-header-file)
+
+   Ex: -align oneimagestdv.mri
+
+   Specifies that the header for the stdv dataset is located
+   in -header-file. Default value is "stdv.mri", but this file
+   will not be opened unless the minimization algorithm (see below)
+   requires it.  Stdv-header-file is not allowed to have the same 
+   name as Input-header-file or Align-header-file.  This is the 
+   estimated standard error of Align-header-file.
+
+   estireg3d accepts only single align real- or complex-valued images
+   with dimension order "vxyzt", "vxyz", "xyz" or "xyzt" for this
+   purpose.  If the t dimension is given, its extent must be 1.
+
+*Arguments:parameters
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+ 
+   Specifies that the motion correction parameters are to be
+   written to Registration-parameter-file. Default value is "reg3d.par".
+
+   The format of the Registration-parameter-file is a series of
+   ASCII numbers of the form:
+         image# q_x q_y q_z q_w shift_x shift_y shift_z mse
+   where the q_ elements compose a unit quaternion specifying
+   the rotation.  These 9 numbers must be separated by spaces
+   or tabs, but NOT carriage returns- all nine numbers must reside
+   on the same line.  The mse entry is ignored;  it is given for
+   compatibility with other utilities.  Lines beginning with '#'
+   are considered to be comments and are ignored.
+
+*Arguments:debug
+   [-debug]
+  
+   Causes debugging output to be produced.
+
+*Arguments:DEBUG
+   [-DEBUG]
+  
+   Causes *lots* of debugging output to be produced.
+
+*Arguments:algorithm
+   [-algorithm alg-string]             (-alg alg-string)
+
+   This option provides control of the algorithm by which motion
+   parameters are estimated.  alg-string is a string with a number
+   of components separated by commas.  Specific elements are:
+
+      "smooth" turns on smoothing.  Smoothing parameters can be set
+               using the smoother arguments described below.
+
+      "nosmooth" turns off smoothing
+
+      "inplane" causes alignment only in the X-Y plane (like 2D slice
+               alignment, but for the whole volume)
+
+      "noinplane" causes full 3D, 6 degree of freedom alignment.
+
+      "rotonly" causes only the rotation to be aligned.
+
+      "norotonly" turns off the "rotonly" option.
+
+      "transonly" causes only the translation to be aligned.
+
+      "notransonly" turns off the "transonly" option.
+
+      "xonly" causes only the X-axis translation to be aligned.
+
+      "noxonly" turns off the "xonly" option..
+
+      "qual=[cox | sabs | ssqr | ucell]" 
+               sets the quality measure used to choose shear 
+               decompositions for some rotation algorithms.
+
+      "weight=[const | inv-stdv | align | smoothalign]"
+               sets the weighting scheme used in calculating the
+               measure minimized by the optimization, as follows:  
+
+           "const" causes the weight to be the summed squared 
+               difference across all voxels, with all voxels 
+               weighted equally.
+
+           "inv-stdv" causes the voxels to be weighted according
+               to the inverse square of the associated standard 
+               deviation.  Voxels for which the stdv is below a 
+               given floor (set to 1.0 at compile time) are excluded 
+               from the measure to be minimized.  
+
+           "align" causes the voxels to be weighted according to 
+               the absolute value of the align dataset.
+
+           "smoothalign" causes the voxels to be weighted according 
+               to the smoothed value of the align dataset.  This is
+               generally used with the "nosmooth" option.
+
+      "inner=[trilin | shear4 | shear7 | shear13]"
+               sets the rotation method used in the inner (fast)
+               optimization loop, as follows: 
+
+           "trilin" implies trilinear interpolation
+
+           "shear4" implies four shear rotations.
+
+           "shear7" implies seven shear rotations.
+
+           "shear13" implies 13 shear fully symmetric rotations.
+
+      "outer=[trilin | shear4 | shear7 | shear13]"
+               as for the "inner" option, but refers to the outer,
+               shorter optimization loop for which more accuracy
+               is needed.
+
+      "opt=[nelmin_t | nelmin | praxis | none]"
+               Controls the optimization method. Nelder-Mead
+               optimization, Nelder-Mead with a T-test cutoff,
+               Praxis, or no optimization can be selected.  The
+               "none" option is useful for producing MSE values
+               for the initial unaligned data.
+
+      "optol=value"
+               Controls the optimizer tolerance.  The effect
+               depends on optimizer type, as follows:
+
+                 none:     value has no effect
+                 praxis:   Praxis attempts to return F(X) such that if
+                           X0 is the true local minimum near X, then
+                           norm(X-X0)<Tol +sqrt(machep)*norm(X).
+                           Default is 0.000001 .
+                 nelmin:   Tol sets the terminating limit for the
+                           variance of function values across the 'feet'
+                           of the simplex.  Default is 0.02 .
+                 nelmin_t: Tol sets the terminating limit for the
+                           variance of function values across the 'feet'
+                           of the simplex.  Default is 0.02 .
+      "opscale=value"
+               Controls the optimizer scale.  (Note that this is
+	       distinct from the -scale parameter).  The effect
+               depends on optimizer type, as follows:
+
+                 none:     value has no effect
+                 praxis:   value is the maximum allowed step size.
+                           Default is 1.0 .
+                 nelmin:   value sets the initial size of the simplex.
+                           Default is 1.0 .
+                 nelmin_t: value sets the initial size of the simplex.
+                           Default is 1.0 .
+
+      "obj=[mse | mutualinfo | jointentropy]"
+               Controls the objective function of the optimization.
+               "mse" implies minimization of mean squared difference;
+               "jointentropy" implies minimization of the joint
+               entropy between the input and 'align' images, and
+               "mutualinfo" inplies maximization of the mutual
+               information.
+
+      "wtfloor=val" where val is a floating point number
+               Voxels corresponding to weights less than
+               wtfloor*maxWeight are ignored (where maxWeight is the
+               maximum weight value).  Thus wtfloor=0.0 includes all
+               voxels with non-negative weights and wtfloor=1.0
+               excludes all voxels.
+
+   The default settings are:
+   "nosmooth,noinplane,norotonly,notransonly,noxonly,opt=praxis,
+        weight=smoothalign,qual=ssqr,inner=shear4,outer=shear4,
+        obj=mse,wtfloor=0.0"
+   The optimizer tolerance and scale are the default values for the
+   specified optimizer type.  Smoothing is done with a Gaussian kernel
+   with bandwidth 1.0 by default.
+
+*Details:Calculation
+
+  For each image in the input data,a two level optimization algorithm 
+  is used to find rotation and and translation values which minimize
+  a measure of the difference between the image and a target image.
+  The target image is provided in the "align" dataset; voxelwise 
+  estimates of the standard deviation of the target image can be
+  provided in the "stdv" dataset.
+
+  The idea is that the inner level optimization provides rapid, rough
+  estimates of alignment parameters, and the outer level produces more
+  accurate values slowly.  This allows a good compromise between the 
+  speed and accuracy of the two algorithms.  
+
+  Specifically, an inner, fast method is used to produce rotated and
+  translated versions of the input image for particular parameter
+  estimates.  When the inner search algorithm produces an estimate
+  of the alignment parameters, slower outer method is used to produce
+  a version of the image data rotated and translated according to
+  those estimates.  The inner algorithm is then restarted to estimate
+  rotation and translation values necessary to align this moved image
+  with the target.  For perfect alignment the inner algorithm will
+  estimate that no additional rotation or translation are needed.
+  This approach can fail if the inner method is not sufficiently
+  accurate to move the estimates in the correct direction;  if this
+  happens a more accurate inner method should be used.
+
+  In the special case that the inner and outer methods are the same, 
+  it becomes redundant and counterproductive to move the image twice.
+  If the two methods match the outer operation is ignored and all
+  the motion is implemented by the call to the inner method in the
+  inner optimization loop.  The outer loop still exists, however, 
+  since it helps in escaping local minima.
+
+  The -algorithm option allows control over the inner and outer
+  methods used in this process and over some additional features.
+  The input and target images can be smoothed before alignment.
+  The optimality measure can be calculated with or without weighting
+  for voxel standard deviation.
+
+  Some rotations and translations are performed using Fourier methods, 
+  as described below.  Note that the periodic nature of these methods
+  means that data carried beyond the edge of the volume will "wrap
+  around" and reappear on the other side.  This means that 
+  geometrically incorrect results can occur for large rotations
+  or translations (typically larger than about 30 degrees' rotation).
+  It is best to use this algorithm on data that is confined to the
+  central region of the volume.
+
+  Some rotations and translations are performed using trilinear
+  interpolation.  This method is fast but not very accurate.  The
+  boundaries of the image volumes are not correctly calculated
+  using this method (in contrast to Fourier methods in which the
+  boundaries wrap).  When trilinear interpolation is used, the
+  software keeps track of the regions which have not been calculated
+  and excludes them from the optimization measure.
+
+  For more details on this algorithm, see Eddy, Fitzgerald, Noll ---
+  "Improved Image Registration Using Fourier Interpolation", 
+  Magnetic Resonance in Medicine 36-6 (Dec 1996)  ***This should get
+  replaced with the new paper once it finishes existing***.
+
+  The correct choice of objective function depends on the degree of
+  similarity between the input and target images.  If they are very
+  similar, the mean squared error option works well; this is the
+  case when aligning multiple images of the same scan to each other.
+  If the input and target are acquired with different imaging
+  modalities the joint entropy or mutual information measures are
+  likely to be superior.  In some cases the MSE measure will actually
+  have a minimum far from the intuitively correct alignment.
+
+  Mutual information is slightly slower to compute than joint entropy,
+  but it can be more robust when misalignments are large since it
+  includes the individual entropies of the input images.
+
+m4include(../fmri/coordsys_help.help)
+
+m4include(../fmri/fshrot3d_help.help)
+
+m4include(../fmri/linrot3d_help.help)
+
+m4include(../fmri/smoother_help.help)
+
+m4include(../fmri/nelmin_help.help)
+
+m4include(../fmri/praxis_help.help)
+
+m4include(../fmri/entropy_help.help)

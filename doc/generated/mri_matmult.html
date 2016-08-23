@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>mri_matmult_help</title>
+  </head>
+  <body>
+    <h1>mri_matmult_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  mri_matmult does matrix multiplication on Pgh MRI datasets.
+
+  To run mri_matmult use:
+    mri_matmult -out Outfile [-chunk Chunk-Name] [-v] [-debug] 
+ 	[-complex] File1 File2
+
+  or:
+    mri_matmult -help
+
+</pre>
+<h2>Default</h2>
+<pre>
+
+  Chunk_name: images
+
+
+</pre>
+<h2>Arguments</h2>
+<h3>chunk</h3>
+<pre>
+
+  -chunk Chunk-Name      (-chu|c Chunk-Name)
+
+  Selects the chunk to be multiplied.  This chunk must exist in both
+  File1 and File2, and the chunks in those two files must be of the
+  correct "shape" to be multiplied (see Details).  Default is the
+  chunk "images".
+
+</pre>
+<h3>File1</h3>
+<pre>
+
+  File1
+
+  File1 is the first (left) input dataset.  This argument is required,
+  and this dataset must contain the selected chunk.  In the complex
+  case (see -complex below) the input file must have first dimension v
+  with extent 2.
+
+  See the Details or Examples sections for dimension order
+  requirements for this input file.
+
+</pre>
+<h3>File2</h3>
+<pre>
+
+  File2
+
+  File2 is the second (right) input dataset.  This argument is required,
+  and this dataset must contain the selected chunk.  In the complex
+  case (see -complex below) the first dimension must be v with extent 2.
+
+  See the Details or Examples sections for dimension order
+  requirements for this input file.
+
+</pre>
+<h3>Outfile</h3>
+<pre>
+
+  -out Outfile
+
+  Outfile will contain the output dataset.  The selected chunk of this
+  dataset will be the product of the corresponding chunks of File1
+  and File2, with summation being done over their common dimension.
+  Other chunks and tags will be identical to those of File1.  This
+  argument is required.  The output datatype is float unless the first
+  input is double precision, in which case the output is double
+  precision as well.
+
+</pre>
+<h3>complex</h3>
+<pre>
+
+  [-complex]				(-cpx)
+
+  Turns on complex arithmetic.  The input and output files must all
+  have a leading dimension v with extent 2, and the multiplication
+  and sum are performed as if v=0 and v=1 were the real and imaginary
+  parts of a complex number.
+
+</pre>
+<h3>verbose</h3>
+<pre>
+
+  [-verbose]				(-ver|v)
+
+  Turns on verbose output.
+
+</pre>
+<h3>debug</h3>
+<pre>
+
+  [-debug]				(-dbg)
+
+  Turns on debugging output.
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  Let the selected chunk of File1 be called _L_ (for left), and
+  let the selected chunk of File2 be called _R_ .  _L_ and _R_
+  are matrices, each with dimensions in a specific order and of
+  specific extents.  To be multiplied, _L_ and _R_ must have
+  dimension orders of the forms XQYS and QZS respectively.  (This
+  is for the scalar case; we'll return to the complex case
+  momentarily).  X, Y, Z, and S are character strings with no common
+  characters; Q is any single character not in X, Y, Z, or S.  The
+  extents of the dimensions in S and Q must be the same in _L_ and _R_.
+
+  If the chunks match this pattern, they can be multiplied.  The
+  result will be a matrix _P_ with the dimension string XZYS with
+  values calculated as follows:
+
+    for each s in S {
+      for each x in X {
+        for each y in Y {
+          for each z in Z {
+            total= 0
+            for each q in Q {
+              total= total+ _L_[xqys] * _R_[qzs]
+            }
+            _P_[xzys]= total
+          }
+        }
+      }
+    }
+            
+  In other words, there is a separate matrix multiplaction over q for
+  every s in S.
+
+  For example, suppose the dimensions of  the selected chunk in File1 
+  are abxytw and those in File2 are xztw.  Then X corresponds to ab, 
+  Q to x, Y to y, Z to z, and S to tw.  These two chunks can be
+  multiplied to produce a chunk with dimensions abzytw.  However, if 
+  the dimensions of File2 were xzwt there would be no consistent 
+  pattern for S and the chunks could not be multiplied.
+
+  In the complex case, the first dimensions of both _L_ and _R_
+  must be v, and that dimension must have an extent of 2.  This
+  dimension is interpreted as the real and imaginary part of a chunk
+  of complex numbers.
+
+  All of the math is carried out in double precision, with conversion to
+  and from double precision taking place on input and output as needed.
+
+  I know there is no inherent reason why the summed-over dimension
+  must be leftmost in File2; it just makes my life easier.  Use
+  mri_permute if necessary.
+
+</pre>
+<h2>Examples</h2>
+<pre>
+
+  Suppose the dataset file1 has the following images chunk:
+
+    images.datatype = float32
+    images.dimensions = xqt
+    images.extent.t = 10
+    images.extent.q = 2
+    images.extent.x = 5
+
+  and that the dataset file2 has the following images chunk:
+
+    images.dimensions = qyz
+    images.extent.q = 2
+    images.extent.y = 5
+    images.extent.z = 10
+
+  These two datasets share the common dimension q, which has extent 2.
+  q is the leftmost dimension of file2, as mri_matmult rather
+  capriciously requires.  The output dataset will thus have 
+  dimensions xyzt, with the following extents:
+
+    images.dimensions = xyzt
+    images.extent.t = 10
+    images.extent.x = 5
+    images.extent.y = 5
+    images.extent.z = 10
+
+  It would be an error to try to multiply these datasets with the
+  -complex flag set, because they lack the appropriate leading
+  dimension v.  
+
+  Suppose that dataset file1 contains complex data as follows:
+
+    images.datatype = float32
+    images.dimensions = vxqt
+    images.extent.v = 2
+    images.extent.t = 10
+    images.extent.q = 2
+    images.extent.x = 5
+
+  and that dataset file2 contains complex data as follows:
+
+    images.dimensions = vqyz
+    images.extent.v = 2
+    images.extent.q = 2
+    images.extent.y = 5
+    images.extent.z = 10
+
+  It would be an error to multiply these datasets without the -complex
+  flag set, since they share two common dimensions (v and q).  With
+  the -complex flag set, the output dataset will have the following
+  dimensions and extents:
+
+    images.dimensions = vxyzt
+    images.extent.v = 2
+    images.extent.t = 10
+    images.extent.x = 5
+    images.extent.y = 5
+    images.extent.z = 10
+
+  Suppose that dataset file1 contains complex data as follows:
+
+    images.datatype = float32
+    images.dimensions = vxqtsc
+    images.extent.c = 4
+    images.extent.s = 7
+    images.extent.v = 2
+    images.extent.t = 10
+    images.extent.q = 2
+    images.extent.x = 5
+
+
+  and that dataset file2 contains complex data as follows:
+
+    images.dimensions = vqyzsc
+    images.extent.c = 4
+    images.extent.s = 7
+    images.extent.v = 2
+    images.extent.q = 2
+    images.extent.y = 5
+    images.extent.z = 10
+
+  It would be an error to multiply these datasets without the -complex
+  flag set.  With the -complex flag set, the output dataset will have 
+  the following dimensions and extents:
+
+    images.dimensions = vxyztsc
+    images.extent.c = 4
+    images.extent.s = 7
+    images.extent.v = 2
+    images.extent.t = 10
+    images.extent.x = 5
+    images.extent.y = 5
+    images.extent.z = 10
+</pre>
+    <hr>
+    (automatically generated by mri_matmult_help version of Thu Jun 14 00:03:11 2012)
+  </body>
+</html>

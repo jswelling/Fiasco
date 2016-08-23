@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>mri_smooth_help</title>
+  </head>
+  <body>
+    <h1>mri_smooth_help</h1>
+<h2>Overview</h2>
+<pre>
+
+  mri_smooth takes a pgh MRI dataset of any type, and outputs
+  a dataset of floating point values containing a smoothed
+  version of the same data.  The smoothing operation acts on
+  all chunks in the dataset except the "missing" chunk, which
+  is not smoothed.
+
+  mri_smooth [-dimension Dim] [-bandwidth Band] [-kernel Ktype]
+      [-threshold Thresh] [-verbose] [-debug] [...smoother options...]
+      infile outfile
+
+</pre>
+<h2>Usage</h2>
+<h3>dimension</h3>
+<pre>
+  [-dimension Dim]			(-dim|d Dim)
+
+  Specify dimension over which to smooth.  Default is "t".
+
+</pre>
+<h3>bandwidth</h3>
+<pre>
+  [-bandwidth Band]			(-bdw Band)
+
+  Short form of smoother "-smoother_bandwidth" switch; see
+  below.  Default is 3.0 .
+
+</pre>
+<h3>threshold</h3>
+<pre>
+  [-threshold Thresh]			(-thr Thresh)
+
+  Short form of smoother "-smoother_threshold" switch; see
+  below.  Default is 0.0 .
+
+</pre>
+<h3>kernel</h3>
+<pre>
+  [-kernel Ktype]			(-ker Ktype)
+
+  Short form of smoother "smoother_kernel" switch; see below.
+  Keywords for this option are "gaussian", "triangular",
+  "exponential", and "median"; default is "gaussian".  (Median 
+  smoothing is not a kernel-smoothing operation, but it is still
+  selected via the "-kernel" option.
+
+</pre>
+<h3>verbose</h3>
+<pre>
+  [-verbose]				(-ver|v)
+
+  Verbose mode; write verbose info to stderr.
+
+</pre>
+<h3>debug</h3>
+<pre>
+
+  -debug
+
+  Debug mode; write debugging info to stderr.
+
+</pre>
+<h3>SmootherOptions</h3>
+<pre>
+
+    -smoother_type type
+
+       type specifies smoother type. Available options are:
+
+              "gauss" for Gaussian kernel smoothing
+              "tri"   for triangular kernel smoothing
+              "pow"   for power law kernel smoothing 
+              "median"for median smoothing
+              "none"  to disable smoothing  
+              "ddx"   a special type which produces output values equal 
+                      to the change in the input from the previous sample
+              "shift" a special type which produces output values equal 
+                      to the input values at some nearby cell
+              "linterp" a special type which produces output values which
+                      are linearly interpolated between adjacent inputs
+              "runningsum" a special type which produces output values equal 
+                      to the previous output value plus the
+                      corresponding input value
+
+    -smoother_bandwidth band
+
+       band (a floating point number) specifies the bandwidth used
+            in smoothing.  The meaning of bandwidth depends on the
+            type of smoothing used;  see below.
+
+    -smoother_threshold thresh
+
+       thresh (a floating point number) specifies the cutoff threshold
+            for the smoothing kernel.  If a point within the smoothing
+            window differs from the point being calculated by a value
+            greater than the threshold, the window is truncated before
+            that value on that side.  If thresh is &lt;= 0.0, this test
+            is not performed and the window is not truncated.
+
+    -smoother_k k
+
+       k (a floating point number) specifies a constant which may be
+            used in specifying the smoothing kernel.  No current 
+            smoother type actually uses this value; it is present for
+            future expansion.
+
+  Unless otherwise specified for a specific function, the default type
+  is Gaussian, the default bandwidth is 45.0, the default constant is 
+  60.0, and the default threshold is 0.0.
+
+</pre>
+<h2>SmootherCalculation</h2>
+<pre>
+
+  All kernel smoothers check for missing data points, and exclude them. 
+
+  Kernel smoothers perform the following operations at each point
+  to be smoothed.  First, a smoothing window is defined.  This
+  window initially includes all of the data points.  The window is 
+  then truncated using the threshold value if appropriate.  A weighted
+  sum of the points remaining in the window is then calculated,
+  excluding missing points.  This value is divided by the sum of the 
+  weights to produce the smoothed value for the point in question.
+ 
+  The weights used are defined by the kernel K(t), where t= x1-x2, the
+  separation between the points in question.  The kernels used by the
+  various kernel smoothers are:
+
+  Gaussian:   K(t)= exp( -(t*t)/(bandwidth*bandwidth) ) 
+
+
+                    1.0 - (abs(t)/bandwidth) if abs(t)&lt;=bandwidth/2
+  Triangular: K(t)= 
+                    0.0 otherwise
+                    
+
+  Power law:  K(t)= pow( C, abs(t) )  where C= pow(0.5,1/bandwidth), 
+                                      so that bandwidth is full width
+                                      at half maximum.
+
+  Smoother type "median" replaces the input value with the median
+  value in a window of total width equal to bandwidth.  "median"
+  k values but respects thresholds.
+
+  Smoother type "none" does no smoothing, simply copying its input to
+  its output.
+
+  Smoother type "ddx" produces output Y[i]= X[i]-X[i-1].  This is a
+  convenient hack when derivatives are needed.  "ddx" ignores
+  bandwidth, threshold, k, and all "missing" information.
+
+  Smoother type "shift" produces output Y[i]= X[i+shift], where 
+  shift=rint(bandwidth).  (rint rounds to the nearest integer).
+  Values for which X[i+shift] would fall outside the range of the
+  input data are set to 0.0.  "shift" ignores threshold, k, and all
+  "missing" information.
+
+  Smoother type "linterp" produces output Y[i]= (X[i-1] + X[i+1])/2
+  for all i which do not lie on the boundary of the input data range.
+  At the boundaries, 2-point extrapolative values are used.  For
+  example, Y[0]= 2*X[1] - X[2].
+
+  Smoother type "runningsum" produces output Y[0]= X[0], and
+  Y[i]= Y[i-1]+X[i] for all i&gt;0.
+
+
+</pre>
+    <hr>
+    (automatically generated by mri_smooth_help version of Thu Jun 14 00:03:09 2012)
+  </body>
+</html>

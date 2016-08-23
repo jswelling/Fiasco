@@ -1,0 +1,82 @@
+*Introduction
+
+  ireg is used to perform 2-D motion correction on a set
+  of images, given estimates of the motion.  The image pixels
+  are assumed to be square in the x-y direction.
+
+  To run ireg use:
+    ireg [-input Input-header-file] [-headerout Output-header-file]
+         [-dataout Output-data-file]
+         [-parameters Registration-parameter-file]
+
+  or:
+    ireg -help
+
+
+*Arguments:input
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -i baseline.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   ireg accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+*Arguments:headerout
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h iregOutput.mri
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file. Default value is "ireg.mri".
+   Output-header-file is not allowed to have the same name
+   as Input-header-file.
+
+*Arguments:dataout
+   [-dataout Output-data-file]      (-d Output-data-file)
+
+   Ex: -d iregOutput.dat
+
+   Specifies that the output data should be written to Output-data-file.
+   Default value is the value of headerout with the ".dat" file
+   extension. 
+
+   The output dataset will consist of single-precision, floating-point
+   values of the same vector length as the input dataset.
+
+*Arguments:parameters
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+
+   Specifies that the motion correction parameters are to be
+   read from Registration-parameter-file. Default value is "reg.par".
+
+   The format of Registration-parameter-file is as that
+   output by estireg.m --- ASCII numbers of the form:
+         image# slice# x-shift y-shift rotation mse
+   These six numbers must be separated by spaces of tabs, but
+   NOT carriage returns --- all six numbers must reside on
+   the same line.
+
+*Details:Calculation
+
+  The 2-D motion correction for an image is performed via Fourier
+    interpolation.  That is, translations are performed by applying
+    the Fourier transform, applying a linear phase change across
+    the image, and then applying the inverse Fourier transform.
+    Rotations are performed via three shearing transformations,
+    which use a Fourier transform, location-varying linear phase
+    change, inverse Fourier transform algorithm.
+  For more details on this algorithm, see Eddy, Fitzgerald, Noll ---
+    "Improved Image Registration Using Fourier Interpolation", 
+    Magnetic Resonance in Medicine 36-6 (Dec 1996)
+
+m4include(../fmri/fft2d_help.help)
+
+
+

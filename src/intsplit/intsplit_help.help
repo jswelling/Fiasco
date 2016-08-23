@@ -1,0 +1,270 @@
+*Introduction
+
+  intsplit takes a file with information on experimental conditions
+  and converts it to a image-by-image condition specification for use
+  by spm.m and anova.m 
+
+  The command line for intsplit is:
+    intsplit [-splitin Input-Condition-File] [-code Coding-File] 
+             [-splitout Output-Condition-File] infile
+ 
+  or:
+    intsplit -help  
+
+*Arguments:splitin
+  [-splitin Input-Condition-File]	(-spi Input-Condition-File)
+
+  Ex: -splitin in/split
+
+  Specifies that the input file containing the experimental conditions
+  info is Input-Condition-File. Default value is "split".
+
+  Note: See the "in" section under Details for info on the
+  construction of an input file or read the section "Creating
+  Conditions" in the Instructions section of the FIASCO home page
+  (www.stat.cmu.edu/~fiasco).
+
+*Arguments:code
+  [-code Coding-File]
+
+  Ex: -code codesFile
+
+  Specifies that the coded information for the experimental conditions
+  should be written to Coding-File. Default value is "codes".
+
+  Note: See the "code" section under Details for info on the contents
+  of this file.
+
+*Arguments:splitout
+  [-splitout Output-Condition-File]	(-spo Output-Condition File)
+
+  Ex: -splitout newSplitFile
+
+  Specifies that the output file for the experimental conditions is
+  Output-Condition-File. Default value is "newsplit".
+
+  Note: See the "out" section under Details for info on the contents
+  of this file.
+
+*Arguments:infile
+  infile
+
+  Ex:  Detrend.mri
+
+  Specifies that the header file (.mri file) for the input dataset is
+  infile.  This argument is required.
+
+  Note: The input dataset is not actually used, only the header.
+
+*Details:in_details
+
+  Input-Condition-File is a text file which contains three or four 
+  pieces of information:
+      1. The number of factors in the experimental design.  [Required]
+      2. The factor names.  [Required]
+      3. The specification of images to conditions.  [Required]
+      4. The method of specifying such conditions.  [Optional]
+  
+  The FIRST LINE of Input-Condition-File must be one of two forms:
+
+    Number-of-Factors [end-of-line]
+      -or-
+    Number-of-Factors bynumimages [end-of-line]
+
+    where Number-of-Factors is just a integer from 1 to 9
+    and bynumimages is precisely those 11 letters.
+    The presence or absence of bynumimages affects how later lines
+    are interpreted, as noted below.
+
+  The SECOND LINE of Input-Condition-File is a space or tab delimited
+    list of factor names (of length Number-of-Factors)
+
+  The REMAINING LINES assign images to experimental conditions.
+    If bynumimages is present, then each remaining line contains
+    ( Number-of-Factors + 1 ) space- or tab-delimited values.
+    If bynumimages is absent, then each remaining line contains
+    either ( Number-of-Factors + 1 ) or ( Number-of-Factors + 2 ) values.
+    In either case, the first Number-of-Factors values are character
+    string indicating factor levels.
+
+    If bynumimages is present, then the last value in each line is a
+      positive integer, indicating the number of images (for all slices)
+      in sequence, starting from where the previous line left off (or
+      from zero if the previous line was the factor names line), to 
+      be assigned to the condition.
+
+    If bynumimages is absent, if there are ( Number-of-Factors + 2 ) 
+      values on a line, then the final two values in each line
+      specify the image and slice numbers, respectively, which correspond
+      to the experimental condition.  If only ( Number-of-Factors + 1 )
+      values are present, then the last value specifies the image numbers,
+      and all slices for those images are given membership to the
+      experimental condition.  Image/slice numbers are specified
+      by either a single number for a single image/slice or by a range
+      of numbers specified by two numbers (first and last image inclusive)
+      separated by a hyphen (but NO white space).  Note that the numbering
+      for images/slices is C-numbering (i.e. the first image/slice is
+      numbered 0).
+
+  MISSING IMAGES can be specified by setting any or all of an images
+    factor levels to "Missing" or "NA" (without the quotes).
+
+  NOTE 1: Any images which are considered missing in Input-header-file
+    will be considered assigned to the "missing" experimental condition
+    by intsplit.
+
+  NOTE 2: If an image is assigned to an experimental condition more
+    than once in Input-condition-file, the last specification over-rides
+    all previous specifications.
+
+  NOTE 3: Any images which are not assigned to an experimental condition
+    are considered to be missing.
+
+
+  Here is an example Input-condition-file:
+
+    2 bynumimages
+    HEIGHT  WEIGHT
+    Tall    Heavy   2
+    Tall    Light   3
+    Short   Heavy   2
+    Short   Light   4
+    Tall    Heavy   1
+
+  This file specifies that, for each slice, the first two images
+    correspond to the Tall/Heavy experimental condition, the next
+    three (or third to fifth) images correspond to the Tall/Light
+    experimental condition, the next two (sixth to seventh) to
+    Short/Heavy, etc.
+
+  An equivalent Input-condition-file is given by:
+
+    2
+    HEIGHT  WEIGHT
+    Tall    Heavy   0-1
+    Tall    Light   2-4
+    Short   Heavy   5-6
+    Short   Light   7-10
+    Tall    Heavy   11
+
+  Or, for a dataset with exactly six slices:
+
+    2
+    HEIGHT  WEIGHT
+    Tall    Heavy   0-1    0-5
+    Tall    Light   2-4    0-5
+    Short   Heavy   5-6    0-5
+    Short   Light   7-10   0-5
+    Tall    Heavy   11     0-5
+
+  Only if bynumimages is absent can different slices for a single
+    image be given different experimental conditions, as in:
+
+    2
+    HEIGHT  WEIGHT
+    Tall    Heavy   0-1    0-5
+    Tall    Light   2-3    0-5
+    Tall    Light   4      0
+    Tall    Light   4      2
+    Short   Heavy   4      1
+    Short   Heavy   4      3-5
+    Short   Heavy   5-6    0-5
+    Short   Light   7-10   0-5
+    Tall    Heavy   11     0-5
+
+    where slices 0 and 2 of image four are assigned to Tall/Light and
+    slices 1, 3, 4, and 5 are assigned to Short/Heavy.
+
+  Equivalently, a slightly shorter but equivalent version of this 
+    condition file could be constructed by taking advantage of NOTE 2:
+
+    2
+    HEIGHT  WEIGHT
+    Tall    Heavy   0-1    0-5
+    Tall    Light   2-3    0-5
+    Tall    Light   4      0-2
+    Short   Heavy   4      1
+    Short   Heavy   4      3-5
+    Short   Heavy   5-6    0-5
+    Short   Light   7-10   0-5
+    Tall    Heavy   11     0-5
+
+  If for some reason, it were desired to consider image 4 slice 1 to be
+    missing, then any of the following lines would suffice:
+
+    NA      NA      4      1
+    NA      Heavy   4      1
+    Short   NA      4      1
+    Missing Missing 4      1
+    ...
+
+    Omission of all lines containing image 4 slice 1 would also work
+      (see NOTE 3).
+
+
+*Details:code_details
+
+  intsplit takes the Input-Condition-File and writes out codes
+    for experimental conditions to Output-Condition-File.
+    Coding-file contains the information for mapping these codes back 
+    to the experimental conditions as specified in Input-Condition-File.
+
+  The format for Coding-File is a table, as can be read by Splus's
+    read.table command.  The first line contains the factor names,
+    exactly as specified on the second line of Input-Condition-File.
+    The remaining lines contain an integer, an experimental condition
+    code, followed by the levels of the factors for that experimental
+    condition.
+
+  The Coding-File that would be produced by the example 
+    Input-Condition-File's in the "in" section would look something like:
+
+            HEIGHT WEIGHT
+          0 NA NA
+          1 Tall Heavy
+          2 Tall Light
+          3 Short Heavy
+          4 Short Light
+
+  NOTE: The 0 code always corresponds to the "missing" experimental
+    condition.
+
+
+*Details:out_details
+
+  Output-Condition-File contains ( number-of-images * number-of-slices )
+    lines, each containing three integers --- image number, slice number,
+    and experimental condition code, respectively.
+
+  So, assuming that there are exactly twelve images in the input dataset,
+    the first example in the "in" section would produce a file of the form:
+
+      0       0        1
+      0       1        1
+      0       2        1
+      0       3        1
+      0       4        1
+      0       5        1
+      1       0        1
+      1       1        1
+      1       2        1
+      1       3        1
+      1       4        1
+      1       5        1
+      2       0        2
+      2       1        2
+    ...     ...      ...
+     10       4        4
+     10       5        4
+     11       0        1
+     11       1        1
+     11       2        1
+     11       3        1
+     11       4        1
+     11       5        1
+
+    where the ... ... ... represents omitted lines.
+
+
+
+

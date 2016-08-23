@@ -1,0 +1,76 @@
+*Introduction
+
+   baseline2 reads and baseline-corrects right and left images for
+   two-shot catch and hold data, combines them into a single image,
+   averaging the area of overlap in the middle, and pads the ends with
+   zeroes.  Every second scan line is reversed.  Note that the output
+   dataset has a time dimension 1/2 that of the input dataset.
+
+   To run baseline2 use:
+     baseline2 [-reverse even|odd|all|none] [-jitter floatNum] 
+               [-shift intNum] [-estimates Estimates-File] infile outfile
+
+   or:
+     baseline2 -help
+
+*Examples
+
+   baseline2 infile outfile
+
+   This use takes all the defaults:
+	-est baseadj.par
+	-rev none
+	-shi 10
+
+   baseline2 -est baseline.par -rev even -shi 20 infile outfile
+
+   This use puts the raw parameter estimates in file baseline.par (at
+   odds with the default use).  Line reversal is for even lines only
+   (typical for coronal slices) and the shift is set to 20.
+	
+
+*Arguments:reverse
+   [-reverse even|odd|all|none]		(-rev|r Which-Lines)
+
+   Ex: -r all
+
+   Reverses even-numbered rows, odd rows, all rows, or  no rows
+   respectively.  The default is to use any row flipping information
+   available in the input dataset, or "none" if no such information 
+   is available.
+
+*Arguments:jitter
+   [-jitter floatNum]			(-jit floatNum)
+
+   Performs a jitter correction with floating point parameter floatNum
+   (THIS IS NOT YET IMPLEMENTED).
+
+*Arguments:shift
+   [-shift intNum]			(-shi|s intNum)
+
+   Specifies that the amount of shift (half the amount of overlap) is
+   the value of intNum (which is an integer) complex units. 
+   Default value is 10.
+
+*Arguments:estimates
+  [-estimates Estimates-File]		(-est|e Estimates-File)
+
+  Ex: -e b.par
+
+  Specifies that the location adjustment parameters should be written
+  to Estimates-file. Default is "baseadj.par".
+
+
+*Details:Inputs and Outputs
+
+  Baseline2 accepts only standard complex-valued images with dimension
+  order "vxyzt" as input with a vector length of 2.
+
+  The outfile is not allowed to have the same name as the infile. The
+  default outfile is baseline.mri.
+
+  The outfile consists of single-precision, complex-valued, floating-point
+  numbers.
+
+  Odd line reversing is typical for axial and sagittal slices; even
+  line reversing is typical for coronal slices.

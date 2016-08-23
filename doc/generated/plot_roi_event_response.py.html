@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>plot_roi_event_response.py</title>
+  </head>
+  <body>
+    <h1>plot_roi_event_response.py</h1>
+<h2>Overview</h2>
+<pre>
+
+  Given a dataset in time series order and a mask selecting some
+  subset of the voxels in the dataset, plot_roi_event_response.py
+  generates a Postscript plot of the response of the voxes
+  within the ROI to a set of stimulus events.
+
+   plot_roi_event_response.py [-v][-d] [--title TitleString]
+      [--bars BarLocString] [--autobars] [--window WindowLength]
+      -r RoiMaskDS --out Output.ps --bps binsPerSec --ttl timeToLive
+      --phrase eventIdentifierPhrase --iqr --nosamp 
+      key1=val1 key2=val2 ... InFile
+
+  where
+    -v specifies verbose output
+    -d specifies debugging output
+    --title TitleString provides an overall title for the graph.
+    --bars BarLocString accepts a comma-separated list of bar
+      locations as a parameter string.  Vertical bars are drawn
+      at these locations to help with identifying things like trial
+      boundaries.
+    -r RoiMaskDS specifies the name of the ROI mask, a dataset in
+      (v)xyz(t) order.
+    --out Output.ps specifies the name of the output file (default
+      plot.ps)
+    --bps binsPerSec specifies the number of bins per second into
+      which sample values should be collected when building the
+      trendline.  The default is 2.0, for a bin width of 1/2.0 sec.
+    --ttl timeToLive specifies the number of seconds to associate
+      samples with an event after it occurs.  Note that this is 
+      typically greater than the duration of a trial!  The default is 10.0.
+    --phrase eventIdentifierPhrase is a key phrase used to identify
+      which stimuli in the stimulus time series of this experiment
+      are to be tracked as events.  For example, --phrase "Cue"
+      would identify as events stimuli named "conCue",
+      "CueTheTrumpets", or "someCueHere".  Note that matching is case
+      sensitive!  The default phrase is "Stim".
+    --iqr causes lines for the Q1 and Q3 scores of each binned
+      stimulus response curve to be drawn, rather than a single line
+      for the median.
+    --nosamp supresses the drawing of individual summary samples.
+      This reduces the clutter on the graph and is useful with --iqr.
+    key1=val1, etc. are key-value pairs that are passed to 
+      customize_local.py to fully specify the experimental stimulus
+      sequence.  They must come after other arguments but before
+      InFile.
+    InFile is the input dataset, which must be in (v)txyz order.
+
+  or
+
+   plot_roi_event_response.py -help [topic]
+
+</pre>
+<h2>Example</h2>
+<pre>
+
+  Suppose one had a standard Fiasco timeseries dataset named
+  "tshifted" in vtxyz order, and that this dataset has been corrected
+  for slice timing as with afni_tshift.py.  Suppose there is a
+  matching boolean ROI dataset named "roi", as might be created by
+  the "pullback_roi.py" utility.  
+
+  Suppose that two of the event types in the stimulus time series for
+  this run are called "ConStim" and "InconStim".  There might be
+  others the names of which did not include "Stim", the default 
+  --phrase value.
+
+  If customize_local.py could calculate the stimulus time series 
+  given the additional values for "subj", "task", "runnum", and "db_uname", 
+  one could produce an output plot named "test.ps" with the command:
+
+    plot_roi_event_response.py -v --title "My sample plot" -r roi 
+      --out test.ps --bars '3.5,7.0' --bps 2 --ttl 10.0 
+      subj=17 task=arrow runnum=1 db_uname=welling tshifted
+
+  The --bars option adds two vertical bars to the plot.
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  This script uses the functionality of customize_local.py to learn
+  the stimulus sequence for the experiment.  This means that 
+  customize_local.py must know about this particular experiment, and
+  that needed additional information like subject number and database
+  access information must be provided as key-value pairs.
+
+  Given the stimulus time sequence, the calculation proceeds as
+  follows:
+
+   -The time courses of all the voxels within the ROI are extracted
+    from the input datafile.
+   -A summary value, currently the median, is calculated for the ROI
+    at each time.
+   -The stimulus sequence is scanned for relevant events using the
+    --phrase command line argument.  Each such event remains active
+    for --ttl seconds after it occurs.  During that time, each time
+    sample (an ROI median, for example) is associated with the event.
+    In each case, the sample is scaled by the value of the first 
+    sample in this particular occurance of the event to adjust for
+    slow drift in the fMRI signal.
+   -All active events are retired at the end of each acquisition (as
+    signaled by the acq_blocks chunk of the input dataset).
+   -This produces a short list of events, each of which collects many
+    samples at several times.  
+   -For each event, samples are binned in time according to the --bps
+    value, and a summary value for each bin (currently the median) is
+    calculated.
+   -The output plot is produced by running R as a subprogram.
+   
+  The output plot shows the time course of each event type,
+  including the line of binned values and scatterplot points for
+  each individual ROI summary value.  
+
+  NOTE that if the --ttl value is greater than the duration of a
+  single trial, each TR of the input dataset may contribute a sample
+  to more than one event time series!
+
+  NOTE that you may want to correct the input dataset for slice
+  acquisition timing, as with the afni_tshift.py utility, before
+  passing it as input to this script!
+
+</pre>
+    <hr>
+    (automatically generated by plot_roi_event_response.py version of Sat Jan  2 22:50:39 2010)
+  </body>
+</html>

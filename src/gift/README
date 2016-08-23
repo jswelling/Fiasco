@@ -1,0 +1,109 @@
+
+	gift - a program for converting between various MRI file formats
+
+	Formats currently supported include: ANALYZE, FIASCO, SPIRAL_SL,
+	and PGH.
+
+	Written by Greg Hood, Pittsburgh Supercomputing Center
+	Copyright (c) 1996, Pittsburgh Supercomputing Center
+
+--------------------------------------------------------------------
+INSTALLATION
+
+To install gift, you must first have installed the libmri library to
+allow reading and writing the PGH format.  If you install gift in a
+sister directory of libmri, then the Makefile will work without
+alterations.  If libmri is located elsewhere, then change the OPTIONS
+and LIBS definitions to refer to the proper directories.
+
+To compile, cd to the gift directory and do a "make".  The resulting
+executable "gift" can then be moved to an appropriate bin directory.
+
+
+--------------------------------------------------------------------
+USAGE
+
+For basic usage information, simply type "gift" without any arguments.
+This will output something similar to the following:
+
+Usage: gift -to <format> <filename_1> ... <filename_n>
+           [-delete]
+           [-compress]
+           [-o|outname <output_name>]
+           [-bei] [-beo] [-lei] [-leo]
+           [-slice <slice_number_range>]
+           [-time <time_number_range>]
+       where <format> is one of:
+           FIASCO  PGH  ANALYZE  SPIRAL_SL  
+       and:
+         -delete deletes the input file after conversion
+         -compress compresses the output
+         -o specifies the output name
+         -bei -beo -lei -leo specifies big-endian-input, ...
+         -slice -time designate subsets of the input file
+
+Input filenames must follow all other options on the command line.
+Other than that, the options and input files filenames may occur in 
+any order on the command line.
+
+The filenames supplied on the command line are interpreted
+as if they had an implicit '*' after them.  Thus, to specify
+a collection of "sl" files as the input, it is only necessary
+to type "sl" and this will be expanded to encompass all files
+beginning with "sl".
+
+It is possible to use a directory prefix in the -o filename.
+For output formats that typically consist of many files (e.g.
+ANALYZE and SPIRAL_SL), the directory will be created
+if necessary.
+
+
+-----------------------------------------------------------
+EXAMPLES
+
+To convert a collection of ANALYZE files in the temp2 subdirectory
+to temp3 in the PGH format:
+	gift -to pgh -o temp3 temp2/
+This will create temp3.mri and temp3.dat in the current directory.
+
+To convert a PGH file named "test.mri" to ANALYZE format, leaving
+the analyze files in a subdirectory named test2, and prefixed
+with the letters exp1
+	gift -to analyze -o test2/exp1 test
+
+To convert only times 3 through 5, inclusive, from a set of
+SPIRAL_SL files and put the result in a FIASCO file:
+	gift -to fiasco -time 3-5 -o fiasco1 sl
+
+-----------------------------------------------------------
+NOTES ON SPECIFIC FORMATS
+
+FIASCO:
+	Dimensions in the data must be in vxyzt order, though
+	the v (vector), z, and t dimensions may be omitted in
+	any combination.
+
+PGH:
+	Compression is not supported.  Eventually compression
+	will be supported within the libmri library itself.
+	If the output format is PGH, a single file containing
+	both header and image data may be written, or the
+	image data may be place in a separate file with
+	extension ".dat".
+	The user can control this with the flags:
+	    -split	(generates one .mri file and one .dat file)
+	    -single     (generates one .mri file)
+	The default is -split.
+
+ANALYZE:
+	If the output format is ANALYZE, a single file may
+	be written, or multiple files (one per timestep).
+	The user can control this with the flags:
+	    -split      (generates one file per timestep)
+	    -single	(generates one file)
+	The default is -split.
+
+SPIRAL_SL:
+	For spiral_sl datasets with multiple coils, it is
+	possible to select the coil with the flag:
+	    -coil <integer>

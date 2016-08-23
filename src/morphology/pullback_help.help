@@ -1,0 +1,46 @@
+*Usage
+
+  pullback takes the values in its input file and the corresponding
+  address in the address file and sums the values into the output file
+  voxel with the given address.
+
+  Usage:
+
+    pullback [-debug] [-verbose] [-chunk chunkName] -qdim dQ 
+       -addr addrFile inFile outFile] 
+
+   where:
+
+     -debug requests debugging output.
+
+     -verbose requests verbose output.
+
+     -qdim dQ is the dimension of the output file.  It must be greater
+        than the largest value in addrFile.
+
+     -a addrFile is the address file.  This file must have dimensions
+        matching those of inFile, and every value in the file must
+        be greater than or equal to zero and less than dQ.
+
+     inFile is the input file.  The product of all the dimensions in
+        inFile must match the product of all the dimensions in addrFile.
+
+     outFile is the output file name.  The dimensions of this
+        file will be q, with extent qdim.
+
+  or:
+
+    pullback -help [topic]
+
+
+*Details
+
+  Suppose inFile contains values V(x,y,z) at the voxel with indices x, y,
+  and z, and addrFile contains values A(x,y,z), where 0<= A < dQ for
+  all x, y, and z.  After execution, outFile will contain values S(q)
+  at each of its voxels, where S(q) is the sum of all V(x,y,z) for 
+  which A(x,y,z) is equal to q.  The values in inFile have been binned
+  into the voxels of outFile according to their associated addresses
+  in addrFile.
+
+  The output dataset must fit entirely in memory.

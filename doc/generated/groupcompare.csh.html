@@ -1,0 +1,232 @@
+#Mon Sep 10 22:43:00 EDT 2012 /home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64/groupcompare.csh
+# $Id: groupcompare.csh,v 1.24 2003/09/16 17:31:58 bakalj Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>groupcompare.csh</title>
+  </head>
+  <body>
+    <h1>groupcompare.csh</h1>
+<h2>Overview</h2>
+<pre>
+
+  groupcompare.csh takes mean, standard deviation, and count data for
+  multiple subjects in two groups in each of two conditions, and
+  produces F and P scores for the terms of a random effects model of
+  the data.  An overall mean is also produced for convenience in doing 
+  overlays, and a data set of total samples per voxel is produced as
+  a check that the regions of interest have been well sampled.
+
+  groupcompare.csh [-m namemap] [-d key=value] subj1 subj2 ...
+
+    -m namemap uses the specified mapfile (along with defaults in
+       F_MAP_PATH) to find subject directories.  Multiple -m
+       options may be used.
+    -d key=value defines the given additional key-value pair
+
+  or
+
+  groupcompare.csh -help [topic]
+
+  All of the subjects must have been transformed into the same
+  coordinates, presumably Taliarach space.
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  The statistical model used by groupcompare.csh is:
+
+    Y   = M + A  + B  + C  + (AB)   + (BC)   + (AC)   + (ABC)
+     ijk       i    j    k       ij       jk       ik        ijk
+
+  where M is the overall mean, 0&lt;i&lt;s identifies the s subjects, 0&lt;j&lt;2
+  represents the two groups, and 0&lt;k&lt;2 represents the 2 conditions.
+  These terms cover all of the degrees of freedom of the 2*s 
+  observations of Y.  This will be a mixed model, with subject being
+  a random effect and group and condition being fixed.
+
+  The direct effect of the two conditions is thus:
+
+    Y   - Y    = C - C   + (BC)  - (BC)   + (AC)  - (AC)   
+     ij1   ij0    1   0        j1      j0       i1      i0
+
+                + (ABC)    - (ABC)
+                       ij1        ij0
+
+  with the other terms cancelling.  Rewriting this equation using 
+  lower case to denote differences, 
+
+    y  = m + a + b + (ab)
+     ij       i   j      ij
+
+  This forms a two factor mixed effects model, with 'b' (the
+  difference of the (BC) terms) being fixed and 'a' random.
+  For this model, the relevant test statistics are:
+
+      Factor       Test
+
+        a        MSa/MSE   (random)
+
+        b        MSb/MSab  (fixed)
+
+       (ab)      MSab/MSE  (random)
+
+  (see "Applied Liner Statistical Models" by Neter et al, chapter 24).
+  Note that these summed squares apply to the subtracted model, not
+  the original model.
+
+  The needed sums of squares are computed by applying an appropriate 
+  regression to the unsubtracted Y values to deal with possible
+  imbalances.  Specifically,
+
+
+    Y' = X'V + E'
+
+  where Y' is the vector of scaled input observations, X' is the factor
+  matrix, V is the vector of parameters to be estimated, and E' is a
+  residual error term.  This regression is calculated independently
+  for each voxel in the input data.  Estimates and sums of squares for
+  the elements of V are calculated, and from them F and P scores 
+  for the terms of the model above are estimated.  
+
+  For s subjects Y' will be an n by 1 matrix, X' will be n by p, 
+  and V will be p by 1, where n=2s and p=s+2.
+
+  The algorithm used assumes that there are two groups and two
+  experimental conditions.  The Y' vector is given by:
+
+          /            
+          | mean(1,1)  |
+          | mean(1,2)  |
+    Y'= S | mean(2,1)  |
+          | mean(2,2)  |
+          | mean(3,1)  |
+          | mean(3,1)  |
+          |  etc.      |
+                      /
+
+  where mean(i,c) is the mean for subject i in condition c, and the
+  scaling matrix S is the diagonal matrix with elements:
+
+    S   = sqrt( N(k/2, k%2) )
+     k,k
+
+  in which N(i,c) is the number of observations of subject i in 
+  condition c and stdv(i,c) is the corresponding standard deviation.
+
+  The factor matrix X'=SX, where S is as above and X has the following
+  columns:
+
+   -The first column is all 1's and serves to de-mean the Y vector.  
+
+   -The second column is 1 for rows in condition 2 and -1 for rows
+    in condition 1.  This column implements term C in the unsubtracted
+    model.
+
+   -The third column is 1 for rows in group 2 and -1 for rows
+    in group 1.  This term implements term B in the model.
+
+   -The fourth column is the product of columns 2 and 3 and implements
+    the (BC) cross term.
+
+   - s-2 columns follow which reflect the (ABC) difference term in the
+    subtracted Y equation.  Each column is 1 for the corresponding
+    subject, 0 otherwise, de-meaned within group and condition,
+    multiplied by factor 2.  One column is dropped from each group
+    for orthogonality.  (Specifically, the column corresponding to
+    the last subject in the group is dropped).  
+
+  As an example of one of the subject columns, consider the specific
+  case of 20 subjects with 10 in each group.  There would be 9 subject
+  columns for each group.  The first subject column in the first group
+  would have the row values:
+
+    (-0.9, 0.9, 0.1, -0.1, 0.1, -0.1, ..., 0, 0, 0, 0, ...)
+
+  where there are a total of 9 (0.1, -0.1) pairs and 10 (0,0) pairs.
+  These pairs correspond to all subjects other than the first in group
+  1 and all 10 subjects in group 2 respectively.
+
+  Note that these are the factor values before scaling by S.
+  Multiple regression is performed on these factors, and the estimate
+  and variance for factors 1 through 3 are computed.  
+
+  The subject factors as described are orthogonal to the first four
+  factors, but missing subject data can break this orthogonality.  To
+  avoid this, the regression is actually calculated in two stages.  
+  An initial regression is performed on the Y values using the first
+  four factors, and a second regression is performed on the residuals
+  using the subject factors.
+
+  The mean squared errors of the various columns in this regression
+  correspond to mean squared terms needed in test statistics for the 
+  subtracted model.  Specifically, the mean square associated with
+  factor 4 above corresponds to MSab in the subtracted mixed effects
+  model, and the total mean square associated with the last (s-2)
+  columns correspond to the MSE of the subtracted mixed effects model.
+  (The MSE of the regression is made up of terms which are symmetric
+  in the experimental condition and hence do not contribute to the
+  subtracted model).  The mean square associated with factor 2 can be
+  used with the subtracted MSE to construct a test statistic for the
+  experimental condition.
+  
+
+    Original Model       Subtracted Model   DOF
+
+      factor 2 MS             MSm            1
+      factor 4 MS             MSab           1
+      factors &gt;=5 MS          MSE           s-2
+
+  P scores are calculated from the F test statistics using the
+  associated degrees of freedom.
+
+  A dataset named mean is returned containing the estimates for the
+  first (constant) factor.  
+
+</pre>
+<h2>Example</h2>
+<pre>
+
+  If subjects 1137, 1139, and 1143 are patients and subjects 2213,
+  2215, and 2219 are controls, and if the map file "subjmap" provides
+  a mapping between subject numbers and the mean, standard deviation,
+  and counts files for those subjects in Taliarach space, the command:
+
+    groupcompare.csh -m subjmap 1137 1139 1143 2213 2215 2219
+
+  will produce a between-groups comparison for these subjects.  The
+  subjects may appear in any order. The outputs of the script will be 
+  the following Pittsburgh MRI datasets: 
+
+    effect_f and effect_p - F and P scores for the average difference
+                            over all subjects between the two conditions
+      cross_f and cross_p - F and P scores for the difference in the
+                            response of the two groups to the two
+                            conditions 
+                     mean - overall mean
+              totalcounts - total samples across all subjects
+
+</pre>
+<h2>Environment</h2>
+<pre>
+
+  groupcompare.csh keeps scratch files in a temporary directory.  If
+  the environment variable F_TEMP is defined this directory will be
+  ${F_TEMP}/groupcompare_tmp_NN (where NN is the current process ID);
+  otherwise ./groupcompare_tmp_NN will be used.  The temporary
+  directory is deleted when groupcompare.csh is finished with it.
+
+  Name map information (used in finding the locations of subjects'
+  data) will be read from the files in the environment variable
+  F_MAP_PATH if it is defined.  F_MAP_PATH is a colon-separated list
+  of file names.  Names appearing in files earlier in F_MAP_PATH
+  override those which appear later; files or definitions given on the
+  command line with -m or -d switches override any given in
+  F_MAP_PATH.
+
+</pre>
+    <hr>
+    (automatically generated by groupcompare.csh version of Sat Jan  2 22:50:39 2010)
+  </body>
+</html>

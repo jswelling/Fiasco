@@ -1,0 +1,95 @@
+*Usage
+
+  spiral_reader translates spiral scan data to Pgh MRI format.
+  It is specific to data collected according to a scan program
+  by Doug Noll, the author of gsp15.c & etc., from which spiral_reader
+  was derived.  All images and slices from all coils are translated.
+
+  spiral__reader [-help <topic>]
+	[-bei] [-beo] [-lei] [-leo]
+	[-print_mode]
+	[-input_dir <dirname>]
+	[-tmp_dir <dirname>]
+	[-output_dir <dirname>]
+	[-out_name | -output_name <filename>]
+	[-scale | -output_scale <float>]
+        [-tag <idtag>]
+	[-v | -verbosity <integer>]
+       fname1 [fname2 ...]
+
+*Usage:Input
+
+   fname1 and additional files are input for reconstruction.
+		Arbitrarily many files can be supplied;
+		compressed files are decompressed automatically.
+                Pfiles are expected to be in GE LX format.
+
+  -input_dir | -input_directory <dirname>
+		Specifies the input directory where the P files
+		and reference files are to be found.  (If the
+		P files or reference dataset names start with a
+		'/' or '.', this setting will be ignored.)
+
+  -tmp_dir | -tmp_directory <dirname>
+		Specifies the temporary directory to use if we
+		have to uncompress the P files.  These are
+		uncompressed one at a time and removed after
+		we are through processing that P file.
+
+  -bei		Specifies big endian input (default) 
+
+  -lei		Specifies little endian input.
+
+
+*Usage:Parameters
+
+  -tag <idtag>
+                Specifies that the given string is to be associated
+                with the data by including it in the Pittsburgh MRI 
+                file produced.  The tag will become the value of the 
+                key "images.scan.id".  This is typically used to 
+                attach a unique scan ID to the file. 
+
+*Usage:Output
+
+  -scale | -output_scale <float>
+		Multiply the output image voxel values by this
+		number (defaults to 1024.0)
+
+  -beo		Specifies big endian output (default)
+
+  -leo		Specifies little endian output
+
+  -output_dir | -output_directory <dirname>
+		Specifies the output directory if not the
+		current directory
+
+  -out_name | -output_name <filename>
+		Specifies the filename to use for the output
+		dataset header.  A ".mri" extension will
+		be appended if the filename has no extension.
+
+*Usage:Auxiliary output
+
+*Usage:Reporting
+
+  -v | -verbosity <integer>
+		Set level of verbosity (each level also prints the messages
+		    of lower levels):
+			0: only print out errors
+			1: print one line per P file and a done message
+			2: print out summary information per P file
+			3: print out summary information per slice
+				(all timesteps)
+			4: print out information per slice per timestep
+		The verbosity defaults to 1.
+
+  -print_mode
+		Print out the settings of all reconstruction
+		parameters
+
+  -help [<topic>]
+		Engage help system, providing help on topic, if supplied,
+		or starting the interactive help system otherwise.
+
+

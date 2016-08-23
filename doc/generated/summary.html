@@ -1,0 +1,223 @@
+# $Id: summary.c,v 1.39 2007/03/22 00:09:45 welling Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>summary_help</title>
+  </head>
+  <body>
+    <h1>summary_help</h1>
+<h2>Overview</h2>
+<pre>
+
+  summary calculates summary statistics for the various
+    parameter outputs in FIASCO
+
+  summary [-headerinput Input-header-file] [-list Parameter-list-file]
+            [-split Input-split-file] [-cond Input-condition-file]
+            [-out Summary-output-file] [-fixed Fixed-image]
+            [-missing Missing-history-file] [-html | -ps] [-env]
+
+  summary -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+  Note: summary.m looks for the following environment
+        variables for the purpose of printing:
+        F_CREDATE  F_PRTDATE  F_HEADER  F_DESCRIPTION  F_SUBJ_AGE
+        F_SUBJ_SEX  F_SUBJ_1DIAG  F_SUBJ_2DIAG  F_SUBJ_3DIAG  
+
+</pre>
+<h2>Usage</h2>
+<h3>headerinput</h3>
+<pre>
+
+  -headerinput Input-header-file        (-h Input-header-file)
+
+     Specifies that the header for the input dataset is located
+       in Input-header-file.
+     Default value is "input.mri".
+
+     smregpar.m accepts only standard images, and dimensions t and
+       z are required.
+
+</pre>
+<h3>list</h3>
+<pre>
+
+  -list Parameter-list-file             (-l Parameter-list-file)
+
+     Specifies that the file which contains the list of parameter
+       names and corresponding filenames is Parameter-list-file.
+     See ListFormat for details on how to construct this file.
+     Default value is "parlist".
+
+</pre>
+<h3>missing</h3>
+<pre>
+
+  -missing Missing-history-file         (-m Missing-history-file)
+
+     Specifies that the file contains a step-by-step listing of
+       counts of missing images per slice for each processing step.
+       This information is used to print a table of which steps
+       marked images missing.  This file must be consistent with
+       the images found to be missing in Input-header-file.
+     See MissingFormat for details on how to construct this file.
+     Default is no missing history, so that only total counts of
+       missing images are printed.
+     
+</pre>
+<h3>out</h3>
+<pre>
+
+  -out  Summary-output-file             (-o Summary-output-file)
+
+     Specifies that the output Postscript file containing the
+       summary statistics is written to Summary-output-file.
+     Default value is "summary.ps".
+
+</pre>
+<h3>split</h3>
+<pre>
+
+  -split Input-split-file               (-s Input-split-file)
+
+     Specifies the split file to read in determining condition 
+       count statistics.  Default value is "newsplit".
+
+</pre>
+<h3>cond</h3>
+<pre>
+
+  -cond Input-cond-file                 (-c Input-cond-file)
+
+     Specifies the condition file to read in determining condition
+       count statistics.  Default value is "condition".
+
+</pre>
+<h3>fixed</h3>
+<pre>
+
+  -fixed Fixed-image                     (-f Fixed-image)
+
+     Specifies that the image which was considered fixed in the
+       image registration was image number Fixed-image.  This image 
+       is ignored in calculating statistics for "estireg" and
+       "smregpar" parameters.  The given value can be an iteger, or
+       one of the strings "center", "middle", or "mean".  "center"
+       and "middle" are equivalent to specifying the middle image
+       in the time series.  If the given value is an integer less 
+       than 0 or is a string other than "center" or "middle", no 
+       image is ignored in the calculation.
+     Default value is -1.
+
+     Note: Values out of range indicate that no image is to be
+       ignored in calculation.
+
+</pre>
+<h3>html</h3>
+<pre>
+
+  -html
+
+     Specifies that the output should be written in html format.  The
+       default is to write output in postscript format.
+
+</pre>
+<h3>ps</h3>
+<pre>
+
+  -ps
+
+     Specifies that output should be written in postscript format.  
+       This is the default.
+
+</pre>
+<h3>env</h3>
+<pre>
+
+  -env
+
+    Causes a table of the values of all environment variables beginning
+      with 'F_' (for Fiasco) to be included in the summary.
+
+</pre>
+<h2>ListFormat</h2>
+<pre>
+
+  The parameter list file consists of several lines, each containing
+    two values each.  The first value is the name of the parameter
+    for which to calculate summary statistics, and the second is the
+    name of the file in which these parameters are located.
+  Known values for parameter names are:
+    "mnadj", "phadj", "outlier", "displace", "smdisplace",
+    "baseline", "estireg", "smregpar", "deghost"
+  Names of the form "foo.name" have the prefix "foo." removed before
+    being matched against this list.  Files associated with any other
+    names must have parameter format information included in the
+    parameter file itself.
+
+</pre>
+<h2>ParamFileFormat</h2>
+<pre>
+
+  Files referenced in the parameter list file contain parameter time
+    series data.  The format of this data can be known based on the
+    associated parameter name from the parameter list file, or it can
+    be inferred based on format information at the top of the
+    parameter file itself.
+  Known values for parameter names in the parameter list file are:
+    "mnadj", "phadj", "outlier", "displace", "smdisplace",
+    "baseline", "estireg", "smregpar", "deghost"
+  Names of the form "foo.name" have the prefix "foo." removed before
+    being matched against this list.
+  Format information lines must appear at the top of the file, and
+    must begin with the string "##Format:" (without quotes) starting
+    in column 1.  The following key-value pairs may follow:
+
+     Key      Value     Meaning
+    ------    -----     -------
+
+    order:  z_fastest   Data lines appear in z-fastest order
+            t_fastest   Data lines appear in t-fastest order
+            t_only      One value for each t is given, assumed to
+                        apply all z
+            z_only      One value for each t is given, assumed to
+                        apply all t
+            index_t     First element of each data line is a t value.
+                        Data which follows is for all z's at that t
+            index_z     First element of each data line is a z value.
+                        Data which follows is for all t's at that z.
+            index_tz    First two elements on each line are t and z, 
+                        in that order
+            index_zt    First two elements on each line are z and t, 
+                        in that order
+
+    type:   raw         Data represents raw (unsmoothed) estimates
+            filtered    Data represents smoothed estimates
+
+    names:  (name1,...) A parenthesized, comma-separated list of names
+                        for the data columns.  These names will be
+                        used to label the data in the summary output.
+
+</pre>
+<h2>MissingFormat</h2>
+<pre>
+
+  The missing history file consists of a series of step names, each
+    of which is followed by a number of lines of slice information.
+    Each such line consists of two integers.  The first is the slice
+    number, counting from zero.  The second is the number of images
+    missing for that slice after the given processing step.  Slices
+    must appear in order.  Lines beginning with '#' are ignored.
+
+    
+
+</pre>
+    <hr>
+    (automatically generated by summary_help version of Sat Jan  2 22:50:25 2010)
+  </body>
+</html>

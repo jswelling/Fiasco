@@ -1,0 +1,77 @@
+*Introduction
+
+  generate_vmpfx_in takes a prototype file and some Fiasco run 
+  information and generates an appropriate input file for
+  vmpfx, a component of Chris Genovese' BRAIN toolkit.  The
+  output file is written to stdout.  Input is based on a prototype
+  file with particular known values to be substituted with values
+  appropriate to the current run.
+
+  To use generate_vmpfx_in the command is:
+    generate_vmpfx_in -nimage num_images -nslice num_slices_per_image
+                      [-proto proto_file] [-null] [-split split_file] 
+                      [-cond cond_file] -droot input_file_root_name 
+                      -dpath input_file_path [-iai iai_value] 
+                      [-fixed fixed_cond_names] 
+	     
+
+*Arguments:nimage
+   -nimage num_images
+ 
+   (required)
+   Specifies the number of images.
+
+*Arguments:nslice
+   -nslice num_slices_per_image
+
+   (required)
+   Specifies the number slices per image.
+
+*Arguments:droot
+   -droot input_file_root_name
+
+   (required)
+   Specifies root file name for input dataset.
+
+*Arguments:dpath
+   -dpath input_file_path
+
+   (required)
+   Specifies the path for input dataset.
+
+*Arguments:proto
+   [-proto proto_file]
+
+   Specifies the prototype file name. Default is "vmpfx_proto.t".
+
+*Arguments:iai
+   [-iai iai_value]
+
+   Specifies the inter-acquisition interval value. Default is 3.0.
+
+*Arguments:null
+   [-null]
+
+   Specifies that the given prototype file requests only the null
+   model, and thus does not need split, cond, or fixed info.
+   The default is that this flag is not set.
+
+*Arguments:split
+   [-split split_file]
+
+   Specifies the image-by-image split file as output by
+   intsplit. Default is "newsplit".
+
+*Arguments:cond
+   [-cond cond_file]
+ 
+   Specifies the condition file as output by intsplit. Default is
+   "conditions". 
+
+*Arguments:fixed
+   [-fixed fixed_cond_names] 
+           
+   (required unless -null is specified)
+   Specifies the names of factor levels to hold fixed, as a
+   comma-delimed list. 
+

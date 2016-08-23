@@ -1,0 +1,74 @@
+*Usage
+
+  partialk is used to extend the negative phase direction
+    of k-space data which has been collected with all the
+    positive phase information but only partial negative
+    information.  The result is symmetrized data, with
+    equal coverage in the positive and negative phase
+    directions.
+
+  partialk [-reverse even|odd|all|none] [-dim nnn]
+        -input Input-mri-file -output Output-mri-file
+
+  baseline.m -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+*Usage:input
+
+  -input Input-mri-file        (-i Input-mri-file)
+
+     Specifies that the header for the input dataset is located
+       in Input-mri-file.  Default value is "input.mri".
+     Input-header-file is not allowed to have the same name
+       as Output-mri-file.
+
+     partialk accepts only standard complex-valued images with
+       dimension order "vxy(z)(t)" or "vqy(z)(t)" as input.
+
+*Usage:output
+
+  -output Output-mri-file  (-o Output-mri-file)
+
+     Specifies that the header for the output dataset should
+       be written to Output-mri-file.
+     Default value is "partialk.mri".
+     Output-mri-file is not allowed to have the same name
+       as Input-mri-file.
+
+     The output dataset will consist of single-precision, complex-valued,
+       floating-point numbers.
+
+*Usage:dim
+
+  -dim nnn      (-d nnn)
+
+     Specifies that the output data should have a y range of nnn.  The
+     given value must be >= half the y range of the input data, and
+     <= the y range of the input data.  If this value is not provided,
+     the value of the "images.dy_base" tag of the input dataset will
+     be used.
+
+*Usage:reverse
+
+  -reverse even | odd | all | none       (-r even | odd | all | none)
+
+     Reverse even-numbered input scan lines, odd-numbered input scan
+     lines, all scan lines, or no scan lines.  The default is to
+     use the row flipping information in the input dataset, or "none"
+     if no such information is available.
+
+*Calculation
+
+  The calculation is based on the fact that a missing value at
+    the location (x,y) in a complex image from an MR scanner
+    should be nearly equal to the complex conjugate of the
+    value at (xmax-x, ymax-y) (adjusted for pixel numbering,
+    of course).
+
+
+   
+ 

@@ -1,0 +1,55 @@
+PRELIMINARY SPECIFICATIONS FOR MRI IMAGE FILE FORMAT CONVERTER
+--------------------------------------------------------------
+Name of program: convert
+Platforms: SGI, Sun, DEC Supercluster, HP workstations, IBM SP-2
+Written in: C
+
+Initial formats:
+	FIASCO			image-space
+	ANALYZE			image-space
+
+Formats to be added shortly thereafter:
+	SPIRAL_SL		image-space
+	ANMR_IMAGE		image-space
+	SIGNA_IMAGE		image-space
+	HEADERLESS_SIGNA_IMAGE	image-space
+	DMOD			image-space
+	DICOM			image-space
+
+K-space formats to be possibly added later:
+	FIASCO_RAW		k-space
+	SPIRAL_RAW		k-space
+	ANMR_RAW		k-space
+
+
+--------------------------------------------------------------
+COMMAND LINE FLAGS & ARGUMENTS:
+
+convert -to format [-b size] [-c] [-delete] [-o name] input1 input2 ...
+
+FLAGS:
+	-c 		compress the output (optional)
+	-delete		delete the input after processing
+	-o name		specifies the output name (optional)
+				(- indicates stdout)
+	-to format	specifies the desired output format
+	-b		big-endian input data
+	-l		little-endian input data
+
+FILE ARGUMENTS:
+	input1 input2 .... indicate the names of the files
+		to be converted.  For some formats this name
+		may be a base name or directory specifying
+		a set of files
+
+	- in place of input1 directs the program to take
+	its input from stdin
+
+	flags may be intermingled with or follow the list of
+	input files; however, the flag(s) apply to all files
+	on the command line, not just the following ones
+--------------------------------------------------------------
+
+EXAMPLES:
+
+	sconv -to fiasco in

@@ -1,0 +1,203 @@
+# $Id: blind_minimize.c,v 1.9 2007/03/21 23:54:26 welling Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>blind_minimize_help</title>
+  </head>
+  <body>
+    <h1>blind_minimize_help</h1>
+<h2>Overview</h2>
+<pre>
+
+  blind_minimize minimizes a function implemented in a separate
+  script file.
+
+    blind_minimize -script scriptFile -start startPointString 
+           [-algorithm algString] [-scale scaleVal] [-debug]
+
+  or
+
+    blind_minimize -help [subtopic]
+
+</pre>
+<h2>Usage</h2>
+<h3>script</h3>
+<pre>
+
+  -script scriptFile
+
+  specifies the name of the script file (or other executable) to be
+  used to calculate the function value for a given vector of input
+  values.  The script will be called with a series of floating point
+  numbers as input.  Its output must be a single line, and the first
+  token on that line must be parsable as a floating point number.
+  The rest of the output line is ignored.
+
+</pre>
+<h3>start</h3>
+<pre>
+
+  -start startPointString
+
+  specifies a string consisting of one or more floating point numbers
+  separated by spaces, for example "0.1 1.2 2.3".  The number of 
+  entries in the string determines the dimensionality of the
+  minimization, and the values of the entries determine the starting
+  point of the search.
+
+</pre>
+<h3>scale</h3>
+<pre>
+
+  -scale scaleVal
+
+  specifies a floating point number with which to scale the function
+  output.  This does not change the location of the minimum, but some
+  optimization methods (nelmin and nelmin_t) are sensitive to the
+  scale of the input.  Increasing the scale will cause these methods
+  to run longer and to produce more accurate results.
+
+</pre>
+<h3>algorithm</h3>
+<pre>
+
+   -algorithm algString             (-alg algString)
+
+   This option provides control of the algorithm used for
+   minimization.  algString is a string with components separated 
+   by commas.  At the moment, there is only one component:
+
+      "opt=[nelmin_t | nelmin | praxis | none]"
+               Controls the optimization method. Nelder-Mead
+               optimization, Nelder-Mead with a T-test cutoff,
+               Praxis, or no optimization can be selected.  The
+               "none" option is useful for producing MSE values
+               for the initial data.
+     "optol=value"
+               Controls the optimizer tolerance.  The effect
+               depends on optimizer type, as follows:
+
+                 none:     value has no effect
+                 praxis:   Praxis attempts to return F(X) such that if
+                           X0 is the true local minimum near X, then
+                           norm(X-X0)&lt;Tol +sqrt(machep)*norm(X).
+                           Default is 0.000001 .
+                 nelmin:   Tol sets the terminating limit for the
+                           variance of function values across the 'feet'
+                           of the simplex.  Default is 0.02 .
+                 nelmin_t: Tol sets the terminating limit for the
+                           variance of function values across the 'feet'
+                           of the simplex.  Default is 0.02 .
+     "opscale=value"
+               Controls the optimizer scale.  (Note that this is
+        distinct from the -scale parameter).  The effect
+               depends on optimizer type, as follows:
+
+                 none:     value has no effect
+                 praxis:   value is the maximum allowed step size.
+                           Default is 1.0 .
+                 nelmin:   value sets the initial size of the simplex.
+                           Default is 1.0 .
+                 nelmin_t: value sets the initial size of the simplex.
+                           Default is 1.0 .
+
+   The default settings are:
+   "opt=praxis,"
+   The optimizer tolerance and scale are the default values for the
+   given optimizer type.
+
+</pre>
+<h3>debug</h3>
+<pre>
+
+  -debug
+
+  This flag causes debugging output to be written.  One can watch the
+  optimization converge.
+
+</pre>
+<h2>Examples</h2>
+<pre>
+
+  Suppose the file calc.csh contains the following:
+
+  #! /bin/csh -ef
+  mri_counter -e 1 junk
+  mri_rpn_math -o junk2 
+    '0,'$1',1,-,dup,*,'$2',2,-,dup,*,+,'$3',3,-,dup,*,+,1,if_print_1' 
+    junk
+
+  This script takes 3 parameters and returns the summed squared
+  distance from the point given by the 3 parameters to the point
+  (1,2,3).  For example,
+
+  &gt; ./calc.csh 1.0 1.0 1.0
+
+  returns '5'. (The &gt; is the command line prompt).  To find the
+  minimum of this function using blind_minimize, the command and its
+  output would be:
+
+  &gt; blind_minimize -script "./calc.csh" -start "0.1 1.2 2.3"
+  # $Id: blind_minimize_help.help,v 1.3 2005/06/01 19:53:20 welling Exp $
+  # algorithm: opt=praxis,
+  Final: 1 2 3 -&gt; 0
+  # Optimization complete in 0.010000u 0.010000s
+
+  The line marked Final shows the coordinates of the minimum and the
+  return value of the function at that point.
+      
+</pre>
+<h2>Details</h2>
+<h3>NelminCalculation</h3>
+<pre>
+
+  Nelmin and nelmin_t are minimization algorithms based on the Nelder-
+  Mead simplex algorithm.  See for example "Numerical Recipes in C"
+  section 10.4.  These versions of the code are based on Applied 
+  Statictics algorithm AS 47 (J.R.STATIST.SOC C), (1971) VOL.20, NO.3 
+  by R. O'Neill, as modified in remark AS R28 by I. D. Hill.  This
+  Fortran code was translated to C using "f2c" and cleaned up by hand.
+
+  Both versions have been modified to include a "reset" routine which
+  is called periodically.  The calling pattern of this routine forms
+  the "outer loop" in a minimization procedure.
+
+  Nelmin is the straight version of this routine.  Nelmin_t uses a
+  T-test to determine when to exit, on the hypothesis that the bottom
+  of the function to be minimized is "noisy".  When the likelyhood
+  that the minimization criterion has been reached exceeds 95%, the
+  routine exits.
+ 
+
+
+</pre>
+<h3>PraxisCalculation</h3>
+<pre>
+
+  Praxis is a minimization algorithm based on Powell's Method as
+  modified by Brent.  See for example "Numerical Recipes in C" section
+  10.5 for an introduction to Powell's Method, and "Algorithms for
+  Minimization without Derivatives" by Richard P. Brent, ch. 7 
+  (Prentice-Hall 1973) or Brent's 1971 thesis for details.  Praxis
+  is a contraction of "principal axis".
+
+  This particular implementation of praxis comes from the Fortran
+  version available from Netlib (http://www.netlib.org/).  It was
+  hand-translated into C, and the singular value decomposition
+  routine was replaced with a call to the LAPACK routine DGESVD.
+  Brent's "random()" routine was replaced with the standard
+  drand48().  The C version is reentrant.
+
+  This implementation has been modified to make a call to the "reset"
+  routine passed it at the beginning of each outer loop iteration.  
+  This routine implements the outer, slower alignment method.
+
+
+
+
+
+</pre>
+    <hr>
+    (automatically generated by blind_minimize_help version of Sat Jan  2 22:50:20 2010)
+  </body>
+</html>

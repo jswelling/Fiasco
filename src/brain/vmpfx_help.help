@@ -1,0 +1,509 @@
+*Author
+
+ Author: Christopher R. Genovese 1996
+
+ Pittsburgh MRI support contributed by Joel Welling
+
+*Copyright
+
+ Christopher R. Genovese 1996
+
+*Introduction
+
+ The vmpfx module of the BRAIN software system fits a flexible
+ hierarchical statistical model voxelwise to fMRI time series.
+ Typically vmpfx is the first module applied to the data after
+ suitable reconstruction and correction with the FIASCO software
+ system.  The output of vmpfx can be used as is or can be refined with
+ later system modules.  For example, the module vfpfx performs
+ posterior sampling and computes a wider variety of statistics.  The
+ module query (when available) will support a range of statistical
+ queries from both the vmpfx and vfpfx output structures.
+
+ This documentation is preliminary (and rough) and focuses on Version
+ 0.25beta.  However, because this software is changing rapidly, this
+ document intertwines brief descriptions of several later versions to
+ give the reader an idea of what changes to expect.
+
+   Version  0.25beta       Preliminary and experimental version
+                           bundled and compatible with initial 
+                           FIASCO 4.0 Release September 1997.
+
+   Version  0.75beta       Expected to be released in October 1997
+                           Vastly optimized performance, wider model
+                           support, better input/output handling,
+                           and a streamlined set of features.
+
+   Version  1.0            Expected to be released in December 1997.
+                           Further performance optimization, cleaner
+                           and more powerful input/output structure,
+                           methods for specifying additional layers
+                           in the hierarchy, ROI specification,
+                           and improved interface.
+                           
+*Version
+
+ This is version vmpfx 0.25-beta.  See Introduction for description
+ of future releases and varible features.
+
+
+*Usage
+
+ vmpfx can be invoked in two ways:
+
+ vmpfx input_file [override_options]
+ vmpfx [-help [topic]]
+
+ For the first form, the required input file is a text file describing
+ the data, design, and algorithm specification using the INSPEC 0.5
+ specification.  See Input-Format and Input-File.
+
+ The override options allow command line overrides of tags
+ specified in the input file, which can prove useful.
+ See Usage:Overrides for further help.
+
+ For the second form, 
+
+  -help     Engage this help system.  With no further arguments, interactive help is
+            supplied; if a topic is supplied, help for that topic is given.  If the
+            topic argument is supplied as a string "topic1 topic2 ..." in quotes,
+            then each topic in the list is documented.
+
+ If no arguments are supplied, a short usage line is provided.
+
+* Usage:Overrides
+
+  Command line overrides of the input file are of the form name=value.
+  The available choices are as follows:
+
+  root=dataroot               Set root name of data file
+  path=datapath               Set path of data file
+  data=datafile               Set name of data (header) file
+  format=dataformat           Set format of data file
+  oroot=outputroot            Set output file root name
+  opath=outputpath            Set output file path
+  output=outputfile-name      Set output file name
+  logfile=logfile-name        Set log file name
+  first=voxel#                First voxel to process, indexed from 0
+  last=voxel#                 Last voxel to process, indexed from 0 (-1 == all)
+
+  
+  Note:  In the beta versions, overrides can be specified by the user via <arg> 
+         tags in the input file.  With version 1.0, this will be implemented
+         differently---with some set options and a general override option,
+         and the <arg> tag will disappear.
+
+
+*Input-Format
+
+ The beta versions of vmpfx specify their input using the INSPEC 
+ descriptor format version 0.5.  This is a general format for
+ providing input information to complex applications.  It allows
+ a variety of commands for representing information and dealing
+ with contingencies.  A C library for processing these files
+ is used by vmpfx.  
+
+ This original version of INSPEC was an attempt to solve a longstanding
+ (at least for me) problem with managing complex numerical programs.
+ It allows information to be encoded, stored, and easily varied
+ without rigid rules of order or format.  The C library is intended
+ to make it easy to process even very complicated input information
+ straightforwardly.
+
+ However, in its first large scale use, several design weaknesses
+ and unfulfilled potentials have been revealed.  Version 1.0 of
+ INSPEC fixes these problems and will provide a much cleaner and
+ more powerful tool, with both C and C++ implementations. 
+
+ Formatting Basics:
+ -----------------
+
+ The input file is arranged into a series of lines of the form
+
+ tag  value
+
+ separated by arbitrary spaces and comments.  Here, the tag is a
+ string of characters not including white space, comment characters #,
+ the command open close characters <>, or an optional tag separator
+ (by default empty but e.g., =).  Tags can be enclosed in quotes but
+ need not be.  The value is the sequence of tokens until the end of a
+ line.  White space separates individual tokens which thus specify
+ different input values associated with tag.  Strings enclosed in
+ quotes are processed and can include whitespace. Hence, the following
+ are acceptable:
+
+  foo   1 
+  bar   true
+  zap   1 2 3 4 5
+  ick   1 hello 2.718 world 3.14 "e I pi = -1" "\n"
+  what  "$<foo> 2 $<zap>"       # All in one string
+  hmmm  true $<zap> false       # Multiple values 
+
+  The application program determines how to parse the values associated
+  with each tag, but they can be arbitrary in number and type.  Lines
+  can be continued by a '\' preceding a newline.
+
+  In the example above, what is associated with the single string value
+  "1 2 1 2 3 4 5" while hmmm is associated with the multiple values
+  true 1 2 3 4 5 false.  Thus, previously defined tags can be referenced,
+  and quotes modulate how those values are combined.
+
+  The # is the comment character.  Any text between a # and
+  the end of a line is ignored; however, a comment has a replacement
+  value equivalent to whitespace, so input tokens cannot be split
+  by a comment.
+
+  Tag/Values pairs in the file can be given in any order and can be separated
+  by arbitrary whitespace.  Of course, tags must be defined if they are to
+  have a non-trivial substitution value during input file scanning.  Undefined
+  tags expand to the null string.
+
+  Command Structures:
+  ------------------
+
+  To make processing more convenient, there are a variety of commands 
+  available with reserved names.  These are all of the form
+
+      <command_name>
+
+  All multi-line commands are ended with <end>.
+
+  The commands are as follows:
+
+  <append> tag value              Appends value to the previously defined value of tag.
+                                  If tag has not been defined, this is the same as
+                                  assigning it.  Without the <append>, tag would be
+                                  redefined.
+
+  <arg> tag name                  Provides a command line over-ride alias "name="
+                                  for the tag  "tag".  This can also be specified
+                                  in the calling program, but was included to all
+                                  end-user flexibility.  However, the <arg> command
+                                  will be eliminated in the next version of INSPEC.
+
+  <cond> tag string               Conditionally specifies value of tag.  
+       string1   value1           If string == stringi, then tag is assigned value i.
+          ...                     The <end> must be placed on its own line in version 0.5.
+       stringn   valuen
+  <end>
+
+  <data> tag                      Specifies a data table associated with tag.
+                                  Each column of the table must maintain the same
+         X1  Y1  ...  Z1          data type.  The <end> must be placed on its
+         X2  Y2  ...  Z2          own line in version 0.5.
+            ...
+         Xn  Yn  ...  Zn
+  <end>
+       
+
+  <end>                           Ends a multiline command
+
+  <endinput>                      Stops input processing of the file.  This is 
+                                  helpful for including text information before
+                                  other (e.g., binary) input information.
+
+  <include> file                  Begin reading from file, continuing with current
+                                  file when finished.  Note that <endinput> in an
+                                  included file causes  
+
+  <require> tag                   Causes an error to be generated during scanning 
+                                  if tag has not been defined by this point.
+                                  This command will be eliminated in Version 1.0.
+
+ See Input-Format_Future for a comment on the new INSPEC 1.0 features.
+
+*Input-Format_Future
+
+ INSPEC Version 1.0 will eliminate the commands  <arg> and <require>,
+ and will eliminate the built-in variables $<#>.  New command features
+ include <namespace>, <record>, <binary>, and <class>.  The <namespace>
+ feature is particularly relevant to vmpfx, since it allows the coherent
+ organization of related tags.  That is,
+
+  <namespace> prefix
+    tag1 value1
+    tag2 value2
+      ...
+    tagn valuen
+  <end>
+
+ defines the tags prefix.tag1, prefix.tag2, ..., prefix.tagn.
+ All constructs and commands can be nested within a <namespace>.
+
+ The built-in variables in INSPEC 1.0 will include
+
+      $<this>           file name (without path) of the input file
+      $<this.path>      path only of input file
+      $<prog>           current executable root
+      $<prog.path>      path of current executeable
+      $<home>           user's home directory
+                 
+
+*Input-File
+
+ The input file contains tags to specify information to the program
+ on several sets of related quantities.  The tags 
+
+ Data
+ ----
+
+ Tag             Value         Default      Description
+		   	         	      
+ data.file       File Name                  Name of Data file (header)n
+ data.format     Format Name   list         Data File Format (see Data-Files)
+
+ 
+ I find it useful in the input file to define tags data.root and data.path
+ and base.path as follows:
+
+    base.path   /users/genovese/mri/
+
+    data.root   rootname
+    data.path   $<base.path>data/foo/
+    data.file   $<data.path>$<data.root>.mri
+
+ This allows a good deal of flexibility in using the same input file without
+ introducing errors from multiple changes throughout the file.
+
+
+ Output
+ ------
+
+ Tag               Value         Default      Description
+		   	         	      
+ output.file       filename      	      Name of output file
+ output.logfile    filename      	      Name of logfile
+ output.append     true/false    true         Add output to existing files?
+
+ vmpfx.produce     product list  estimates    List of output products to compute
+ vmpfx.model       model spec    full         Sub-models to include in hierarchy
+ vmpfx.null.model  true/false    false        Include null model? (Deprecated; use vmpfx.model) 
+
+
+ If no logfile is specified, the logfile will be named output-root.log.  The binary
+ file will be of the form output-root.bin in general.  The path component of the
+ output file name is carried over in both cases.
+
+ The possible products are as follows:
+
+     estimates               parameter estimates
+     standard.errors         parameter standard errors
+     residuals               residuals of the model fit
+     fitted.values           fitted values (data - residuals)
+     diagnostics             fit diagnostics and model comparisons
+     covariances             parameter covariance matrix (symmetric packed format)
+
+ The model structure determines which responsiveness parameters are included in the model
+ and which sub-models are compared in computing the posterior.  The currently supported
+ model specifications are:
+
+     full                    Include all non-fixed 
+     null                    Include none
+     maximal                 Include sub-models that each drop one non-fixed parameter
+     all                     Include all sub-models
+     full+null               Include full and null models
+     null+full               Include null and full models
+     all-full                Include all but full model
+
+ In version 0.25beta, only full, null, and full+null/null+full are supported.
+ The deprecated tag vmpfx.null.model determines whether or not a null model
+ is to be added to the full model.  
+
+ Design
+ ------
+
+ Tag               Value         Default      Description
+		   	         	      
+ conditions        integer                    Number of experimental conditions
+ design            3 col table                Condition, Task Start, and Task Length 
+ design.images     0 or 1           1         Design table given in images (1=true,0=false)
+ design.aligned    0 or 1           1         Tasks aligned with acquisition (1=true,0=false)
+ IAI               positive        1.0        Time between (3-D) images
+ fixed             integer list    empty      Conditions fixed to 0 responsiveness
+ slice.offset      non-negative    0.0        Time between slices (same units as IAI)
+ slice.order       integer list    empty      Slice indices in acquisition order (from 0)
+
+ Algorithm Settings
+ ------------------
+ Tag                 Value         Default      Description
+		   	         	      
+ vmpfx.iterations    pos integer      5000      Max # Iterations per voxel
+ vmpfx.evaluations   pos integer     50000      Max # Objective Evaluations per voxel
+ vmpfx.memlimit      pos integer   1048576      Output Cache Size Limit in bytes
+ vmpfx.qnb.options   2 col table                List of Options to Quasi-Newton Optimizer
+ vmpfx.scd.tol       pos real       1.0e-8      Tolerance for Numerical Hessian Calculation
+ vmpfx.cov.method    1..4                4      Method for Hessian Calculation
+ vmpfx.knots         integer             6      Number of Drift Knots to usen
+ vmpfx.fix.knots     true/false       true      Fix Knot Values (true) or Allow to Vary (false)
+ vmpfx.first.voxel   integer             0      Index (from 0) of first voxel processed
+ vmpfx.last.voxel    integer            -1      Index (from 0) of last voxel processed (-1 == all)
+
+ The values for covariance method correspond to
+
+        0            Second Central Difference Direct Estimate
+        1            Second Central Difference Richardson Interpolation
+        2            First Centeral Difference Direct Estimate
+        3            First Centeral Difference Richardson Interpolation
+        4            Analytic
+
+ Analytic is recommended.  If numerical calculation is used, the Richardson method
+ is far superior.
+
+ Note: In beta versions earlier than 0.5, only Direct and Richardson are supported, and
+ the default value is 1 (Richardson).   In all beta versions, gradient first central
+ differences are not yet implemented.
+
+
+ Parameter Specification
+ -----------------------
+
+ Tag               Value         Default      Description
+		   	         	      
+ drift.degree      integer           3        Degree of drift piecewise polynomials
+ shape.params      2-8               4        Number of Shape Parameters for Bell Functions
+ ramp.length       integer        8192        Length of Bell Spline Ramps (no need to change)
+ paste.form        0 or 1            0        Non-additive model  (0=additive, 1=smooth_paste)
+ paste.scale       pos real      0.001        Pasting Ratio (ignored if paste.form == 0)
+
+
+ Priors
+ ------
+
+ Tag               Value         Default      Description
+		   	         	      
+ prior.baseline     2 reals      [none] 1      Center and Spread for Baseline 
+ prior.drift        3 reals      1 1 0         Drift specification (see below)
+ prior.resp         2 reals      2.5e-3 50     Shift and Decay (both > 0)
+ prior.shape        s x 2 Table  1 1 each row  Shape and Scale (1 row per parameter, all > 0)
+ prior.sigmasq      2 reals      2.5 1.25      Shape and Scale for 1/sigma^2    (both > 0)
+
+ prior.drift.scaled  true/false  false        Deprecated (Scale Drift by Baseline)
+
+ The drift specification requires three values.  The first is the prior penalty on the
+ norm of the drift profile, the second is the prior penalty on the curvature of the
+ drift profile, and the third is the target degrees of freedom allowed for the
+ drift profile.  The values 0.001 1 5 are reasonable generic values.
+
+ The priors for the other parameters describe the shape of the prior distribution.
+ The prior.shape tag requires 1 set of parameters for each shape parameter specified.
+
+
+ Initialization
+ --------------
+
+ Tag               Value         Default      Description
+		   	         	      
+ vmpfx.init         list           auto        Components to explicitly initialize
+ vmpfx.init.type    type name      float       Type for initializing information
+ vmpfx.init.iter    integer        50          Max # Iterations for Initial Fit
+ vmpfx.init.tol     real           1e-4        Change tolerance for initial fit
+
+ For the beta versions of vmpfx, I recommend using auto initialization and the
+ other initialization defaults.  Version 1.0 will handle initialization a bit
+ more concisely.
+
+*Data-Files
+
+ vmpfx supports several input formats.  The data should be arranged 
+ with time as the fastest varying dimension since vmpfx pulls off
+ one voxel time series at a time.   The formats are as follows:
+
+   list          List Format
+
+     This format is a generic list of voxel time series, with no required
+     coordinates in space.  The file name given in the data.file is a 
+     text header with the following fields:
+
+        Tag          Value         Default      Description
+
+        file         filename                   Data File Name
+        voxels       integer                    Number of voxels
+        type         type name     float        Storage type of input data
+        dim.t        integer                    Extent of Time Dimension
+        dim.x        integer                    Extent of x dimension  (Optional)
+        dim.y        integer                    Extent of y dimension  (Optional)
+        dim.z        integer                    Extent of z dimension  (Optional)
+        header       integer        0           Size of header before data in bytes
+        missing      string        none         Information on missing values
+        image        true/false    false        Data composed of complete images.
+
+   Unless specified with the file tag, the data file path is taken to be the same  
+   as that of the header file.
+
+
+   pgh-mri       Pittsburgh MRI Format
+
+     Thanks to Joel Welling, vmpfx can read data files in the Pittsburgh MRI Format.
+     The name of the header file is given for the data.file tag.
+
+   pgh           Old Pittsburgh Format
+
+     The old Pittsburgh format has a short header prepended to the data
+
+   raw           Just data file
+
+     In this case, the required information should be included in the input file,
+     as follows:
+
+        Tag               Value         Default      Description
+
+        data.voxels       integer                    Number of voxels
+        data.type         type name     float        Storage type of input data
+        data.dim.t        integer                    Extent of Time Dimension
+        data.dim.x        integer                    Extent of x dimension  (Optional)
+        data.dim.y        integer                    Extent of y dimension  (Optional)
+        data.dim.z        integer                    Extent of z dimension  (Optional)
+        data.header       integer        0           Size of header before data in bytes
+        data.missing      string        none         Information on missing values
+        data.image        true/false    false        Data composed of complete images.
+
+      Note:  The raw format information will be updated in Version 1, particularly the 
+      handling of missing values.
+
+*Output:Intro
+
+ vmpfx produces three files:
+
+   1.  Log                       Input Record and Execution Log
+   2.  Output Descriptor         Text Description of Results Structure
+   3.  Binary Products           Requested Products stored in binary form
+
+ By default, these are named root.log, root.out, and root.bin respectively,
+ where root is the data file name without path or extension.  The
+ logfile root and the output/binary root can be set independently in
+ the input file.
+
+ vmpfx will refuse to overwrite existing files 
+
+ See Output:Logfile, Output:Descriptor, Output:Binary for further details.
+
+*Output:Logfile
+
+ The Logfile contains a time-stamped copy of the input file for reference
+ and an execution log containing any diagnostic information or error messages
+ produced by the program.
+
+ Note: Because of a poor interface design for the IMSL optimizer,
+ vmpfx may redirect some internal IMSL messages to the standard error.
+ Do not be alarmed.  I find it best to implement vmpfx with ">& vlog"
+ at the end of the line to catch these (although they are useless).
+
+*Output:Descriptor
+
+ This file gives a text representation of the records stored in the
+ binary results.  The header tags describe the file and list the
+ volumes produced.  The subsequent tags form a hierarchy of components
+ within each volume.  The type column describes the type of object,
+ the size column describes the size in bytes of each object, and the
+ units column describes the number of objects associated with that
+ component.  The special type record indicates that a .contents field
+ exists for that component.
+
+*Output:Binary
+
+ Results stored in binary format packaged as described in the Descriptor file.
+
+
+
+
+

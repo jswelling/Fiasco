@@ -1,0 +1,230 @@
+# $Id: baseline.c,v 1.17 2007/04/19 22:34:18 welling Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>baseline_help</title>
+  </head>
+  <body>
+    <h1>baseline_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  baseline is used to correct for miscalibration of the
+  analog-to-digital converter. It can also be used to reverse lines,
+  as needed for standard EPI data collection.  Raw and smoothed
+  correction estimates are saved; see "smoother options" below for
+  further details.
+
+  To use baseline use:
+    baseline [-estimates Estimates-File]
+             [-smoothedestimates Smooth-Est-File] [-reverse Which-Lines]
+             [...smoother options...] infile outfile
+
+  or:  
+    baseline -help
+
+</pre>
+<h2>Examples</h2>
+<pre>
+
+  baseline infile outfile
+
+  This use takes all the defaults:
+  -est rawbaseline.par
+  -sme baseline.par
+  -rev odd
+
+  baseline -est baseline.par -sme sm.par -rev even infile outfile
+
+  This use puts the raw parameter estimates in file baseline.par (at 
+  odds with the default use) and puts the smoothed parameter estimates
+  in file sm.par.  Line reversal is for even lines only (typical for
+  coronal slices).
+
+</pre>
+<h2>Arguments</h2>
+<h3>estimates</h3>
+<pre>
+  [-estimates Estimates-File]      (-est Estimates-File)
+
+  Ex: -e b.par
+
+  Specifies that the location adjustment parameters should be written
+  to Estimates-file. Default is "rawbaseline.par".
+
+</pre>
+<h3>smoothedestimates</h3>
+<pre>
+  [-smoothedestimates Smooth-Estimates-File]      (-sme Smooth-Estimates-File)
+
+  Ex: -sme sb.par
+
+  Specifies that the smoothed location adjustment parameters should be
+  written to Smooth-Estimates-file. Default is "baseline.par".
+
+</pre>
+<h3>reverse</h3>
+<pre>
+  [-reverse even|odd|all|none]            (-rev|-r Which-Lines)
+
+  Ex: -r all
+
+  Specifies the lines whose order is to be reversed.
+  Values of Which-Lines accepted:
+       "none"      No line reversing.
+       "odd"       Odd lines are reversed.
+       "even"      Even lines are reversed.
+       "all"       All lines are reversed.
+  The default is to use any row flipping information in the input
+  dataset, or "none" if no such information is available.
+
+
+</pre>
+<h2>Details</h2>
+<h3>Inputs</h3>
+<pre>
+
+  Baseline accepts only standard complex-valued images with dimension
+  order "vxyzt" or "vqyzt" as input.
+
+  The outfile is not allowed to have the same name as the infile.
+
+  The outfile consists of single-precision, complex-valued, floating-point
+  numbers.
+
+  The location adjustment parameters are written in ASCII format with
+  each line containing the real and the imaginary parts parameters.
+  The lines occur in "zt" dimension order.
+
+  Odd line reversing is typical for axial and sagittal slices; even
+  line reversing is typical for coronal slices.
+
+</pre>
+<h3>Calculation</h3>
+<pre>
+
+  Baseline adjustment is based on the fact that the k-space data
+  should (approximately) be oscillating around 0 at the highest frequencies.
+
+  Implementation calculates the mean of the k-space data at the
+  highest frequencies, in particular the left and right
+  quarters of k-space (where the kx-dimension corresponds to the
+  left/right axis).
+
+  Estimates are subject to noise, so the time series for each slice
+  is smoothed.  The smoothed value at each time is subtracted from all
+  of the k-space data for that time.
+
+</pre>
+<h2>Usage</h2>
+<h3>SmootherOptions</h3>
+<pre>
+
+    -smoother_type type
+
+       type specifies smoother type. Available options are:
+
+              "gauss" for Gaussian kernel smoothing
+              "tri"   for triangular kernel smoothing
+              "pow"   for power law kernel smoothing 
+              "median"for median smoothing
+              "none"  to disable smoothing  
+              "ddx"   a special type which produces output values equal 
+                      to the change in the input from the previous sample
+              "shift" a special type which produces output values equal 
+                      to the input values at some nearby cell
+              "linterp" a special type which produces output values which
+                      are linearly interpolated between adjacent inputs
+              "runningsum" a special type which produces output values equal 
+                      to the previous output value plus the
+                      corresponding input value
+
+    -smoother_bandwidth band
+
+       band (a floating point number) specifies the bandwidth used
+            in smoothing.  The meaning of bandwidth depends on the
+            type of smoothing used;  see below.
+
+    -smoother_threshold thresh
+
+       thresh (a floating point number) specifies the cutoff threshold
+            for the smoothing kernel.  If a point within the smoothing
+            window differs from the point being calculated by a value
+            greater than the threshold, the window is truncated before
+            that value on that side.  If thresh is &lt;= 0.0, this test
+            is not performed and the window is not truncated.
+
+    -smoother_k k
+
+       k (a floating point number) specifies a constant which may be
+            used in specifying the smoothing kernel.  No current 
+            smoother type actually uses this value; it is present for
+            future expansion.
+
+  Unless otherwise specified for a specific function, the default type
+  is Gaussian, the default bandwidth is 45.0, the default constant is 
+  60.0, and the default threshold is 0.0.
+
+</pre>
+<h2>SmootherCalculation</h2>
+<pre>
+
+  All kernel smoothers check for missing data points, and exclude them. 
+
+  Kernel smoothers perform the following operations at each point
+  to be smoothed.  First, a smoothing window is defined.  This
+  window initially includes all of the data points.  The window is 
+  then truncated using the threshold value if appropriate.  A weighted
+  sum of the points remaining in the window is then calculated,
+  excluding missing points.  This value is divided by the sum of the 
+  weights to produce the smoothed value for the point in question.
+ 
+  The weights used are defined by the kernel K(t), where t= x1-x2, the
+  separation between the points in question.  The kernels used by the
+  various kernel smoothers are:
+
+  Gaussian:   K(t)= exp( -(t*t)/(bandwidth*bandwidth) ) 
+
+
+                    1.0 - (abs(t)/bandwidth) if abs(t)&lt;=bandwidth/2
+  Triangular: K(t)= 
+                    0.0 otherwise
+                    
+
+  Power law:  K(t)= pow( C, abs(t) )  where C= pow(0.5,1/bandwidth), 
+                                      so that bandwidth is full width
+                                      at half maximum.
+
+  Smoother type "median" replaces the input value with the median
+  value in a window of total width equal to bandwidth.  "median"
+  k values but respects thresholds.
+
+  Smoother type "none" does no smoothing, simply copying its input to
+  its output.
+
+  Smoother type "ddx" produces output Y[i]= X[i]-X[i-1].  This is a
+  convenient hack when derivatives are needed.  "ddx" ignores
+  bandwidth, threshold, k, and all "missing" information.
+
+  Smoother type "shift" produces output Y[i]= X[i+shift], where 
+  shift=rint(bandwidth).  (rint rounds to the nearest integer).
+  Values for which X[i+shift] would fall outside the range of the
+  input data are set to 0.0.  "shift" ignores threshold, k, and all
+  "missing" information.
+
+  Smoother type "linterp" produces output Y[i]= (X[i-1] + X[i+1])/2
+  for all i which do not lie on the boundary of the input data range.
+  At the boundaries, 2-point extrapolative values are used.  For
+  example, Y[0]= 2*X[1] - X[2].
+
+  Smoother type "runningsum" produces output Y[0]= X[0], and
+  Y[i]= Y[i-1]+X[i] for all i&gt;0.
+
+
+
+
+    </pre>
+    <hr>
+    (automatically generated by baseline_help version of Sat Jan  2 22:50:22 2010)
+  </body>
+</html>

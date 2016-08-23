@@ -1,0 +1,185 @@
+# $Id: stats.c,v 1.21 2004/12/09 22:38:39 welling Exp $
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>stats_help</title>
+  </head>
+  <body>
+    <h1>stats_help</h1>
+<h2>Overview</h2>
+<pre>
+
+  stats calculates the mean and standard deviation for all
+    experimental conditions, as well as all pair-wise, 
+    pooled two-sample t-statistics, percent signal change,
+    and estimated error in percent signal change.
+
+  stats [-condition Experimental-conditions-file]
+          [-input Input-header-file] 
+          [-meanprefix MPath] [-stdvprefix SPath]
+          [-tsprefix TPath] [-maxtpairs MaxPairs]
+
+  stats -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+</pre>
+<h2>Usage</h2>
+<h3>condition</h3>
+<pre>
+
+  -condition Experimental-conditions-file (-c Experimental-conditions-file)
+
+    Specifies that the image/slice-by-image/slice experimental condition
+      memberships are to be read from Experimental-conditions-file.
+    Default value is "newsplit".
+
+    The format of Experimental-conditions-file is as that output by
+      intsplit.c --- an ASCII file of ( number-of-images * number-of-slices )
+      lines of 3 integers each, corresponding to the image number,
+      slice number, and experimental condition code, respectively.
+
+</pre>
+<h3>input</h3>
+<pre>
+
+  -input Input-header-file        (-i Input-header-file)
+
+     Specifies that the header for the input dataset is located
+       in Input-header-file.
+     Default value is "input.mri".
+
+     stats accepts only standard real-valued images with
+       dimension order "xyzt" or "vxyzt" as input.
+
+</pre>
+<h3>meanprefix</h3>
+<pre>
+
+  -meanprefix MPath                (-m MPath)
+
+     Specifies that the datasets for the mean images of the experimenatal
+       conditions will be written to MPathMean_%d.mri and MPathMean_%d.dat
+       for the headers and data, respectively, where %d represents the
+       experimental condition code.  The overall mean (across all
+       conditions) will be written to MPathGrandMean.mri and
+       MpathGrandMean.dat .
+ 
+     Note that if MPath is a directory specification, it should end in "/".
+       For example, "/tmp/" rather than "/tmp".
+     Default value is "".  (Writes to current directory.)
+
+</pre>
+<h3>stdvprefix</h3>
+<pre>
+
+  -stdvprefix SPath                (-s SPath)
+
+     Specifies that the datasets for the standard deviation images of the
+       experimenatal conditions will be written to SPathStdv_%d.mri and 
+       SPathStdv_%d.dat for the headers and data, respectively, where %d 
+       represents the experimental condition code.  The overall
+       standard deviation across all conditions will be written to
+       SPathGrandStdv.mri and SPathGrandStdv.dat .
+ 
+     Note that if SPath is a directory specification, it should end in "/".
+       For example, "/tmp/" rather than "/tmp".
+     Default value is "".  (Writes to current directory.)
+
+</pre>
+<h3>tsprefix</h3>
+<pre>
+
+  -tsprefix TPath                  (-t TPath)
+
+     Specifies the path prefix for the t-statistics, percent signal
+       change, and estimated error in percent signal change output.
+       T-statistics are written to "Tpath"Tmap_%d-%d.mri, percent
+       signal change to "Tpath"PctSC_%d-%d.mri, and estimated error
+       in percent signal change to "Tpath"EPctSC_%d-%d.mri , where %d-%d 
+       represents the experimental condition codes for the conditions
+       being contrasted.
+     Note that if TPath is a directory specification, it should end in "/".
+       For example, "/tmp/" rather than "/tmp".
+     Default value is "".  (Writes to current directory.)
+
+</pre>
+<h3>maxtpairs</h3>
+<pre>
+
+  -maxtpairs MaxPairs             (-p MaxPairs)
+
+     For a conditions file listing n distinct conditions, there will
+       exist (n*(n-1))/2 possible pairs of conditions for T statistics.  
+       This may be prohibitively many.  MaxPairs specifies an upper
+       limit to the number of T statistics produced;  if (n*(n-1))/2
+       is greater than MaxPairs no T statistics will be produced.
+       T statistics can be supressed completely by setting MaxPairs
+       to 0. Default is 50.  (This limit also applies to percent 
+       signal change and its estimated error).
+
+
+</pre>
+<h2>Calculation</h2>
+<pre>
+
+  Within each experimental condition, the estimates of the mean and
+    standard deviation are calculated on a pixel-wise basis using the
+    usual unbiased estimates:
+       Mean[ X ] = 1 / N ( x_1 + x_2 + ... + x_N )
+       Stdv[ X ] = sqrt( 1 / ( N - 1 ) *
+                         ( ( x_1 - Mean[ X ] )^2 + ( x_2 - Mean[ X ] )^2 +
+                           ... + ( x_N - Mean[ X ] )^2 ) )
+    where N is the number of images in the experimental condition.
+
+  The grand mean and standard deviation are calculated in the same
+    way, except that all non-missing images are assumed to be in the
+    same experimental condition.
+
+  If N = 0, then the means and standard deviations are simply set to zero.
+    If N = 1, then the means are calculated normally and the standard
+    deviations are set to zero.
+
+  t-statistics are calculated for all pairwise contrasts of experimental
+    conditions (excepting the "missing" condition).  The pooled t-test
+    is used whenever sufficient data is available ( N &gt;= 1 for both
+    conditions and N &gt; 1 for at least one ).  That is, the pooled 
+    standard deviation is estimated as:
+
+      pooled_stdv = sqrt( ( Stdv[ X_A ]^2 * ( N_A + 1 ) +
+                            Stdv[ X_B ]^2 * ( N_B + 1 ) ) /
+                          ( N_A + N_B - 2 ) *
+                          sqrt( 1 / N_A + 1 / N_B ) )
+
+    where the _A and _B simply denote the different experimental conditions.
+    The t-statistic is then:
+
+      t_(A-B) = ( Mean[ X_A ] - Mean[ X_B ] ) / pooled_stdv
+
+    If pooled_stdv is 0, or if insufficient data is available, then the
+    t-statistic is simply set to plus or minus an arbitrarily large number
+    (currently 999999) if there is a positive or negative difference in
+    means, respectively, or 0 otherwise.
+
+  Percent signal change between conditions A and B is calculated as:
+
+     PctSC(A-B) = 100.0 * ( Mean[ X_A ] - Mean[ X_B ] ) / Mean[ X_B ]
+
+    and estimated error in percent signal change as:
+
+     EPctSC(A-B) = 100.0 * sqrt( total_var / Mean[ X_B ] )
+
+    where
+
+     total_var = ( Stdv[X_A]*Stdv[X_A] / N_A )
+                +( Stdv[X_B]*Stdv[X_B] / N_B )
+
+
+</pre>
+    <hr>
+    (automatically generated by stats_help version of Sat Jan  2 22:50:25 2010)
+  </body>
+</html>

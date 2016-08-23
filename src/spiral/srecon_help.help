@@ -1,0 +1,84 @@
+*Usage
+
+  srecon.c transforms spiral data on a k-space grid to coordinate
+  space.
+
+  spiral [-s] [-bei] [-beo] [-lei] [-leo] [-o im_offset] [-p] [-v]
+
+  sgrid -help [topic]
+
+  spiral takes no command line arguments other than option switches.
+  Instead, environment variables are used to specify input and output
+  files.  See the Environment usage information.
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+*Usage:options
+
+  -o im_offset
+
+     Specifies offset used in output image numbers.  Default 0.
+     This switch overrides the environment variable F_SRECON_IM_OFFSET.
+
+  -a
+
+     Specifies that a separate image should be written for each coil.
+     This switch overrides the environment variable F_SRECON_ALL_COILS.
+
+  -p
+
+     Specifies that an image phase file should be written.  This 
+     switch overrides the environment variable F_SRECON_WR_PHASE.
+
+  -bei
+
+     Specifies big-endian input.
+
+  -beo
+
+     Specifies big-endian output.
+
+  -lei
+
+     Specifies little-endian input.
+
+  -leo
+
+     Specifies little-endian output.
+
+  -v
+
+     Specifies verbose operation.
+
+  -2
+
+     Specifies double translation in registration file.
+
+*Usage:environment
+
+  srecon recognizes the following environment variables:
+
+      F_SRECON_FILTER_SZ        total width of filter in pixels
+      F_SRECON_HC_COR           time-segmented correction
+      F_SRECON_LIN_MAP          linear correction maps
+      F_SRECON_GEN_MAP          general correction maps
+      F_SRECON_IM_OFFSET        output image numbering offset
+      F_SRECON_SLICE            slice number to work on 
+                                (0 indicates all slices)
+      F_SRECON_ALL_COILS        true if a separate image should 
+                                be written for each coil
+      F_SRECON_WR_PHASE         true if an image phase file should be written
+      F_SRECON_MAP_TIME
+      F_SRECON_SAMP_TIME
+      F_SRECON_PH_TWIST         phase twist
+      F_SRECON_HOSTS            hosts for parallel execution
+      F_SRECON_INPUT_DIR        directory for input files
+      F_SRECON_TMP_DIR          directory for scratch files
+      F_SRECON_OUT_DIR          directory for output files
+      F_SRECON_OUT_NAME         name for output dataset
+      F_SRECON_OUT_DATA         file for output data chunk
+
+

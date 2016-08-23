@@ -1,0 +1,44 @@
+*Usage
+
+  pfileorder is used to reorder pfile names, correcting for
+  wrap-around in file numbering.  pfileorder is used to create
+  an appropriate list of filenames for input to the spiral
+  reconstruction routines.
+
+  pfileorder reference_filename all_filenames...
+
+  e.g. pfileorder reffile `ls P*`
+
+  prints list to stdout.  On error no output is produced.
+
+  pfileorder -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+
+  pfileorder takes a reference file name and an arbitrarily 
+  ordered list of filenames including the reference filename.
+  The list of filenames (*including* the reference filename)
+  is printed out in numerical order, starting with the first
+  filename greater than the reference file name and continuing
+  in ascending order.  When the maximum filename is reached,
+  the output wraps around to include filenames less than the
+  reference filename.  
+  in numerical order, starting with the first filename
+  than the reference file name and continuing in ascending
+  order and wrapping around to include filenames < the
+  reference file name at the end.
+
+  This code is designed to handle a single wrap case,
+  where the correct ordering of files might be:
+
+     P30000 P40000 P50000 P60000 P00000 P10000
+
+  it does _NOT_ handle a possible double wrap case where
+  the correct ordering is
+
+     P30000 P40000 P50000 P60000 P00000 P10000 P35000
+

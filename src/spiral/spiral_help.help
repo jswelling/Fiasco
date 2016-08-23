@@ -1,0 +1,293 @@
+*Usage
+
+  spiral.c regrids & reconstructs spiral scan data.
+  It is specific to data collected according to a scan program
+  by Doug Noll, the author of gsp15.c & etc., from which spiral.c
+  was derived.
+
+  spiral [-help <topic>]
+	[-bei] [-beo] [-lei] [-leo]
+	[-r | -reg_file | -registration file <filename>]
+	[-2 | -reg2x]
+	[-a | -all_coils]
+	[-l | -loc_shift | -location_shift]
+	[-write_raw]
+	[-m | -write_mag | -write_magnitude]
+	[-p | -write_phase]
+	[-write_samples]
+	[-v | -verbosity <integer>]
+	[-print_mode]
+	[-lin_cor | -linear_correction]
+	[-hc_cor | -homogeneity_correction]
+	[-lin_map | -linear_map]
+	[-gen_map | -general_map]
+	[-mapdel <float> | -map_delay <float>]
+	[-float | -output_float]
+	[-res | -resolution <integer>]
+	[-grid_len | -grid_length <float>]
+	[-over_samp | -oversampling <integer>]
+	[-slice <integer>]
+	[-samp_delay | -sample_delay <integer>]
+	[-samp_cor | -sample_correction]
+	[-ph_twist | -phase_twist <float>]
+	[-lr_shift | -left_right_shift <integer>]
+	[-tb_shift | -top_bottom_shift <integer>]
+	[-zoom <float>]
+	[-mag_factor | -magnitude_factor <float>]
+	[-ph_factor | -phase_factor <float>]
+	[-filter_sz | -filter_size <integer>]
+	[-hosts <hostlist>]
+	[-input_dir <dirname>]
+	[-tmp_dir <dirname>]
+	[-output_dir <dirname>]
+	[-out_name | -output_name <filename>]
+	[-out_data | -output_data <filename>]
+	[-scale | -output_scale <float>]
+	[-ref | -reference <filename>]
+	[-tag <idtag>]
+	fname1 [fname2 ...]
+
+  spiral gets a few inputs from environment variables;  see
+  the Environment usage information.
+
+
+*Usage:Input
+
+   fname1 and additional files are input for reconstruction.
+		Arbitrarily many files can be supplied;
+		compressed files are decompressed automatically.
+                Pfiles are expected to be in GE LX format; Pgh
+                MRI datasets are expected to contain equivalent
+                information (see the documentation for 
+                spiral_reader).
+
+  -input_dir | -input_directory <dirname>
+		Specifies the input directory where the P files,
+		reference files, and/or input Pgh MRI datasets
+		are to be found.  (If the input file names start 
+		with a '/' or '.', this setting will be ignored.)
+
+  -tmp_dir | -tmp_directory <dirname>
+		Specifies the temporary directory to use if we
+		have to uncompress the P files.  These are
+		uncompressed one at a time and removed after
+		we are through processing that P file.
+
+  -slice <integer>
+		Only process the specified slice from the P file
+
+  -bei		Specifies big endian input (default) 
+
+  -lei		Specifies little endian input.
+
+
+*Usage:Parameters
+
+  -res | -resolution <integer>
+		Specifies the x,y resolution for the output
+		images (default is 64)
+
+  -over_samp | -oversampling <integer>
+		Specifies the oversampling factor (the gridded
+		data will have a resolution equal to this
+		multiplied by the resolution of the output images)
+		(defaults is 2)
+
+  -grid_len | -grid_length <float>
+		Specifies the half width of the convolution performed
+		during the gridding process (default is 1.5)
+
+  -samp_delay | -sample_delay <integer>
+		Specifies the input delay expressed as a number
+		of samples (default is 50)
+
+  -filter_sz | -filter_size <integer>
+		Specifies the total width (in pixels) of the filter
+		used in generating the reference images (default is 5).
+		This parameter is only used when processing references.
+
+  -tag <idtag>
+                Specifies that the given string is to be associated
+                with the data by including it in the Pittsburgh MRI 
+                file produced.  The tag will become the value of the 
+                key "images.scan.id".  This is typically used to 
+                attach a unique scan ID to the file. 
+
+*Usage:Corrections
+
+  -r | -reg_file | -registration_file <filename>
+		Specifies a registration file to apply
+		while gridding.
+		
+  -2 | -reg2x
+		Double the registration x and y shifts.
+
+  -ref | -reference <filename>
+
+  -lin_cor | -linear_correction
+		Apply a linear correction computed from
+		a reference
+
+  -gen_cor | -general_correction | hc_cor | -homogeneity_correction
+		Apply a general (homogeneity) correction
+		computed from a reference
+
+  -samp_cor | -sample_correction
+		Apply sample density correction
+
+
+*Usage:Adjustments
+
+  -l | -loc_shift | -location_shift
+		Specifies that a location shift should be done
+		to align the slices according to information in
+		the P file header
+
+  -lr_shift | -left_right_shift <integer>
+		Applies a left or right shift during the
+		gridding
+
+  -tb_shift | -top_bottom_shift <integer>
+		Applies a top or bottom shift during the
+		gridding
+
+  -mag_factor | -magnitude_factor <float>
+		Magnitude adjustment of the K-space data
+
+  -ph_factor | -phase_factor <float>
+		Phase adjustment of the K-space data
+
+  -ph_twist | -phase_twist <float>
+		Applies a phase twist to the K-space data
+
+  -zoom <float>
+		Zooms during the gridding by the specified factor
+
+  -mapdel <float>
+                The delay in microseconds at which the reference map
+                was acquired.  This information is available in most
+                Pfiles and thus is generally not needed.  If both a
+                command line value and an input file value are
+                present, the command line value overrides.
+
+*Usage:Reference file switches
+
+  -lin_map | -linear_map
+		Generate a linear correction map from this
+		reference P file
+
+  -gen_map | -general_map
+		Generate a general (homogeneity) correction map
+		from this reference P file
+
+
+*Usage:Output
+
+  -float | -output_float
+		Write the output images as floats rather than
+		16-bit integers (the default).
+
+  -scale | -output_scale <float>
+		Multiply the output image voxel values by this
+		number (defaults to 1024.0)
+
+  -beo		Specifies big endian output (default)
+
+  -leo		Specifies little endian output
+
+  -output_dir | -output_directory <dirname>
+		Specifies the output directory if not the
+		current directory
+
+  -out_name | -output_name <filename>
+		Specifies the filename to use for the output
+		dataset header.  A ".mri" extension will
+		be appended if the filename has no extension.
+
+  -out_data | -output_data <filename>
+		Specifies the filename in which to put the actual
+		output data (defaults to .dat, i.e., the dataset
+		name with .dat replacing .mri)
+
+*Usage:Auxiliary output
+
+  -write_raw
+		Write out the gridded K-space data
+
+  -m | write_mag
+		Write out the magnitude of the gridded
+		K-space data
+
+  -write_samples
+                Write out the raw, ungridded, complex K-space samples
+
+  -p | -write_phase
+		Write out the phase of the reconstructed
+		image data
+
+  -a | -all_coils
+		Specifies that separate output chunks should
+		be created for all coils.
+
+
+*Usage:Reporting
+
+  -v | -verbosity <integer>
+		Set level of verbosity (each level also prints the messages
+		    of lower levels):
+			0: only print out errors
+			1: print one line per P file and a done message
+			2: print out summary information per P file
+			3: print out summary information per slice
+				(all timesteps)
+			4: print out information per slice per timestep
+		The verbosity defaults to 1.
+
+  -print_mode
+		Print out the settings of all reconstruction
+		parameters
+
+  -help [<topic>]
+		Engage help system, providing help on topic, if supplied,
+		or starting the interactive help system otherwise.
+
+
+*Usage:Parallel Operation
+
+  -hosts <hostlist>
+		Use the specified hosts when running in parallel.
+		For more than one host, the list should be quoted,
+		e.g. -hosts "hostname1 hostname2".  An option integer
+		can be appended to each hostname (using a colon) to
+		indicate how many workers should be started on that
+		host (this is useful for SMPs),
+		e.g. -hosts "hostname1:6 hostname2:4"
+
+  For parallel operation, remember to set PAR_ENABLE to 1.  See the
+  section on environment variable usage for other variables that
+  affect running parallel
+
+*Usage:Environment
+
+  spiral recognizes the following environment variables that are
+	used by the libpar library:
+
+      PAR_ENABLE	if non-zero, enables parallelism
+      PAR_DEBUG		if non-zero, start each worker up
+				under a debugger
+      PAR_GROUP		specifies the PVM group name if we
+				want to force a particular name;
+				otherwise a unique name will be
+				chosen for us
+      PAR_NOSPAWN	specifies that the workers should
+				not be started by spawning them
+				from the master (presumably some other
+				method (e.g. mpprun) will start them
+				up independently of the master)
+      PAR_CWD		specifies the current working directory
+				for the processes (this is only
+				needed when setting PAR_NOSPAWN to 1,
+				since if the workers are spawned by
+				the master, they will automatically
+				get the same working directory as the
+				master)

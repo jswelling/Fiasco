@@ -1,0 +1,438 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>ireg3d_help</title>
+  </head>
+  <body>
+    <h1>ireg3d_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  ireg3d is used to perform 3-D motion correction on a set
+  of images, given estimates of the motion.  If the input images
+  are in image space, the specified rotation and translation are
+  carried out.  If the input images are in k-space, the rotation
+  is carried out and the phases of the result are set such that
+  the in-plane translation will be carried out by the FFT that 
+  transforms the images to image space. (Scalar data is assumed 
+  to be in image space, complex data (v.extent=2) is assumed to be 
+  in k-space).  Note that this convention assumes that images are
+  acquired slicewise, so that complex data is reconstructed using
+  FFTs in the X and Y directions only.  Input data must be organized
+  as (v)xyz(t).  It is best to use this algorithm on data that 
+  is confined to the central region of the volume;  see the 
+  "Calculation" section below for details.  Specifically, applying
+  this algorithm to equivalent image space and k space data may
+  not produce equivalent results because of these boundary effects.
+
+  To run ireg3d use:
+    ireg3d -xvoxel xv -yvoxel yv -zvoxel zv
+           [-input Input-header-file] [-headerout Output-header-file]
+           [-parameters Registration-parameter-file] [-debug] [-verbose]
+           [-real] [-qualmeasure cox|sabs|ssqr|ucell]
+           [ -interp fourier|closest|linear|catmullrom|bspline|bezier]
+           [-shear4 | -shear7 | -shear13 ]
+
+  or:
+    ireg3d -help 
+
+</pre>
+<h2>Arguments</h2>
+<h3>xvoxel</h3>
+<pre>
+   -xvoxel xv                      (-x xv)
+
+   Specifies the voxel edge length in the x direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>yvoxel</h3>
+<pre>
+   -yvoxel yv                      (-y yv)
+
+   Specifies the voxel edge length in the y direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>zvoxel</h3>
+<pre>
+   -zvoxel zv                      (-z zv)
+
+   Specifies the voxel edge length in the z direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+</pre>
+<h3>input</h3>
+<pre>
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -input partialk.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   ireg3d accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+</pre>
+<h3>headerout</h3>
+<pre>
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h 3dOutput.mri
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file. Default value is
+   "ireg3d.mri. Output-header-file is not allowed to have the same
+   name as Input-header-file. 
+
+</pre>
+<h3>parameters</h3>
+<pre>
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+ 
+   Specifies that the motion correction parameters are to be
+   read from Registration-parameter-file. Default value is "reg3d.par".
+
+   The format of the Registration-parameter-file is a series of
+   ASCII numbers of the form:
+         image# q_x q_y q_z q_w shift_x shift_y shift_z mse
+   where the q_ elements compose a unit quaternion specifying
+   the rotation.  These 9 numbers must be separated by spaces
+   or tabs, but NOT carriage returns- all nine numbers must reside
+   on the same line.  The mse entry is ignored;  it is given for
+   compatibility with other utilities.  Lines beginning with '#'
+   are considered to be comments and are ignored.
+
+</pre>
+<h3>debug</h3>
+<pre>
+   [-debug]                               [-dbg]
+  
+   Causes debugging output to be produced.
+
+</pre>
+<h3>verbose</h3>
+<pre>
+   [-verbose]                              [-v]
+
+   Causes verbose output to be produced.
+
+</pre>
+<h3>real</h3>
+<pre>
+   [-real]
+
+   Set this option if the input data is complex but represents the
+   (forward) Fourier transform of a pure real function.  The output is 
+   then guaranteed also to represent the Fourier transform of purely
+   real data.
+
+</pre>
+<h3>shear4</h3>
+<pre>
+   [-shear4]
+
+   Causes a minimum number of Fourier transforms to be applied.  The
+   exact pattern is controlled by the -qualmeasure flag.  Four shear
+   operations are used to implement general 3D rotations and
+   translations;  some special cases use fewer.  This is the default
+   method of implementing the rotation.  This flag is incompatible
+   with the -shear7, -shear13, and -trilinear flags.
+
+
+</pre>
+<h3>shear7</h3>
+<pre>
+   [-shear7]
+
+   Causes a pattern of Fourier transforms to be performed which is 
+   symmetrical for small rotation angles.  The exact pattern is 
+   controlled by the -qualmeasure flag.  Seven shear operations are
+   used to implement general 3D rotations and translations;  some
+   special cases use fewer.  This flag is incompatible with the
+   -shear4, shear13, and -trilinear flags.
+
+</pre>
+<h3>shear13</h3>
+<pre>
+   [-shear13]
+
+   Causes a fully symmetric series of Fourier transformations to be
+   applied.  This means that an odd number of shearing operations
+   will be done.  The first will be identical to the last, the second
+   will be identical to the second-from-last, etc.  This flag is 
+   incompatible with the -shear4, -shear7, and -trilinear flags.
+
+</pre>
+<h3>interp</h3>
+<pre>
+   [ -interp fourier|closest|linear|catmullrom|bspline|bezier]
+
+   Specifies the interpolation mode to be used.  Fourier interpolation
+   is the default, and the only interpolation mechanism supported for
+   complex data.  See the section below on interpolation methods for
+   information on the other options.  The -shear4, -shear7, and
+   -shear13 flags are complatible only with Fourier interpolation, and
+   the -qualmeasure options effect only Fourier interpolation.
+
+</pre>
+<h3>qualmeasure</h3>
+<pre>
+   [-qualmeasure cox|sabs|ssqr|ucell]
+
+   Sets the method used to calculate the quality measure for a given
+   decomposition of a rotation into shears.  This in turn effects 
+   which decomposition is chosen for any given rotation.  Valid
+   parameters are "cox" (which uses the maximum of the absolute values
+   of the shear parameters), "sabs" (which uses the sum of absolute
+   values) "ssqr" (which uses the sum of squares of shear
+   parameters), and "ucell" (which means a measure of the volume of
+   the unit cell which the rotation carries out of the unit cell).
+   Default is "ssqr".
+
+</pre>
+<h2>Details</h2>
+<h3>Calculation</h3>
+<pre>
+
+  The requested operation is performed using Fourier methods, as
+  described below.  Note that the periodic nature of these methods
+  means that data carried beyond the edge of the volume will "wrap
+  around" and reappear on the other side.  This means that 
+  geometrically incorrect results can occur for large rotations
+  or translations (typically larger than about 30 degrees' rotation).
+  It is best to use this algorithm on data that is confined to the
+  central region of the volume.
+
+  For more details on this algorithm, see Eddy, Fitzgerald, Noll ---
+  "Improved Image Registration Using Fourier Interpolation", 
+  Magnetic Resonance in Medicine 36-6 (Dec 1996)
+
+</pre>
+<h3>CoordinateSystems</h3>
+<pre>
+
+  This section describes the 3D coordinate system used by Fiasco.
+  The coordinate system is right handed, with the X-Y slices oriented
+  according to the "radiological convention".
+
+  As a specific example, consider a set of multi-slice axial scan
+  data.  When a slice is viewed, the right side of the image
+  corresponds to the patient's left side, and patient's nose is
+  at the top of the image.  This amounts to viewing the slice as
+  if one were standing at the patient's feet, looking toward the
+  head.
+
+  We choose the X axis to be horizontal, with the positive X direction
+  toward the image's right (the patient's left).  The Y axis is
+  vertical, with the nose pointing in the positive Y direction.  The
+  right hand rule then implies that the Z axis points out of the image,
+  toward the patient's feet.
+
+  The order of data in a Pittsburgh MRI file representing a scan is
+  such that low X values (image left, patient right) appear before 
+  high X values (image right, patient left), and low Z values
+  (the top of the head) appear before high Z values (slices closer to 
+  the patient's feet).  However, note that low Y values (the back of
+  the head for an axial scan) appear *after* high Y values (the nose).
+  Thus the coordinate system order for the Y direction is reversed
+  with respect to the data order.
+
+  With this coordinate system convention (still assuming an axial
+  scan), a positive rotation about the X axis corresponds to a nod- 
+  the nose moves in the direction of the patient's feet.  A positive
+  rotation about Y moves the patient's right ear (on the image's 
+  left) in the direction of the feet.  A positive rotation about Z
+  brings the nose in the direction of the right ear (on the image's
+  left).
+
+
+
+</pre>
+<h3>FSHROT3DCalculation</h3>
+<pre>
+
+  Fourier Shifts and rotations in 3D are implemented using the 
+  "fshrot3d" package.  This package decomposes a requested 
+  rotation and translation into three or more shear operations
+  in 3D, and implements those shears using 1D Fourier transforms.
+  The elementary operations implement a shear, plus a translation
+  in the shear direction.
+
+  If the operation is a simple translation (no rotation component),
+  three shearing operations implement it- one in each direction.
+  Hereafter rotations R may include a translation T.  Pure rotations
+  will be denoted by lowercase r, such that 
+
+         R = T r
+
+
+  If an axis-aligned rotation is requested, three shears are used.
+  A fourth shear adds a translation along the rotational axis if
+  necessary.
+  Specifically, 
+
+         Rz = Sz Sy Sx Sy
+
+  where Rz is a rotation about Z, Sx is a shear in the X direction,
+  and etc.  Rotations about other axes can be found by permutation
+  of coordinates.
+
+  A non-axis-aligned rotation can be implemented as four shears:
+
+        R = Si Sj Sk Si
+
+  where i, j, and k represent distinct (but not necessarily cyclical)
+  axes X, Y, and Z.  There are 3*2*1*1=6 possible such decompositions.
+  See Cox et. al., "Real-Time 3D Image Registration for Functional",
+  Magnetic Resonance in Medicine 42(1999) or Welling, Eddy, and Young
+  (2000) (in preparation) for details.
+
+  The necessary coefficients for these shears are singular or 
+  near-singular in some regions, however.  If this situation is
+  found to occur, a correcting (pure) rotation "rc" is found which 
+  shifts the rotation out of the bad region, and the rotation is 
+  implemented as follows (bars denote the conjugate rotation):
+
+        R = T r 
+              __
+          = T rc rc r
+
+          = Sy Sz Sx Sy Sz Sx Sy
+                                  __
+  by decomposing ( rc r ) and ( T rc ) each into four shears,
+  resulting in 8 shears overall.
+
+  Note that the Fourier methods used here assume that the volume
+  being treated is periodic.  As a result of this, if any shear
+  carries the "interesting" part of the data beyond the edge of
+  the volume, that data will reappear on the opposite edge and
+  produce strange artifacts.  Thus this method is best used with
+  data confined to the region near the center of the volume, and
+  rotation and translation parameters that do not carry that
+  data to the boundary.
+
+  If the input data is real or is the Fourier transform of pure real
+  data, and one or more of the data dimensions is even, a special
+  condition applies.  The phase of the highest frequency signal along
+  an even dimension cannot be calculated from the input, so that
+  component of the input signal cannot be translated or rotated.  
+  
+
+</pre>
+<h3>FFTAlgorithm</h3>
+<pre>
+
+  The FFTW package (available from http://www.fftw.org/) is
+  used to implement the fast Fourier transforms used in this routine.
+  FFTW (Fastest Fourier Transform in the West) is distributed under
+  the Gnu General Public License.
+
+</pre>
+<h3>FFTEnvironment</h3>
+<pre>
+
+  If the environment variable F_WISDOM_FILE is set, its value will be
+  used as the basis for the name of a file in which FFTW will store
+  "wisdom".  This is machine-specific information about what precise
+  FFT algorithm is fastest on the specific hardware.  This information
+  can then be reused, saving a couple of seconds the next time a
+  program using FFTW runs.
+
+  Because this information is machine specific, an architecture-
+  specific string (usually the same as $PVM_ARCH) is appended to
+  the value of F_WISDOM_FILE in forming the filename.
+
+  In parallel runs, FFTW will create one wisdom file per processor,
+  by appending processor numbers to the file name.  This is necessary
+  to avoid errors due to multiple processes reading and writing the same
+  file.
+
+
+
+
+
+</pre>
+<h3>Interpolator</h3>
+<pre>
+
+  The Interpolator package supports a number of interpolation
+  algorithms.  All are implemented in a 'seperable' fashion, meaning
+  that for multi-dimensional interpolation the different dimensions
+  are interpolated in separate steps.  Each step interpolates a series
+  of samples taken at regular intervals along a grid line.
+
+  <table border cellpadding=5 >
+  <caption><b>Characteristics of Interpolators</b>
+  <tr><td><b>name</b></td>
+        <td><b>N</b></td>
+        <td><b>continuity</b></td>
+        <td><b>interpolates input pts</b></td>
+        <td><b>tension</b></td>
+  </tr>
+  <tr><td>closest</td><td>1</td><td>none</td>
+        <td>yes</td><td>no</td>
+  </tr>
+  <tr><td>linear</td><td>2</td><td>C0</td>
+        <td>yes</td><td>no</td>
+  </tr>
+  <tr><td>catmullrom</td><td>4</td><td>C1</td>
+        <td>yes</td><td>0.5</td>
+  </tr>
+  <tr><td>bspline</td><td>4</td><td>C2</td>
+        <td>no</td><td>no</td>
+  </tr>
+  <tr><td>bezier</td><td>4</td><td>C1</td>
+        <td>every 3rd</td><td>no</td>
+  </tr>
+  </table>
+
+  N is the number of sample points which contribute to a given output
+  value; for example, the output of the "closest" method depends only
+  on the value of the nearest input sample.
+
+  Continuity is the number of continuous derivative.  The "closest"
+  method produces discontinuous output and thus has no continuous
+  derivatives.  The "linear" method performs linear interpolation
+  between the nearest two input points, and thus is continuous but
+  has no continuous derivatives.
+
+  Note that the "bspline" method is the smoothest with two continuous
+  derivatives, but that the price of this is that the input values 
+  are not interpolated.  What this means is that if you ask this
+  interpolation method to return the values at the locations of the
+  input points, the output values will *not* be equal to the input 
+  values.  Nevertheless, this is the interpolation method recommended
+  by Unser et al. (see below) for implementing rotation with this 
+  order of interpolant.
+
+  Methods listed as having a 'tension' support an additional degree
+  of freedom corresponding vaguely to the stiffness of a natural 
+  spline.  If a tension is supported, the default value is given.
+  The specific application in use may or may not support changing 
+  this value.
+  
+</pre>
+<h3>InterpolatorReferences</h3>
+<pre>
+
+  For a nice treatment of interpolation in the context of rotation,
+  see Unser, Thevenaz, and Yaroslavsky, IEEE Transactions on Image 
+  Processing, 4.10, 1995
+
+  Computer Graphics Principles and Practice by Foley, van Dam, Feiner,
+  and Hughes provides a good introduction to spline curves, including
+  the weight functions used by the spline interpolators in this package.
+</pre>
+    <hr>
+    (automatically generated by ireg3d_help version of Sat Jan  2 22:50:35 2010)
+  </body>
+</html>

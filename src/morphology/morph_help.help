@@ -1,0 +1,122 @@
+*Introduction
+
+  morph performs simple dilation and erosion operations on Pgh
+  MRI datasets containing 0's and 1's.  Contiguous blocks of voxels
+  can also be labeled.  The input dataset dimensions must be (v)xyz(t); 
+  the extent of v must be 1 if present.
+
+  To run morph use:
+
+    morph -input infile -mask maskfile -output outfile 
+      -alg algString [-reps nreps] [-thresh nbrthresh] 
+      [-debug] [-verbose]
+
+  or:
+
+    morph -help
+
+*Arguments:input
+
+  -input Infile                    (-i Infile)
+
+  Infile specifies the input file.  It must contain only voxel values
+         0 and 1.  This argument is required.
+
+*Arguments:mask
+
+  -mask Maskfile                   (-m Maskfile)
+
+  Mask specifies a mask file to limit the growth of the active region
+       under dilation.  For example, many mathematical morphology
+       operations require first eroding the active region and then
+       dilating it, but confining that dilation to the region which
+       was active before erosion.  This argument is used to
+       specify the region of confinement.  
+
+       The mask file must contain only voxel values 0 and 1.  This
+       argument is required.
+
+       If Infile contains more than one time, each input time will
+       be masked against the corresponding Mask time, wrapping aroud
+       to the first Mask time as necessary.  If the Mask has only
+       one time, that mask will be used for all input times.
+
+*Arguments:output
+
+  -output Outfile                   (-out Outfile)
+
+  Outfile specifies the file to which output is to be written.  If the 
+       operation in the algorith is 'label' (see below), the output
+       will consist of integer-valued floats in contiguous regions
+       labeling the distinct contiguous regions of active voxels.
+       If the final operation of the algorith is not 'label' the
+       output will contain only voxel values 0.0 and 1.0.  This argument
+       is required, and must be different from both Infile and Maskfile.
+
+*Arguments:alg
+
+  -alg algorithm
+
+  algorithm specifies the algorithm to use, as a comma-separated list of
+  the following elements:
+
+    erode(nNbrs,nReps)   erodes the active region
+    dilate(nNbrs,nReps)  dilates the active region
+    flood                equivalent to dilate(1,infinity) but much faster
+    label                label separate regions of active voxels with
+                         positive integer values
+
+  If the 'label' instruction appears it must be the last entry in the
+  algorithm string.  If the parenthesized part of the 'erode' or 'dilate'
+  instructions are omitted, the default values (see -reps and -thresh)
+  will be used.
+
+*Arguments:reps
+
+  -reps nreps
+
+  nreps specifies the default for the maximum number of repetitions of 
+        the operations in the algorithm.  This value will be used if 
+        a given algorithm step does not specify a maximum number of reps.
+        If this argument is not present, the default maximum number of
+        reps is 1.
+
+*Arguments:thresh
+
+  -thresh nbrthresh
+
+  nbrthresh specifies the default for the minimum number of neighbors 
+        needed to produce a live output cell.  For a description of 
+        the meaning of this value see the description of the -alg
+        option.  If this argument is not present, the default threshold
+        is 20.
+
+*Arguments:debug
+
+  [-debug]
+
+  requests debugging output
+
+*Arguments:verbose
+
+  [-verbose]                          (-v)
+
+  requests verbose output
+
+*Algorithm
+
+  The 'erode' and 'dilate' operations apply the mathematical morphology
+  operations of the same names.  For example, given 4 'on' neighbors and 
+  a nNbrs of 4, a cell will become 'on' under dilation.  Under erosion 
+  it will remain in its initial state.  Given 4 'on' neighbors and a nNbrs
+  of 5, a cell will remain in its initial state under dilation and become 
+  'off' under erosion.
+
+  The volume is flipped to Fourier transform space so that the 
+  neighbors can be counted in O(n log(n)) time using the Fourier 
+  convolution theorem.  The dimensions of the volume are first
+  padded up to convenient values for the FFT operation.
+
+  Note that the assumption is made that only first-order neighbors (in
+  adjacent cells) are used.  This prevents possible wrapping of 
+  neighborhoods between the left and right boundaries (for example).

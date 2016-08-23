@@ -1,0 +1,1001 @@
+/************************************************************
+ *                                                          *
+ *  dicom_reader.c                                          *
+ *                                                          *
+ *  Permission is hereby granted to any individual or       *
+ *  institution for use, copying, or redistribution of      *
+ *  this code and associated documentation, provided        *
+ *  that such code and documentation are not sold for       *
+ *  profit and the following copyright notice is retained   *
+ *  in the code and documentation:                          *
+ *     Copyright (c) 1995 Department of Statistics,         *
+ *                        Carnegie Mellon University        *
+ *                                                          *
+ *  This program is distributed in the hope that it will    *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the   *
+ *  implied warranty of MERCHANTABILITY or FITNESS FOR A    *
+ *  PARTICULAR PURPOSE.  Neither Carnegie Mellon University *
+ *  nor any of the authors assume any liability for         *
+ *  damages, incidental or otherwise, caused by the         *
+ *  installation or use of this software.                   *
+ *                                                          *
+ *  CLINICAL APPLICATIONS ARE NOT RECOMMENDED, AND THIS     *
+ *  SOFTWARE HAS NOT BEEN EVALUATED BY THE UNITED STATES    *
+ *  FDA FOR ANY CLINICAL USE.                               *
+ *                                                          *
+ *                                                          *
+ ************************************************************/
+/* Notes-
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#include <ctype.h>
+#include <math.h>
+#include "mri.h"
+#if (SGI64 || SGI5 || SGIMP)
+#include <bstring.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+
+#include "bio.h"
+#include "fmri.h"
+#include "fexceptions.h"
+#include "array.h"
+#include "stdcrg.h"
+#include "misc.h"
+#include "smartreader.h"
+
+/* DICOM header files */
+#include "dicom_parser.h"
+
+static char rcsid[] = "$Id: dicom_reader.c,v 1.37 2007/03/22 00:03:47 welling Exp $";
+
+/* Notes-
+ */
+
+/* Add useful things to the filehandler hook */
+typedef struct dicom_data_struct {
+  char time[64];
+  char date[64];
+  DicomParser* parser;
+  long long sortNum;
+  int sortMode;
+} DicomData;
+
+/* Siemens embeds big text tables in its DICOM files */
+DCM_METHOD_PROTOTYPE(siemensTextBlockMethod)
+{
+  int i;
+  int inNulls= 0;
+  if (de->length>0) {
+    char* buf;
+    int state= 0;
+    if (parser->debug) fprintf(stderr,"Reading text block, length %d!\n",
+			       de->length);
+    if (!(buf=(char*)malloc((de->length+1)*sizeof(char))))
+      Abort("%s: unable to allocate %d bytes!\n",
+	    progname,(de->length+1)*sizeof(char));
+    (void)fread(buf,1,de->length+1,f);
+    if (buf[de->length-1]==' ') 
+      buf[de->length-1]= '\0';
+    inNulls= 0;
+    state= 0;
+    i= 12; /* skip the recognition sequence */
+    while (i<de->length) {
+      char currentName[256];
+      char currentVR[8];
+#ifdef never
+      fprintf(stderr,"State= %d, i= %d of %d\n",state,i,de->length);
+#endif
+      switch (state) {
+      case 0: 
+	{
+	  /* start */
+	  while (!buf[i]) i++;
+	  if ((signed char)(buf[i])==-51) state= 0;
+	  else if (strlen(buf+i)>2) {
+	    strncpy(currentName,buf+i,sizeof(currentName));
+	    if (parser->debug) fprintf(stderr,"\nName <%s>",currentName);
+	    state=1;
+	  }
+#ifdef never
+	  else fprintf(stderr,"Found <%s> in state %d\n",buf+i,state);
+#endif
+	  i += strlen(buf+i)+1;
+	}
+	break;
+      case 1: 
+	{
+	  /* passed name */
+	  while (!buf[i]) i++;
+	  if ((signed char)(buf[i])==-51) {
+	    /* It seems to work better if we don't respect this code.
+	     * The meaning of the -51 is only a guess, anyway.
+	     */
+	    /*
+	    state= 0;
+	    */
+	    i++;
+	  }
+	  else if (isupper(buf[i]) && isupper(buf[i+1]) && strlen(buf+i)==2) {
+	    strncpy(currentVR,buf+i,sizeof(currentVR));
+	    if (parser->debug) fprintf(stderr," VR <%s>",currentVR);
+	    if (strcmp(currentVR,"Ux")) state=2;
+	    i += 3;
+	  }
+	  else if (strlen(buf+i)>1) {
+	    if (parser->debug) putc('<',stderr);
+	    while (buf[i]) {
+	      if (parser->debug) {
+		if (isprint(buf[i])) putc(buf[i],stderr);
+		else fprintf(stderr,"\\%03d",buf[i]);
+	      }
+	      i++;
+	    }
+	    if (parser->debug) putc('>',stderr);
+	    i ++;	      
+	  }
+	  else i++;
+	}
+	break;
+      case 2: 
+	{
+	  /* passed VR */
+	  /* Known VRs:
+	   *  DS: floating point decimal number as string
+	   *  CS: character string
+	   *  SH: character string
+	   *  FD: vector as strings
+	   *  IS: integer as string
+	   *  US: integer as string
+	   *  UN: ?
+	   *  UL: integer as string
+	   *  LO: string in special format
+	   */
+	  if ((signed char)(buf[i])==-51) state=0;
+	  else if (strlen(buf+i)>1) {
+	    KVHash* defs= kvGetHash(info,"definitions");
+	    if (parser->debug) {
+	      fprintf(stderr," Val ");
+	      if (!strcmp(currentVR,"CS") 
+		  || !strcmp(currentVR,"SH")
+		  || !strcmp(currentVR,"LO"))
+		fprintf(stderr,"<%s>",buf+i);
+	      else if (!strcmp(currentVR,"DS")
+		       || !strcmp(currentVR,"FD"))
+		fprintf(stderr,"%f ",atof(buf+i));
+	      else if (!strcmp(currentVR,"IS")
+		       || !strcmp(currentVR,"US")
+		       || !strcmp(currentVR,"UL"))
+		fprintf(stderr,"%d ",atoi(buf+i));
+	      else fprintf(stderr,"<%s (unparsed!)>",buf+i);
+	    }
+	    if (!strcmp(currentName,"NumberOfImagesInMosaic")
+		&& !strcmp(currentVR,"US")) {
+	      kvDefInt(info,"NumberOfImagesInMosaic",atoi(buf+i));
+	      if (defs != NULL)
+		kvDefString(defs,"NumberOfImagesInMosaic",
+			    "Images per input Siemens mosaic");
+	    }
+	    i += strlen(buf+i)+1;
+	  }
+	  else i++;
+	}
+	break;
+      default: 
+	{
+	  if (parser->debug) 
+	    fprintf(stderr,"State tracking failed; state= %d!\n",state);
+	  break;
+	}
+      }
+    }
+    if (parser->debug) {
+      fprintf(stderr,"end; i= %d\n",i);
+      putc('\n',stderr);
+    }
+    free(buf);
+  }
+  else {
+    if (parser->debug) fprintf(stderr,"(No text in block)\n");
+  }
+}
+
+/* The following table assigns hash table names to Dicom element
+ * contents.  Format for each record is:
+ * { group, element, hashKey, definition, method-if-other-than-default }
+ * NOTE that only one method per group is allowed!
+ */
+static DicomElementMethodTableEntry elementMethodTable[]= {
+  {0x2, 0x0, "DICOM_metadata_length", "length of metadata spe", NULL},
+  {0x2, 0x10, "DICOM_transfer_syntax", "DICOM transfer syntax", NULL},
+  {0x8, 0x16, "DICOM_SOP_Class", "DICOM SOP Class", NULL},
+  {0x8, 0x18, "DICOM_SOP_Instance", NULL, NULL},
+  {0x8, 0x23, "date", "scan date", NULL},
+  {0x8, 0x33, "time", "scan time", NULL},
+  {0x8, 0x70, "manufacturer", "device manufacturer", NULL},
+  {0x8, 0x1090, "model", "device model", NULL},
+  {0x18, 0x24, "pulse_seq", "pulse sequence",NULL},
+  {0x18, 0x50, "slice_thickness", "slice_thickness (mm)",NULL},
+  {0x18, 0x80, "TR", "TR (us)",NULL},
+  {0x18, 0x81, "TE", "TE (us)",NULL},
+  {0x18, 0x88, "voxel_z", "Z voxel size including gap (mm)", NULL},
+  {0x18, 0x1050, "dx_really\\dy_really", NULL, NULL},
+  {0x18, 0x1310, "dx\\dy_alternate\\dx_alternate\\dy", NULL, NULL},
+  {0x18, 0x1314, "flip", "flip angle", NULL},
+  {0x20, 0x12, "acquisition_number", "corresponds to overall image num", NULL},
+  {0x20, 0x13, "instance_number", "corresponds to overall slice num", NULL},
+  {0x20, 0x32, "ImagePositionPatient.0\\ImagePositionPatient.1\\ImagePositionPatient.2", "slice corner, DICOM coords", NULL},
+  {0x20, 0x37, "ImageOrientationPatient.0\\ImageOrientationPatient.1\\ImageOrientationPatient.2\\ImageOrientationPatient.3\\ImageOrientationPatient.4\\ImageOrientationPatient.5", "slice X and Y edges, DICOM coords", NULL},
+  {0x20, 0x1041, "SliceLocation", "slice offset from origin", NULL},  
+  {0x28, 0x10, "dx_mosaic", NULL, NULL},
+  {0x28, 0x11, "dy_mosaic", NULL, NULL},
+  {0x28, 0x30, "voxel_x\\voxel_y", NULL, NULL},
+  {0x28, 0x100, "bits_stored", "bits stored", NULL},
+  {0x28, 0x101, "bits_allocated", "bits allocated", NULL},
+  {0x28, 0x102, "high_bit", "high_bit", NULL},
+  {0x29, 0x1010, "Siemens_text_block_1", NULL, siemensTextBlockMethod},
+  {0x29, 0x1020, "Siemens_text_block_2", NULL, siemensTextBlockMethod},
+  {0x7fe0, 0x10, "start_offset", NULL, NULL},
+};
+
+static DCM_PARSER_BREAK_TEST_PROTOTYPE(eofBreakTest)
+{
+  long long nextOffset= *(long long*)hook;
+  return (offset >= nextOffset);
+}
+
+static void transformDicomToFiascoVec3( double* vec ) 
+{
+  /*
+   * Dicom-to-Fiasco transformation matrix is:
+   *  /  1  0  0 \
+   *  |  0 -1  0 |
+   *  \  0  0 -1 /
+   */
+  vec[1] *= -1.0;
+  vec[2] *= -1.0;
+}
+
+static void calcSliceCorners(KVHash* info)
+{
+  /* If we got here, we are dealing with a 2D slice, not a mosaic
+   * or other 3D volume.
+   */
+  double slice_tlc[3];
+  double slice_blc[3];
+  double slice_brc[3];
+  double slice_trc[3];
+  double x_edge[3];
+  double y_edge[3];
+  double slice_norm[3];
+  double tmpVec[3];
+
+  if (!testVec3(info,"ImageOrientationPatient")
+      || !testVec3(info,"ImagePositionPatient")) {
+    if (debug) fprintf(stderr,"Not enough info to calculate slice corners!\n");
+    return;
+  }
+
+  /* The DICOM "ImageOrientationPatient" 6-vector seems to give the 
+   * 2 in-slice edge directions in a coordinate system where:
+   *   X= R-to-L
+   *   Y= A-to-P
+   *   Z= I-to-S
+   * We need to make some sign changes to convert to Fiasco's system.
+   *
+   * The top left corner of the slice (DICOM coords) appears to be given
+   * by "ImagePositionPatient".
+   *
+   */
+  getVec3(info,"ImageOrientationPatient",x_edge);
+  y_edge[0]= kvGetDouble(info,"ImageOrientationPatient.3");
+  y_edge[1]= kvGetDouble(info,"ImageOrientationPatient.4");
+  y_edge[2]= kvGetDouble(info,"ImageOrientationPatient.5");
+  getVec3(info,"ImagePositionPatient",slice_tlc);
+  transformDicomToFiascoVec3(x_edge);
+  transformDicomToFiascoVec3(y_edge);
+  transformDicomToFiascoVec3(slice_tlc);
+#ifdef never
+  flipToPositiveHemisphereVec3(x_edge);
+  flipToPositiveHemisphereVec3(y_edge);
+#endif
+  normalizeVec3(x_edge);
+  normalizeVec3(y_edge);
+  /* y_edge seems to be negative-going */
+  multVec3(tmpVec,y_edge,-1.0);
+  copyVec3(y_edge,tmpVec);
+  crossVec3(slice_norm, x_edge, y_edge);
+  defVec3(info,"slice_norm",slice_norm);
+  defVec3(info,"slice_tlc",slice_tlc);
+
+  xplusbyVec3( slice_blc, slice_tlc, y_edge, 
+	       -1.0*kvGetInt(info,"dy")*kvGetDouble(info,"voxel_y"));
+  defVec3(info,"slice_blc", slice_blc);
+  xplusbyVec3( slice_trc, slice_tlc, x_edge, 
+	       kvGetInt(info,"dx")*kvGetDouble(info,"voxel_x"));
+  defVec3(info,"slice_trc", slice_trc);
+  xplusbyVec3( slice_brc, slice_trc, y_edge, 
+	       -1.0*kvGetInt(info,"dy")*kvGetDouble(info,"voxel_y"));
+  defVec3(info,"slice_brc", slice_brc);
+}
+
+static void calcVolumeBounds(KVHash* info)
+{
+  /* If we got here, we are dealing with a mosaic or other 3D volume, 
+   * not a 2D slice.
+   */
+  KVHash* defs= kvGetHash(info,"definitions");
+  static double zDir[]= {0.0,0.0,1.0};
+  double x_edge[3];
+  double y_edge[3];
+  double slice_norm[3];
+  double slice_tlc[3];
+  double slice_ctr[3];
+  double delta[3];
+  double tmpVec[3];
+  double blf[3];
+  double brf[3];
+  double blb[3];
+  double brb[3];
+  double tlf[3];
+  double trf[3];
+  double tlb[3];
+  double trb[3];
+
+  if (!testVec3(info,"ImageOrientationPatient")
+      || !testVec3(info,"ImagePositionPatient")) {
+    if (debug) fprintf(stderr,"Not enough info to calculate slice corners!\n");
+    return;
+  }
+
+  /* The DICOM "ImageOrientationPatient" 6-vector seems to give the 
+   * 2 in-slice edge directions in a coordinate system where:
+   *   X= R-to-L
+   *   Y= A-to-P
+   *   Z= I-to-S
+   * We need to make some sign changes to convert to Fiasco's system.
+   *
+   * The top left corner of the slice (DICOM coords) appears to be given
+   * by "ImagePositionPatient".
+   *
+   */
+  getVec3(info,"ImageOrientationPatient",x_edge);
+  y_edge[0]= kvGetDouble(info,"ImageOrientationPatient.3");
+  y_edge[1]= kvGetDouble(info,"ImageOrientationPatient.4");
+  y_edge[2]= kvGetDouble(info,"ImageOrientationPatient.5");
+  getVec3(info,"ImagePositionPatient",slice_tlc);
+  transformDicomToFiascoVec3(x_edge);
+  transformDicomToFiascoVec3(y_edge);
+  transformDicomToFiascoVec3(slice_tlc);
+#ifdef never
+  flipToPositiveHemisphereVec3(x_edge);
+  flipToPositiveHemisphereVec3(y_edge);
+#endif
+  normalizeVec3(x_edge);
+  normalizeVec3(y_edge);
+  /* y_edge seems to be negative-going */
+  multVec3(tmpVec,y_edge,-1.0);
+  copyVec3(y_edge,tmpVec);
+  crossVec3(slice_norm, x_edge, y_edge);
+  defVec3(info,"slice_norm",slice_norm);
+
+  xplusbyVec3(tmpVec,slice_tlc,x_edge,
+	      0.5*kvGetDouble(info,"voxel_x")*kvGetInt(info,"dx_mosaic"));
+  xplusbyVec3(slice_ctr,tmpVec,y_edge,
+	      -0.5*kvGetDouble(info,"voxel_y")*kvGetInt(info,"dy_mosaic"));
+
+  /* Some DICOM mosaic scans are numbered superior-to-inferior; others
+   * inferior-to-superior (although I believe the acquisition order is in
+   * fact the same).  If the slice center is below the origin, this
+   * scan was of the former type; otherwise it is of the latter 
+   * type and we must correct.
+   */
+  if (dotVec3(slice_norm,slice_ctr)>=0.0) {
+    xplusbyVec3(tmpVec,slice_ctr,slice_norm,
+		-1.0*kvGetDouble(info,"voxel_z")*(kvGetInt(info,"dz")-1));
+    copyVec3(slice_ctr,tmpVec);
+    kvDefBoolean(info,"mosaic_head_to_foot",0);
+  }
+  else kvDefBoolean(info,"mosaic_head_to_foot",1);
+  kvDefString(defs,"mosaic_head_to_foot","first image in mosaic is superior");
+
+  xplusbyVec3(tmpVec,slice_ctr,x_edge,
+	      -0.5*kvGetDouble(info,"voxel_x")*kvGetInt(info,"dx"));
+  xplusbyVec3(blb,tmpVec,y_edge,
+	      0.5*kvGetDouble(info,"voxel_y")*kvGetInt(info,"dy"));
+  defVec3(info,"blb",blb);
+  xplusbyVec3(blf,blb,y_edge,
+	      -1.0*kvGetDouble(info,"voxel_y")*kvGetInt(info,"dy"));
+  defVec3(info,"blf",blf);
+  xplusbyVec3(brf,blf,x_edge,kvGetDouble(info,"voxel_x")*kvGetInt(info,"dx"));
+  defVec3(info,"brf",brf);
+  xplusbyVec3(brb,blb,x_edge,kvGetDouble(info,"voxel_x")*kvGetInt(info,"dx"));
+  defVec3(info,"brb",brb);
+
+  multVec3(delta,slice_norm,
+	   kvGetDouble(info,"voxel_z")*kvGetInt(info,"dz"));
+  xplusbyVec3(tlf,blf,delta,1.0);
+  defVec3(info,"tlf",tlf);
+  xplusbyVec3(trf,brf,delta,1.0);
+  defVec3(info,"trf",trf);
+  xplusbyVec3(tlb,blb,delta,1.0);
+  defVec3(info,"tlb",tlb);
+  xplusbyVec3(trb,brb,delta,1.0);
+  defVec3(info,"trb",trb);
+}
+
+static void inferReorderPattern(KVHash* info)
+{
+  static char* manufacturer= NULL;
+  static char* model= NULL;
+  static char* pulse_seq= NULL;
+  int success= 0;
+
+  if (kvLookup(info,"manufacturer")) 
+    manufacturer= kvGetString(info,"manufacturer");
+  if (kvLookup(info,"model")) 
+    model= kvGetString(info,"model");
+  if (kvLookup(info,"pulse_seq")) 
+    pulse_seq= kvGetString(info,"pulse_seq");
+
+  /* I have no idea how general this Siemens pattern is; it's
+   * just a guess.
+   */
+  if (!strcasecmp(manufacturer,"SIEMENS")
+      && ( !strncmp(pulse_seq,"epfid2d",strlen("epfid2d"))
+	  || !strncmp(pulse_seq,"*epfid2d",strlen("*epfid2d")) )) {
+    if (testVec3(info,"slice_norm")) {
+      static double zDir[3]= {0.0,0.0,1.0};
+      double sliceDir[3];
+      getVec3(info,"slice_norm",sliceDir);
+      if (fabs(dotVec3(sliceDir,zDir))>=1.0/sqrt(2.0)) {
+	/* predominantly axial */
+	kvDefBoolean(info,"reorder",0);
+	kvDefString(info,"reorder_pattern","reversed_odd/even");
+      }
+      else {
+	kvDefBoolean(info,"reorder",0);
+	kvDefString(info,"reorder_pattern","odd/even");
+      }
+    }
+  }
+
+  if (!success) {
+    if (debug) 
+      fprintf(stderr,"Not enough info to infer slice reorder pattern!\n");
+  }
+}
+
+static int scan_DICOM_data_header(FileHandler* self, KVHash* info, 
+				  const char* readfile)
+{
+  DicomData* data= (DicomData*)(self->hook);
+  KVHash* defs= kvGetHash(info,"definitions");
+  KVHash* extNames= kvGetHash(info,"external_names");
+  FILE *fphead;
+  int ierror= 0;
+
+  /* This used to be somewhat like the GE code io_signa_dicom.c, 
+   * with mods for portability 
+   */
+  ierror= 0;
+  if (!kvLookup(info,"DICOM_start_offset"))
+    Abort("%s: DICOM start offset info is missing!\n",progname);
+  if (!kvLookup(info,"DICOM_transfer_syntax"))
+    Abort("%s: DICOM transfer syntax info is missing!\n",progname);
+  if ((fphead = fopen(readfile,"r"))!=NULL)
+    {
+      long long startOffset= kvGetLong(info,"DICOM_start_offset");
+      FEX_TRY
+	({
+	  const TransferSyntax* transferSyntax= 
+	    dcm_getTransferSyntaxByName(data->parser,
+					kvGetString(info,"DICOM_transfer_syntax"));
+	  dcm_parseStream( data->parser, info, fphead, startOffset, 
+			   transferSyntax, eofBreakTest, 
+			   &(self->totalLengthBytes));
+	})
+	FEX_CATCH(EXCEPTION_DICOM, e,
+	{
+	  Error("Error reading DICOM header: %s!\n",fex_getExceptionString(e));
+	  ierror= 1;
+	});
+	FEX_CATCH(EXCEPTION_IO, e,
+	{
+	  Error("IO error reading %s: %s!\n",self->fileName,
+		fex_getExceptionString(e));
+	  ierror= 1;
+	});
+      FEX_END_TRY;
+      if (fclose(fphead)) {
+	perror("Error closing header");
+	ierror=1;
+      }
+    }
+  else {
+    perror("Error opening header");
+    ierror= 1;
+  }
+  if (ierror) return 0;
+
+  return 1;
+}
+
+static DCM_PARSER_BREAK_TEST_PROTOTYPE(metaDataBreakTest)
+{
+  if (kvLookup(info,"DICOM_metadata_length")
+      && kvLookup(info,"DICOM_metadata_start")) {
+    if ( offset >= 
+	 kvGetLong(info,"DICOM_metadata_length")
+	 + kvGetLong(info,"DICOM_metadata_start") ) {
+      if (debug) fprintf(stderr,"Breaking out of metaData scan!\n");
+      *(long long*)hook= offset;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static int scan_DICOM_meta_info(FileHandler* self, KVHash* info, 
+				FILE* fphead)
+{
+  DicomData* data= (DicomData*)(self->hook);
+  KVHash* defs= kvGetHash(info,"definitions");
+  KVHash* extNames= kvGetHash(info,"external_names");
+  long long startOffset= 132; /* specified by standard */
+  long long endOffset= 0;
+  int ierror= 0;
+
+  /* This bit used to be like the GE code io_signa_dicom.c, 
+   * with mods for portability, but is now totally different.
+   */
+  ierror= 0;
+  
+  kvDefLong(info,"DICOM_metadata_start",startOffset);
+  kvDefString(defs,"DICOM_metadata_start","start offset of metadata");
+  { FEX_TRY
+    ({
+      const TransferSyntax* transferSyntax= 
+	dcm_getTransferSyntaxByName(data->parser,DCM_META_INFO_TS_NAME); 
+      dcm_parseStream(data->parser, info, fphead, startOffset, 
+		      transferSyntax, metaDataBreakTest, &endOffset);
+    })
+    FEX_CATCH(EXCEPTION_DICOM, e,
+    {
+      Error("Error parsing DICOM meta-info: %s!\n",
+	    fex_getExceptionString(e));
+      ierror= 1;
+    });
+    FEX_CATCH(EXCEPTION_IO, e,
+    {
+      Error("IO error reading %s: %s!\n",self->fileName,
+	    fex_getExceptionString(e));
+      ierror= 1;
+    });
+  FEX_END_TRY; 
+  }
+    
+  kvDefLong(info,"DICOM_start_offset",endOffset);
+  kvDefString(defs,"DICOM_start_offset","start offset of header info");
+
+  if (ierror) return 0;
+
+  return 1;
+}
+
+static long long calcSortNumFromUID( const char* str )
+{
+  long long result= 0;
+  char* copy= strdup(str);
+  char* loc1= NULL;
+  char* loc2= NULL;
+  long long fac= 1000000;
+
+  /* We'll take the second-from-right dotted field, treat it like an
+   * integer, multiply by an arbitrary factor, and add the rightmost
+   * dotted field.
+   */
+  loc1= strrchr(copy,'.');
+  if (!loc1) Abort("%s: dicom_parser: unfamiliar UID format <%s>\n",
+		   progname,str);
+  *loc1++= '\0';
+  loc2= strrchr(copy,'.')+1;
+  if (!loc1) Abort("%s: dicom_parser: unfamiliar UID format <%s>\n",
+		   progname,str);
+  result= (fac*atoll(loc2))+atoll(loc1);
+  free(copy);
+  return result;
+}
+
+static void processHeader( FileHandler* self, KVHash* info, SList* cStack )
+{
+  KVHash* defs= kvGetHash(info,"definitions");
+  KVHash* extNames= kvGetHash(info,"external_names");
+  DicomData* hookData= (DicomData*)self->hook;
+  FILE* fphead= NULL;
+  char* hook_time= hookData->time;
+  char* hook_date= hookData->date;
+  int dz;
+
+  /* Call the base class method */
+  baseProcessHeader( self, info, cStack );
+
+  /* Proper DICOM files have some ignored bytes and a recognition code.
+   * The older SPI format starts right at offset 0 with no recognition code.
+   */
+  if ((fphead = fopen(self->fileName,"r"))!=NULL) {
+    char buf[16];
+    fseek(fphead,128,SEEK_SET);
+    FRdUInt8Array(fphead, (unsigned char*)buf, 4);
+    if (!bio_error) {
+      buf[4]= '\0';
+      if (!strcmp(buf,"DICM")) {
+	if (!(scan_DICOM_meta_info(self, info, fphead)))
+	    Abort("%s: failed to parse DICOM meta-info header!\n",
+		  progname);
+      }
+      else {
+	kvDefLong(info,"DICOM_start_offset",0);
+	kvDefString(defs,"DICOM_start_offset","start offset of header info");
+	kvDefString(info,"DICOM_transfer_syntax",
+		    dcm_guessTransferSyntax(hookData->parser,fphead,0)->name);
+      }
+      if (fclose(fphead)) {
+	perror("Error closing header");
+      }
+    }
+    else Abort("%s: unable to read file %s!\n",progname,self->fileName);
+  }
+  else Abort("%s: unable to open file %s for reading!\n",
+	     progname,self->fileName);
+
+  if (!scan_DICOM_data_header(self, info, self->fileName))
+    Abort("lx_reader: unable to read or parse header from <%s>!\n",
+	  self->fileName);
+
+  /* This parser cannot handle some DICOM formats, like structural
+   * scans, because the data values are used in ways we don't
+   * understand.  Make some guesses if things seem awry, then exit 
+   * gracefully if the parser is confused.
+   */
+  if ( !kvLookup(info,"dx") || (kvGetInt(info,"dx")<1) 
+       && kvLookup(info,"dx_alternate"))
+    kvDefInt(info,"dx",kvGetInt(info,"dx_alternate"));
+  if ( !kvLookup(info,"dy") || (kvGetInt(info,"dy")<1) 
+       && kvLookup(info,"dy_alternate"))
+    kvDefInt(info,"dy",kvGetInt(info,"dy_alternate"));
+  if (kvLookup(info,"dx_alternate")) kvDelete(info,"dx_alternate");
+  if (kvLookup(info,"dy_alternate")) kvDelete(info,"dy_alternate");
+
+  if (!kvLookup(info,"dx") || (kvGetInt(info,"dx")<1)
+      || !kvLookup(info,"dy") || (kvGetInt(info,"dy")<1) )
+    Abort("%s: parser failed; is this a functional scan?\n",progname);
+
+  if (kvLookup(info,"bits_stored")){
+    if (kvGetInt(info,"bits_stored")==8)
+      kvDefInt(info,"datatype_in",SRDR_UINT8);
+    if (kvGetInt(info,"bits_stored")==16)
+      kvDefInt(info,"datatype_in",SRDR_INT16);
+    else if (kvGetInt(info,"bits_stored")==32)
+      kvDefInt(info,"datatype_in",SRDR_INT32);
+    else Abort("%s: dicom_reader: unsupported pixel size of %d bits!\n",
+	       progname,kvGetInt(info,"bits_stored"));
+  }
+  else Abort("%s: dicom_reader: info about pixel format is lacking\n",
+	     progname);
+
+  /* Rescale and convert some values to match Fiasco conventions */
+  if (kvLookup(info,"TR"))
+    kvDefInt(info,"TR",(long)(1000.0*kvGetDouble(info,"TR")));
+  if (kvLookup(info,"TE"))
+    kvDefInt(info,"TE",(long)(1000.0*kvGetDouble(info,"TE")));
+
+  /* We need a few derived key/value pairs */
+  if (kvLookup(info,"voxel_z")) {
+    if (kvLookup(info,"slice_thickness")) {
+      kvDefDouble(info,"slice_gap",
+		  kvGetDouble(info,"voxel_z")
+		  -kvGetDouble(info,"slice_thickness"));
+      kvDefString(defs,"slice_gap","slice gap (mm)");
+    }
+  }
+  else {
+    /* Single slice datasets have no voxel_z entry */
+    if (kvLookup(info,"slice_thickness")) {
+      kvDefDouble(info,"voxel_z",kvGetDouble(info,"slice_thickness"));
+      kvDefString(defs,"voxel_z","Z voxel size including gap (mm)");
+    }
+  }
+  kvDefString(defs,"voxel_z","Z voxel size including gap (mm)");
+  kvDefString(info,"dimstr","xyz");
+  /* image space, so no row flipping! */
+  kvDefBoolean(info,"rowflip",0); 
+  kvDefString(info,"rowflip_pattern","none");
+  kvDefString(defs,"rowflip","EPI row reversal needed");
+  kvDefString(defs,"rowflip_pattern","EPI row reversal pattern");
+  kvDefBoolean(info,"big_endian_input",0);
+
+  /* Sometimes dx_mosaic and dy_mosaic seem to be given in reverse order */
+  if ( kvLookup(info,"dx_mosaic") && kvLookup(info,"dy_mosaic")
+       && kvGetInt(info,"dx_mosaic")%kvGetInt(info,"dx") != 0
+       && kvGetInt(info,"dx_mosaic")%kvGetInt(info,"dy") == 0) {
+    long dx_mosaic= kvGetInt(info,"dy_mosaic");
+    kvDefInt(info,"dy_mosaic",kvGetInt(info,"dx_mosaic"));
+    kvDefInt(info,"dx_mosaic",dx_mosaic);
+  }
+
+  dz= 1;
+  if (kvLookup(info,"dx_mosaic") && kvLookup(info,"dx")) {
+    dz *= kvGetInt(info,"dx_mosaic")/kvGetInt(info,"dx");
+  }
+  if (kvLookup(info,"dy_mosaic") && kvLookup(info,"dy")) {
+    dz *= kvGetInt(info,"dy_mosaic")/kvGetInt(info,"dy");
+  }
+  if (kvLookup(info,"NumberOfImagesInMosaic")) {
+    /* Some of the mosaic images may be just filler; with luck
+     * the Siemens proprietary fields have given us the number.
+     */
+    int dz_reduced= kvGetInt(info,"NumberOfImagesInMosaic");
+    if (dz_reduced>0 && dz_reduced<=dz) dz= dz_reduced;
+  }
+  kvDefInt(info,"dz",dz);
+
+  /* Some missing external names */
+  kvDefString(extNames,"slice_thickness", "slthick");
+
+  /* Calculate boundary points, in 3D if this is a mosaic or
+   * in 2D if it is a single slice.
+   */
+  if (dz==1) calcSliceCorners(info);
+  else {
+    calcVolumeBounds(info);
+    inferReorderPattern(info);
+  }
+
+  /* Force breaks in reading for mosaic layout */
+  if (kvLookup(info,"dx_mosaic")) kvDefLong(info,"skip.x",0);
+  if (kvLookup(info,"dy_mosaic")) kvDefLong(info,"skip.y",0);
+
+  /* Copy a couple of things into the filehandler hook data structure */
+  if (kvLookup(info,"time")) {
+    strncpy(hook_time,kvGetString(info,"time"),sizeof(hookData->time));
+    hook_time[sizeof(hookData->time)-1]= '\0';    
+  }
+  else hook_time[0]= '\0';
+  if (kvLookup(info,"date")) {
+    strncpy(hook_date,kvGetString(info,"date"),sizeof(hookData->date));
+    hook_date[sizeof(hookData->date)-1]= '\0';
+  }
+  else hook_date[0]= '\0';
+  if (kvLookup(info,"DICOM_SOP_Instance"))
+    hookData->sortNum= 
+      calcSortNumFromUID(kvGetString(info,"DICOM_SOP_Instance"));
+  else hookData->sortNum= 0;
+  if (kvLookup(info,"manufacturer") 
+      && !strcasecmp(kvGetString(info,"manufacturer"),"SIEMENS"))
+    hookData->sortMode= 0;
+  else hookData->sortMode= 1;
+
+  /* Add some descriptions of dimensions. */
+  if (kvLookup(info,"dx"))
+    kvDefString(info,"description.x","gridded image-space");
+  if (kvLookup(info,"dy"))
+    kvDefString(info,"description.y","gridded image-space");
+  if (kvLookup(info,"dz"))
+    kvDefString(info,"description.z","gridded image-space");
+  if (kvLookup(info,"dt"))
+    kvDefString(info,"description.t","gridded image-space");
+
+}
+
+static void dicomRead( FileHandler* self, KVHash* info,
+		       long long offset, long n,
+		       SRDR_Datatype datatype_out,
+		       void* obuf ) {
+  if (kvLookup(info,"dz") && kvGetInt(info,"dz")>1) {
+    long long realOffset= offset - kvGetLong(info,"start_offset");
+    long long spans= 
+      realOffset / (kvGetInt(info,"dx")*srdrTypeSize[kvGetInt(info,"datatype_in")]);
+    int wantX= 0;
+    int wantY= spans % kvGetInt(info,"dy");
+    int wantZ= spans / kvGetInt(info,"dy");
+    int flipMe= 0;
+    int images_per_row= 1;
+    long long col;
+    long long row;
+    long long newOffset;
+    if (kvLookup(info,"dx_mosaic")) 
+      images_per_row= kvGetInt(info,"dx_mosaic")/kvGetInt(info,"dx");
+    if (kvLookup(info,"reorder_pattern"))
+      flipMe= (strncmp(kvGetString(info,"reorder_pattern"),
+		       "reverse",strlen("reverse")) != 0);
+    if (kvLookup(info,"mosaic_head_to_foot") 
+	&& !kvGetBoolean(info,"mosaic_head_to_foot"))
+      flipMe= !flipMe;
+    if (flipMe) wantZ= kvGetInt(info,"dz")-(wantZ+1);
+    col= wantZ % images_per_row;
+    row= wantZ / images_per_row;
+    newOffset= 
+      (((((row*kvGetInt(info,"dy"))+wantY)*kvGetInt(info,"dx_mosaic"))
+	+ (col*kvGetInt(info,"dx")) + wantX) 
+       * srdrTypeSize[kvGetInt(info,"datatype_in")])
+      + kvGetLong(info,"start_offset");
+    baseRead( self, info, newOffset, n, datatype_out, obuf );
+  }
+  else {
+    /* Just read it normally */
+    baseRead( self, info, offset, n, datatype_out, obuf );
+  }
+}
+
+static int dicomCompare( FileHandler* f1, FileHandler* f2 )
+{
+  DicomData* data1= (DicomData*)(f1->hook);
+  DicomData* data2= (DicomData*)(f2->hook);
+
+  if (data1->sortMode==data2->sortMode) {
+    if (data1->sortMode==0) {
+      /* We will sort on scan time, since it's accurate to microseconds.
+       * We'll test the date first, in case they hold a scan that crosses
+       * midnight.
+       */
+      int dcomp= strcoll(data1->date,data2->date);
+      if (dcomp==0) return strcoll(data1->time, data2->time);
+      else return dcomp;
+    }
+    else if (data1->sortMode==1) {
+      /* Sort on sortNum, derived from DICOM_SOP_INSTANCE */
+      /* Remember that the difference btwn sortNums may be too 
+       * long for an int 
+       */
+      long long diff= data1->sortNum - data2->sortNum;
+      if (diff<0) return -1;
+      else if (diff>0) return 1;
+      else return 0;
+    }
+    else Abort("%s: dicom_reader internal error: unknown sort mode %d!\n",
+	       progname,data1->sortMode);
+  }
+  else Abort("%s: dicom_reader: files %s and %s cannot be compared!\n",
+	     progname,f1->fileName,f2->fileName);
+}
+
+static void dicomFileHandlerDestroySelf( FileHandler* fh )
+{
+  DicomData* data= (DicomData*)(fh->hook);
+  if (data)
+    dcm_destroyParser(data->parser);
+  baseDestroySelf(fh);
+}
+
+FileHandler* dicomFactory(char* fname, KVHash* info)
+{
+  DicomData* data;
+
+  FileHandler* result= baseFactory(fname);
+  result->processHeader= processHeader;
+  result->typeName= strdup( "DICOM" );
+  result->read= dicomRead;
+  result->compareThisType= dicomCompare;
+
+  if (!(data= (DicomData*)malloc(sizeof(DicomData))))
+    Abort("%s: unable to allocate %d bytes!\n",progname,sizeof(DicomData));
+  data->time[0]= data->date[0]= '\0';
+  data->parser= dcm_createParser(elementMethodTable,
+				 sizeof(elementMethodTable)
+				 /sizeof(DicomElementMethodTableEntry));
+  dcm_setDebug(data->parser,debug);
+  data->sortNum= 0;
+  data->sortMode= 0;
+  result->hook= data;
+
+  return result;
+}
+
+static DCM_PARSER_BREAK_TEST_PROTOTYPE( sopClassBreakTest )
+{
+  if (kvLookup(info,"DICOM_SOP_Class")) return 1;
+  else if (de->group > DCM_SOP_CLASS_GROUP) return 1;
+  else if (de->element > DCM_SOP_CLASS_ELEMENT) return 1;
+  else return 0;
+}
+
+static int dicomTest(FILE* f, long long fileSize, long long startOffset)
+{
+  char *buf;
+  long offset= startOffset;
+  long match= 0;
+
+  if (debug) fprintf(stderr,"***Scanning to identify DICOM file***\n");
+  { FEX_TRY
+    ({
+      /* We don't really need all of these parser methods, but
+       * it doesn't hurt (much).
+       */
+      DicomParser* parser= 
+	dcm_createParser(elementMethodTable,
+			 sizeof(elementMethodTable)
+			 /sizeof(DicomElementMethodTableEntry));
+      KVHash* tmpInfo= kvFactory(KV_DEFAULT_SIZE);
+      const TransferSyntax* transferSyntax= 
+	dcm_guessTransferSyntax(parser,f,startOffset);
+      dcm_parseStream(parser, tmpInfo, f, startOffset, 
+		      transferSyntax, sopClassBreakTest, NULL);
+      if ((kvLookup(tmpInfo,"DICOM_SOP_Class") != NULL)
+	  && strncmp(kvGetString(tmpInfo,"DICOM_SOP_Class"),
+		     DCM_DICOM_UID_STRING, strlen(DCM_DICOM_UID_STRING)))
+	match= 1;
+      dcm_destroyParser(parser);
+      kvDestroy(tmpInfo);
+    })
+  FEX_CATCH(EXCEPTION_DICOM, e,
+  {
+    if (debug) fprintf(stderr,"Dicom parser threw an exception (ignored)\n");
+  });
+  FEX_CATCH(EXCEPTION_IO, e,
+  {
+    if (debug) 
+      fprintf(stderr,"Dicom parser threw an IO exception (ignored)\n");
+  });
+  FEX_END_TRY; 
+  }
+  if (debug) fprintf(stderr,"***Done scanning to identify DICOM file***\n");
+
+  return match;
+}
+
+static long long getFileSize( const char* fname )
+{
+  struct stat s;
+  if (strcmp(fname,"NotARealFile")) {
+    if (stat(fname,&s))
+      Abort("%s: base_reader: stat failed on %s: %s!\n",
+	    progname, fname, strerror(errno));
+    return (long long)s.st_size;
+  }
+  else return 0;
+}
+
+int dicomTester(const char* filename)
+{
+  FILE* fphead;
+  int ierror= 0;
+  long long fileSize= getFileSize(filename);
+
+  /* This bit is from the GE code io_signa_lx.c, with extensive mods */
+  if ((fphead = fopen(filename,"r"))!=NULL) {
+    char buf[16];
+    bigfile_fseek(fphead,128,SEEK_SET);
+    FRdUInt8Array(fphead, (unsigned char*)buf, 4);
+    if (!bio_error) {
+      buf[4]= '\0';
+      if (!strcmp(buf,"DICM")) {
+	/* DICOM File Meta Information Header */
+	/* This always passes */
+      }
+      else {
+	if (dicomTest(fphead,fileSize,0) != 1) ierror= 1;
+      }
+    }
+    else ierror= 1;
+    if (fclose(fphead)) {
+      perror("Error closing header");
+      ierror=1;
+    }
+  }
+  else {
+    perror("Error opening header");
+    ierror= 1;
+  }
+  if (ierror) return 0;
+
+  return 1;
+}
+

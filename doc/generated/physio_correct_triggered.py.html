@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>physio_correct_triggered.py</title>
+  </head>
+  <body>
+    <h1>physio_correct_triggered.py</h1>
+<h2>Overview</h2>
+<pre>
+
+  physio_correct_triggered.py [-d] [-v] [--samptime sampTime]
+                  [--ndisdaq nDisDAqs] [--syncchannel syncChannel]
+                  [--cardiochannel cardioChannel] [--respchannel respChannel]
+                  [--syncthresh syncThreshold] inDS outDS missingDS physioDS
+
+  physio_correct_triggered.py -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+</pre>
+<h2>Arguments</h2>
+<pre>
+
+  inDS      specifies the input Pittsburgh MRI dataset.  This dataset
+            must have rightmost dimensions zt.  Since the data will
+            presumably be complex, the leftmost dimension will presumably 
+            be v with extent 2.  The data chunk defaults to "samples"
+            but can be changed via the environment variable
+            F_PHYS_SAMPCHUNK.
+
+  outDS     is the output Pittsburgh MRI dataset to be created.  Its
+            dimensions and extents will match those of inDS.
+
+  missingDS contains a missing chunk to be applied to inDS.  It is
+            common to repeat inDS for this argument, but it is
+            sometimes convenient to supply the missing data separately.
+
+  physioDS  is a Pittsburgh MRI dataset containing a time series of 
+            physiological sensor measurements sampled at a much higher
+            sampling rate than the TR of inDS.  The dimensions of
+            physioDS are assumed to be vt, where v varies over the
+            sensors (for example, trigger, cardio, and respiratory
+            channels) and t represents the different sampled
+            timepoints.  One channel must be the triggering signal of
+            the scanner.  This data is assumed to be in the "images"
+            chunk of physioDS.
+
+  -d requests debugging output
+
+  -v requests verbose output
+
+  --samptime sampTime
+
+             specifies the sampling interval of the physiological
+             signal.  The default is 10 millisecond; this can also
+             be set with the environment variable F_PHYS_SAMPTIME
+
+  --ndisdaq nDisDAqs
+
+             specifies the number of discarded data acquisitions at
+             the beginning of each scan.  The default is 7; this can
+             also be set with the environment variable F_PHYS_NDISDAQS
+
+  --syncchannel syncChannel
+
+             specifies the channel (offset in v) of the scanner
+      trigger signal in physioDS.  The default is 0; this can
+             also be set with the environment variable F_PHYS_CHSYNC
+
+  --cardiochannel cardioChannel
+
+             specifies the channel (offset in v) of the pulseox
+      signal in physioDS.  The default is 1; this can
+             also be set with the environment variable F_PHYS_CHCARDIO
+
+  --respchannel respChannel
+
+             specifies the channel (offset in v) of the respiratory
+      signal in physioDS.  The default is 2; this can
+             also be set with the environment variable F_PHYS_CHRESP
+
+  --syncthresh syncThreshold
+
+             specifies the threshold value for identifying the leading
+             edge of the scanner trigger pulses.  This value is
+             compared against the time derivative of that data channel.
+             The analysis is fairly insensitive to this value as long
+             as the trigger input signal is clean.  The default is
+             -500; this can also be set with the environment variable 
+             F_PHYS_SYNCTHRESH
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  At no point does the algorithm actually require that inDS be
+  complex, so it would not be complete foolishness to attempt to run 
+  this script on image-space data.  The (trivial) v dimension in inDS
+  must be present, however.
+
+  The processing steps are:
+
+  1) Find the leading edges of the trigger pulses by taking d/dx of that
+  time series and thresholding with syncThreshold.
+
+  2) Scan for breaks in the acquisition sequence by looking for long
+  gaps between trigger pulses.  These breaks occur when the study
+  session consists of multiple acquisitions with intervening breaks.
+  This produces a set of blocks, each of which is expected to
+  correspond to one acquisition.
+
+  3) Working backwards from the end of the session, calculate the
+  number of images (TRs) in each block, eliminating the DisDAqs.
+  If any block contains a number of triggers which is not equal to
+  (N*nImages + nDisDaqs) * nSlices, emit a warning message; such
+  'lost' triggers are common.
+
+  4) The resulting set of "clean" triggers theoretically correspond to
+  the set of actual slice acquisitions.  Subsample the respiratory and
+  cardio channels according to those triggers.  Construct a "session
+  time" dataset corresponding to absolute time within the session from
+  the timebase of the physio dataset, and subsample that also.  This
+  produces cardio, respiratory, and session time datasets sampled at
+  the slice acquisition times.
+
+  5) Fold the subsampled datasets from simple time series order to
+  zt order, respecting the order of slice acquisition by the scanner.
+
+  6) Fit a general linear model to the complex time series of each
+  scanner sample in inDW, regressing against the subsampled cardio, 
+  respiration, and session time, respecting the "missing" information 
+  in missingDS.
+
+  7) Produce the output dataset by adding the constant term of the
+  estimated regression parameters back into the complex residuals.
+
+</pre>
+<h2>Environment</h2>
+<pre>
+
+  physio_correct_triggered.py respects the following environment
+  variables:
+  <table cellpadding=4 border=1>
+  <tr><td>F_TEMP 
+    <td>temporary directory; defaults to ./
+  <tr><td>F_PHYS_SAMPTIME 
+    <td>physiological sampling interval; defaults to 10 millisec
+  <tr><td>F_PHYS_NDISDAQS 
+    <td>number of discarded data acquisitions; defaults to 7
+  <tr><td>F_PHYS_CHTRIG
+    <td>physio data channel for scanner trigger; defaults to 0
+  <tr><td>F_PHYS_CHCARDIO
+    <td>physio data channel for pulseox/cardio; defaults to 1
+  <tr><td>F_PHYS_CHRESP
+    <td>physio data channel for respiration; defaults to 2
+  <tr><td>F_PHYS_SYNCTHRESH
+    <td>trigger sync detection threshold; defaults to -500
+  <tr><td>F_PHYS_SYNC
+    <td>name for the extracted trigger sync dataset; defaults 
+    to "data/sync"
+  <tr><td>F_PHYS_TRIGGER
+    <td>name for the thresholded trigger sync dataset; defaults
+    to "data/sync_thresh"
+  <tr><td>F_PHYS_CLEANTRIGGER
+    <td>name for trigger dataset after thresholding and removal
+    of DisDAqs; defaults to "data/clean_sync_thresh"
+  <tr><td>F_PHYS_CARDIO
+    <td>name for the extracted cardio dataset; defaults to "data/cardio"
+  <tr><td>F_PHYS_SSCARDIO
+    <td>name for the cardio dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/cardio_subsampled"
+  <tr><td>F_PHYS_RESP
+    <td>name for the extracted respiratory dataset; defaults to "data/resp"
+  <tr><td>F_PHYS_SSRESP
+    <td>name for the respiratory dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/resp_subsampled"
+  <tr><td>F_PHYS_TIME
+    <td>name for the session time dataset; defaults to "data/time"
+  <tr><td>F_PHYS_SSTIME
+    <td>name for the session time dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/time_subsampled"
+  <tr><td>F_PHYS_PARAM
+    <td>name for the dataset containing regression parameters;
+    defaults to "stat/physio".  See the documentation for 
+    <b>mri_glm</b> for details on the structure of this dataset.
+  <tr><td>F_PHYS_SAMPCHUNK
+    <td>name of the chunk within inDS where the samples to be
+    corrected are found; defaults to "samples".
+  </table>
+</pre>
+    <hr>
+    (automatically generated by physio_correct_triggered.py version of Sat Jan  2 22:50:39 2010)
+  </body>
+</html>

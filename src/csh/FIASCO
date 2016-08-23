@@ -1,0 +1,87 @@
+#!/bin/csh -ef
+# FIASCO
+#/************************************************************
+# *                                                          *
+# *  Permission is hereby granted to any individual or       *
+# *  institution for use, copying, or redistribution of      *
+# *  this code and associated documentation, provided        *
+# *  that such code and documentation are not sold for       *
+# *  profit and the following copyright notice is retained   *
+# *  in the code and documentation:                          *
+# *     Copyright (c) 1995,1996 Department of Statistics,    *
+# *                        Carnegie Mellon University        *
+# *                                                          *
+# *  This program is distributed in the hope that it will    *
+# *  be useful, but WITHOUT ANY WARRANTY; without even the   *
+# *  implied warranty of MERCHANTABILITY or FITNESS FOR A    *
+# *  PARTICULAR PURPOSE.  Neither Carnegie Mellon University *
+# *  nor any of the authors assume any liability for         *
+# *  damages, incidental or otherwise, caused by the         *
+# *  installation or use of this software.                   *
+# *                                                          *
+# *  CLINICAL APPLICATIONS ARE NOT RECOMMENDED, AND THIS     *
+# *  SOFTWARE HAS NOT BEEN EVALUATED BY THE UNITED STATES    *
+# *  FDA FOR ANY CLINICAL USE.                               *
+# *                                                          *
+# *                                                          *
+# *  Original programming by Bill Eddy                       *
+# ************************************************************/
+#
+# $Id: FIASCO,v 1.32 2006/01/25 15:44:04 fiasco Exp $
+
+# Check for help command
+if ( $#argv >= 1 ) then 
+  if ( junk$argv[1] == junk-help ) then
+    if ( $#argv >= 2 ) then
+      scripthelp $0 $argv[2]
+    else
+      scripthelp $0
+    endif
+    exit
+  endif
+endif
+
+if (! -e out) mkdir out
+setenv LOGFILE out/logfile
+echo '#BEGINNING NEW ANALYSIS' >>& $LOGFILE
+setenv F_STARTDATE "`date`"
+echo '#'$F_STARTDATE $0        >>& $LOGFILE
+echo '$Id: FIASCO,v 1.32 2006/01/25 15:44:04 fiasco Exp $'\
+                               >>& $LOGFILE
+echo '#'`whoami`' '`hostname`  >>& $LOGFILE
+echo '#'$1' Processing'        >>& $LOGFILE
+
+# FIASCO_VERSION number
+setenv FIASCO_VERSION 5.4
+setenv FIASCO_PATCHLVL 0
+echo "#FIASCO Version "$FIASCO_VERSION" patch "$FIASCO_PATCHLVL\
+                               >>& $LOGFILE
+if ( -x $FIASCO/fiat_version ) then
+  echo "#FIAT Version" `fiat_version` >>& $LOGFILE
+endif
+if ($1 == 'spiral') then
+  spiral.proc.csh              >>& $LOGFILE
+else if ($1 == 'epi') then
+  epi.proc.csh                 >>& $LOGFILE
+else if ($1 == 'twoshot') then
+  ts.proc.csh                  >>& $LOGFILE
+else if ($1 == 'epi_brain') then
+  epi_brain.proc.csh           >>& $LOGFILE
+else if ($1 == 'spiral_brain') then
+  spiral_brain.proc.csh        >>& $LOGFILE
+else if ($1 == 'twoshot_brain') then
+  ts_brain.proc.csh        >>& $LOGFILE
+else
+  set notfound = `test_in_subshell.csh which $1.proc.csh`
+  if ($notfound == 0) then
+    $1.proc.csh                >>& $LOGFILE
+  else
+    echo "# $1.proc.csh was not found!"
+    exit -1
+  endif
+endif
+setenv F_ENDDATE "`date`"
+echo "#Start: $F_STARTDATE  End: $F_ENDDATE"\
+                               >>& $LOGFILE
+echo '#FINISHED\!'             >>& $LOGFILE
+exit

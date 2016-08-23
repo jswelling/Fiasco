@@ -1,0 +1,103 @@
+ *Introduction
+
+  iwarp is used to perform 3-D Affine or projective warping on a 
+  set of images, given estimates of the warp.  The input images must
+  be in image space (v.extent=1), not k-space. Input data must be organized
+  as (v)xyz(t).  
+
+  To run iwarp use:
+    iwarp -xvoxel xv -yvoxel yv -zvoxel zv
+           [-input Input-header-file] [-headerout Output-header-file]
+           [-parameters Registration-parameter-file] [-verbose] [-debug]
+           [-interp interpMode]
+
+  or:
+    iwarp -help 
+
+*Arguments:xvoxel
+   -xvoxel xv                      (-x xv)
+
+   Specifies the voxel edge length in the x direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:yvoxel
+   -yvoxel yv                      (-y yv)
+
+   Specifies the voxel edge length in the y direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:zvoxel
+   -zvoxel zv                      (-z zv)
+
+   Specifies the voxel edge length in the z direction.  This
+   parameter is required.  Only the ratio of this parameter 
+   with the other voxel edge length parameters is relevant.
+
+*Arguments:input
+   [-input Input-header-file]        (-i Input-header-file)
+
+   Ex: -input partialk.mri
+
+   Specifies that the header for the input dataset is located
+   in Input-header-file. Default value is "input.mri".
+   Input-header-file is not allowed to have the same name
+   as Output-header-file.
+
+   iwarp accepts only standard real- or complex-valued images
+   with dimension order "vxyzt" or "xyzt" as input.
+
+*Arguments:headerout
+   [-headerout Output-header-file]  (-h Output-header-file)
+
+   Ex: -h 3dOutput.mri
+
+   Specifies that the header for the output dataset should
+   be written to Output-header-file. Default value is
+   "iwarp.mri. Output-header-file is not allowed to have the same
+   name as Input-header-file. 
+
+*Arguments:parameters
+   [-parameters Registration-parameter-file]   (-p Registration-parameter-file)
+
+   Ex: -p reg.par
+ 
+   Specifies that the motion correction parameters are to be
+   read from Registration-parameter-file. Default value is "warp.par".
+
+   The format of the Registration-parameter-file is a series of
+   ASCII numbers of the form:
+         image# v00 v01 v02 v03 v10 v11 v12 v13 ... mse
+   where there are 16 'v' entries in all, representing the 16 entries 
+   in a 4x4 homogeneous transformation matrix.  All non-singular
+   transformations are supported, including projective as well as
+   affine transformation.
+
+   These 18 numbers must be separated by spaces or tabs, but NOT
+   carriage returns- all 18 numbers must reside on the same line.  The
+   mse entry is ignored; it is given for compatibility with other
+   utilities.  Lines beginning with '#' are considered to be comments
+   and are ignored.
+
+*Arguments:verbose
+   [-verbose]                              (-v)
+  
+   Causes verbose output to be produced.
+
+*Arguments:debug
+   [-debug]
+  
+   Causes debugging output to be produced.
+
+*Arguments:interp
+  [-interp interpMode]
+
+  Specifies interpolation mode.  Appropriate modes include
+  "closest", "linear", "catmullrom", "bspline", and "bezier";
+  the default is "linear".
+
+m4include(../fmri/coordsys_help.help)
+
+m4include(../fmri/interpolator_help.help)
+

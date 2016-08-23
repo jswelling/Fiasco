@@ -1,0 +1,3114 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>FiascoScripts</title>
+  </head>
+  <body>
+    <h1>FiascoScripts</h1>
+<h2>Overview</h2>
+<pre>
+
+  This program is meant to be called by a shell script, and not
+  directly by the user.  The script should call it as follows:
+
+    scripthelp scriptname [subtopic]
+
+  where scriptname is $argv[0] and subtopic is an optional subtopic.
+
+</pre>
+<h2>Unknown</h2>
+<h3>Usage</h3>
+<pre>
+
+  You have asked for information on a script for which no information
+  is available.  You may be able to learn something by just reading 
+  the script itself.
+
+</pre>
+<h2>plot_roi_event_response.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  Given a dataset in time series order and a mask selecting some
+  subset of the voxels in the dataset, plot_roi_event_response.py
+  generates a Postscript plot of the response of the voxes
+  within the ROI to a set of stimulus events.
+
+   plot_roi_event_response.py [-v][-d] [--title TitleString]
+      [--bars BarLocString] [--autobars] [--window WindowLength]
+      -r RoiMaskDS --out Output.ps --bps binsPerSec --ttl timeToLive
+      --phrase eventIdentifierPhrase --iqr --nosamp 
+      key1=val1 key2=val2 ... InFile
+
+  where
+    -v specifies verbose output
+    -d specifies debugging output
+    --title TitleString provides an overall title for the graph.
+    --bars BarLocString accepts a comma-separated list of bar
+      locations as a parameter string.  Vertical bars are drawn
+      at these locations to help with identifying things like trial
+      boundaries.
+    -r RoiMaskDS specifies the name of the ROI mask, a dataset in
+      (v)xyz(t) order.
+    --out Output.ps specifies the name of the output file (default
+      plot.ps)
+    --bps binsPerSec specifies the number of bins per second into
+      which sample values should be collected when building the
+      trendline.  The default is 2.0, for a bin width of 1/2.0 sec.
+    --ttl timeToLive specifies the number of seconds to associate
+      samples with an event after it occurs.  Note that this is 
+      typically greater than the duration of a trial!  The default is 10.0.
+    --phrase eventIdentifierPhrase is a key phrase used to identify
+      which stimuli in the stimulus time series of this experiment
+      are to be tracked as events.  For example, --phrase "Cue"
+      would identify as events stimuli named "conCue",
+      "CueTheTrumpets", or "someCueHere".  Note that matching is case
+      sensitive!  The default phrase is "Stim".
+    --iqr causes lines for the Q1 and Q3 scores of each binned
+      stimulus response curve to be drawn, rather than a single line
+      for the median.
+    --nosamp supresses the drawing of individual summary samples.
+      This reduces the clutter on the graph and is useful with --iqr.
+    key1=val1, etc. are key-value pairs that are passed to 
+      customize_local.py to fully specify the experimental stimulus
+      sequence.  They must come after other arguments but before
+      InFile.
+    InFile is the input dataset, which must be in (v)txyz order.
+
+  or
+
+   plot_roi_event_response.py -help [topic]
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  Suppose one had a standard Fiasco timeseries dataset named
+  "tshifted" in vtxyz order, and that this dataset has been corrected
+  for slice timing as with afni_tshift.py.  Suppose there is a
+  matching boolean ROI dataset named "roi", as might be created by
+  the "pullback_roi.py" utility.  
+
+  Suppose that two of the event types in the stimulus time series for
+  this run are called "ConStim" and "InconStim".  There might be
+  others the names of which did not include "Stim", the default 
+  --phrase value.
+
+  If customize_local.py could calculate the stimulus time series 
+  given the additional values for "subj", "task", "runnum", and "db_uname", 
+  one could produce an output plot named "test.ps" with the command:
+
+    plot_roi_event_response.py -v --title "My sample plot" -r roi 
+      --out test.ps --bars '3.5,7.0' --bps 2 --ttl 10.0 
+      subj=17 task=arrow runnum=1 db_uname=welling tshifted
+
+  The --bars option adds two vertical bars to the plot.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This script uses the functionality of customize_local.py to learn
+  the stimulus sequence for the experiment.  This means that 
+  customize_local.py must know about this particular experiment, and
+  that needed additional information like subject number and database
+  access information must be provided as key-value pairs.
+
+  Given the stimulus time sequence, the calculation proceeds as
+  follows:
+
+   -The time courses of all the voxels within the ROI are extracted
+    from the input datafile.
+   -A summary value, currently the median, is calculated for the ROI
+    at each time.
+   -The stimulus sequence is scanned for relevant events using the
+    --phrase command line argument.  Each such event remains active
+    for --ttl seconds after it occurs.  During that time, each time
+    sample (an ROI median, for example) is associated with the event.
+    In each case, the sample is scaled by the value of the first 
+    sample in this particular occurance of the event to adjust for
+    slow drift in the fMRI signal.
+   -All active events are retired at the end of each acquisition (as
+    signaled by the acq_blocks chunk of the input dataset).
+   -This produces a short list of events, each of which collects many
+    samples at several times.  
+   -For each event, samples are binned in time according to the --bps
+    value, and a summary value for each bin (currently the median) is
+    calculated.
+   -The output plot is produced by running R as a subprogram.
+   
+  The output plot shows the time course of each event type,
+  including the line of binned values and scatterplot points for
+  each individual ROI summary value.  
+
+  NOTE that if the --ttl value is greater than the duration of a
+  single trial, each TR of the input dataset may contribute a sample
+  to more than one event time series!
+
+  NOTE that you may want to correct the input dataset for slice
+  acquisition timing, as with the afni_tshift.py utility, before
+  passing it as input to this script!
+
+</pre>
+<h2>afni_tshift.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  afni_tshift.py uses the AFNI executable 3dTshift to perform slice
+  timing correction of Pgh MRI datasets.
+
+    afni_tshift.py [-v] [-d] inFname outFname
+
+  where
+
+   -v specifies verbose output
+   -d specifies debugging output
+   inFname is the name of the input Pgh MRI file
+   outFname is the name of the output Pgh MRI file
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This script acts on the 'images' chunk of the input dataset.
+
+  The input dataset is converted to AFNI format, slice timing
+  correction is performed using 3dTshift, and the resulting data is
+  converted back to Pgh MRI format.  The slice acquisition order
+  information in the 'images.reorder_pattern' tag determines the
+  reordering pattern used by 3dTshift.  All tag information from the
+  input file is preserved in the output, except for the
+  images.reorder_pattern tag (which no longer applies).
+
+
+  3dTshift's -Fourier interpolation method is used.  
+
+</pre>
+<h2>epoch_subset.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  epoch_subset.py assembles its output from arbitrarily-placed blocks
+  of its input.
+
+    epoch_subset.py [-v] [--debug] --dim a --newdim b --len aExtent 
+                    --offsetfile offsetFname inFname outFname
+
+  where:
+
+   -v specifies verbose output
+   --debug specifies debugging output 
+   --dim a specifies that the input file dimension a will be split,
+     so that the corresponding output file dimensions will be 'ab'
+     where b is specified by --newdim
+   --specifies the 'block dimension'
+   --len aExtent specifies the length of the blocks read from the
+     input file.  This also serves as the extent of the split 
+     dimension in the output file
+   --offsetfile gives the name of a file containing offsets for
+     the blocks, as ascii integers one per line
+   inFname is the name of the input Pgh MRI file
+   outFname is the name of the output Pgh MRI file
+
+  or
+
+    epoch_subset.py -help [topic]
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  Suppose you have a file called 'file1' of dimensions 'abc', with 
+  extents 7:5:3, and a text file called 'epochs.txt' with the values 
+  1, 2, 3, and 4 on separate lines. You could use the epoch_subset.py 
+  command to split the second dimension of the input file, as follows:
+
+    epoch_subset.py --dim b --newdim d --len 2 --offsetfile epochs.txt 
+      file1 file2
+
+  (all on one line, of course).  The output file 'file2' would have
+  dimensions abdc with extents 7:2:4:3.  It is made up of runs of 
+  14 ( =7*2 ) contiguous values from 'file1'.  There are a total of
+  12 ( =4*3 ) such runs.  The first starts at an offset of 1 from 
+  the beginning of 'file1', because that is the first value in the
+  text file of offsets.  Likewise the second run starts from an offset
+  of 2, and mostly uses values from 'file1' which overlap those used
+  by the first run.  The third and fourth runs begin at offsets 3 and 4.
+
+  After the first 4 runs, however, things change a bit.  The next set
+  of 4 runs is taken from the next block of b values, those for which
+  the c dimension is 1 rather than 0.  That block begins at position
+  35 ( =7*5 ) within 'file1'.  Thus the second set of runs begin at
+  offsets 36 ( =1+35 ), 37 ( =2+35 ), 38, and 39.  After that comes
+  the next set of 4 runs, beginning at 71 ( = 1+(2*35) ), 72, and etc.
+
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  There is no requirement that the input blocks be disjoint, or in
+  any particular order.
+
+  This script is implemented using mripipes, and so will do its work
+  at the speed of a compiled executable.
+
+</pre>
+<h2>strip_skull.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  strip_skull.py attempts to automatically strip the skull from an
+  anatomical dataset, by checking for and applying external packages.
+
+    strip_skull.py [-v] [-d] [--like OtherStrippedDS] InputDS OutputDS
+
+  where:
+    -v specifies verbose output
+    -d specifies debugging output
+    --like OtherStrippedDS allows the user to suggest stripping by
+     the same method used for a previously stripped dataset
+    InputDS is the input anatomical dataset.  
+    OutputDS is the output dataset, which should correspond to the 
+     input but with the skull stripped off.  If the OutputDS exists,
+     it must be older than the InputDS or strip_skull.py will exit.
+
+  or
+
+    strip_skull.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  NOTE: If OutputDS exists and is newer than InputDS, 
+  strip_skull.py will exit.  This is generally a great convenience,
+  but might cause confusion if one is changing the stripping method
+  while leaving the input unchanged.
+
+  The script currently knows how to use the AFNI 3dSkullStrip and
+  3dIntracranial methods, and how to read a 'hint' from a previously
+  stripped dataset and apply a matching method.  The following methods
+  are tried, in order:
+
+  1) Convert to AFNI format, strip using 3dSkullStrip, and convert
+     back to Pgh MRI.
+  2) Convert to AFNI format, strip using 3dIntracranial, and convert
+     back to Pgh MRI.
+  3) Read the conversion hint from another dataset supplied with the
+     '--like' option and apply it.
+
+  After each attempt a crude reality check is performed, to make sure
+  that a plausible number of voxels have been stripped off.  If the
+  test is failed the program goes on to the next method, or exits with
+  an error if all methods have failed.
+
+  When a successful method is found, a hint about the method and the
+  parameters used is written to the "images.skull_strip_info" tag of 
+  the output dataset.
+
+</pre>
+<h2>plot_roi_time_series.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  Given a dataset in time series order and a mask selecting some
+  subset of the voxels in the dataset, plot_roi_time_series.py
+  generates a Postscript plot of the time series of the selected
+  voxels and the temporal running mean of their spatial mean.
+
+   plot_roi_time_series.py [-v][-d] [--title TitleString]
+      [--bars BarLocString] [--autobars] [--window WindowLength]
+      -r RoiMaskDS --out Output.ps InFile
+
+  where
+    -v specifies verbose output
+    -d specifies debugging output
+    --title TitleString provides an overall title for the graph.
+    --bars BarLocString accepts a comma-separated list of bar
+      locations as a parameter string.  Vertical bars are drawn
+      at these locations to help with identifying specific blocks
+      or trials.  Bar locations are in units of the scan TR.
+    --autobars is equivalent to --bars, but with a set of bar
+      locations hard-coded into the script.  The user may find it
+      easier to edit the script than to provide a long list of bars
+      on the command line.  Bar locations are in units of the scan TR.
+    --window WindowLength allows the user to specify an integer 
+      width in time for the running mean window. (default 6)
+    -r RoiMaskDS specifies the name of the ROI mask, a dataset in
+      (v)xyz(t) order.
+    --out Output.ps specifies the name of the output file (default plot.ps)
+    InFile is the input dataset, which must be in (v)txyz order.
+
+  or
+
+   plot_roi_time_series.py -help [topic]
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  Suppose one has a standard Fiasco single-subject directory, with 
+  time series dataset data/permute.mri and an ROI mask dataset called
+  mask.mri .  (The latter dataset might have been constructed using
+  pullback_roi_mask.py from Talairached data, for example).  To
+  generate a plot, one might do:
+
+    plot_roi_time_series.py -v --title "This is a sample plot"
+      --bars "10.1,15.2,21.3" --window 8 -r mask --out myplot.ps data/permute
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  Based on the mask the time series for the selected voxels are read
+  into the script.  A temporal running mean (with the given width) of
+  the spatial mean of those samples is constructed.  An R sub-process
+  is spawned and used to generate the Postscript plot of the given
+  time series.  The X axis measures the temporal sample number, so it
+  typically is in units of TRs.  The Y axis measures MR signal
+  intensity, so it typically is in 'standard MR units'.
+
+</pre>
+<h2>pullback_roi_mask.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  pullback_roi_mask.py takes a mask defined in Talairach space and
+  the information in a standard Fiasco subject directory, and finds
+  the corresponding mask in the subject's original un-normalized
+  space.
+
+   pullback_roi_mask.py [-v][-d] --srcdir directoryName 
+     [--thresh voxCountThresh]  [--strippedthresh brainTissueThreshold]
+     inMaskDS outMaskDS
+
+  where
+    -v specifies verbose output
+    -d specifies debugging output
+    --srcdir directoryName specifies the directory path to
+      a Fiasco directory for the subject in question.  This directory
+      must contain the 'stat', 'anat', and 'generated_scripts' 
+      subdirectories with their usual contents.  This field is required.
+    --thresh voxCountThresh specifies the number of Talairach ROI voxels
+      within the given unnormalized voxel for it to be considered
+      to lie within the unnormalized ROI.  The default is 1.0.
+    --strippedthresh brainTissueThreshold specifies the minimum value
+      of the stripped anatomical image considered to lie within the
+      brain.  The default is 1.0.
+    inMaskDS is an input mask dataset in Talairach space.  All voxel
+      values in the file must be either 0.0 or 1.0.
+    outMaskDS is the name of the output unnormalized mask to be
+      created.  This dataset will contain voxels with values equal to
+      0.0 or 1.0.
+
+  or
+
+   pullback_roi_mask.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The algorithm requires that the following files exist in the
+  input directory: 
+
+    stat/GrandMean.mri dataset
+    normalized_anat/norm_stripped_axial dataset, or
+      anat/stripped_axial
+    generated_scripts/apply_coreg_inplane.gen_csh
+    generated_scripts/apply_coreg_struct_to_inplane.gen_csh
+    generated_scripts/apply_cowarp_inplane.gen_csh
+    generated_scripts/apply_normalize.gen_csh
+
+  if the norm_stripped_axial dataset does not exist, it is created
+  from the stripped_axial dataset using the generated scripts.
+
+  The algorithm proceeds as follows.  
+
+  - In Talairach space, a mask is constructed by taking the
+    intersection of the set of voxels in the input ROI mask 
+    inMaskDS with the value 1 and the set of voxels in the 
+    subject's norm_stripped_axial dataset with values greater 
+    than or equal to the --strippedthresh value.
+
+  - An address volume is constructed in unnormalized space by
+    filling each voxel with that voxel's offset within the file.
+    This volume is then normalized using the generated scripts,
+    producing an address volume in Talairach space filled with
+    corresponding offset values in the unnormalized space volume.
+    'Nearest neighbor' resampling is used in this normalization,
+    so that the address values are preserved.
+
+  - The 'pullback' utility is used to sum the voxels in the
+    intersection mask (which have values 0 or 1) into the
+    unnormalized space voxels at the corresponding addresses
+    in the Talairach space address file.
+
+  - Because Talairach voxels are much smaller than unnormalized 
+    voxels, a variable number of Talairach mask voxels may overlap 
+    the Talairach'd version of an unnormalized mask.  The pulled-
+    back dataset constructed above thus has voxel values ranging
+    from 0 to approximately 40, depending on the details of the
+    normalizing transformation.  If an unnormalized voxel contains
+    a number of normalized mask voxels at least equal to the 
+    --thresh value, its value is 1 in the output ROI mask.
+
+</pre>
+<h2>build_model_matrix.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  build_model_matrix.py uses R to produce a design matrix from a Fiasco
+  split file and a model equation.
+
+   build_model_matrix.py [-v][-d] --nslices dz --nimages dt
+     --out outfile --model 'model equation' [--ordered | --unordered] 
+     [--contrasts none|poly|sum|treatment|helmert]
+     split1 [split2 [split3 ...]]
+
+  where
+
+    -v specifies verbose output
+    -d specifies debugging output
+    --nslices dz is the number of slices, presumably the same for all
+      the input splitfiles
+    --nimages dt is the total number of images covered by all the 
+      input splitfiles
+    --out outfile is a Pgh MRI file containing the output X matrix.
+      It will have dimensions vtz, where the extent of v matches
+      the number of matrix columns.
+    --model 'model equation' specifies the model equation, for
+      example '~ height*weight'.  The model must be specified in
+      terms of the factors given in the split file(s).
+    --ordered specifies that the factors are to be treated as ordered.
+      This is the default.
+    --unordered specifies that the factors are to be treated as unordered.
+    --contrasts contrastType specifies the type of contrast to be used
+      in constructing the design matrix.  For ordered data the options
+      are "none" and "sum" ("none" being the default).  For unordered
+      data the options are "treatment" and "helmert" ("treatment"
+      being the default).
+    split1 and etc. are split files of the type read by 'intsplit'.
+      If multiple files are given, they are concatenated in time.
+
+  or
+
+   build_model_matrix.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This script provides an interface between the statistics package R
+  and Fiasco.  It runs R as a slave process, translates the
+  information in a Fiasco split file into a format R understands, uses
+  R to produce a model matrix, and translates the results back to the 
+  Fiasco universe.  In principle it should work with SPlus also, but 
+  problems in the management of the SPlus slave process prevent this.
+  The command to run is taken from the environment variable SPLUS,
+  if it is set, and modified appropriately.  If SPLUS is not set the
+  command used is 'R --slave --no-save'.
+
+  <b>NOTE</b> that if it did work with SPlus the resulting model matrix
+  would not be the same as that produced by R, because the two
+  packages use different default methods for factoring the model.
+
+  <b>NOTE</b> also that if you use a model matrix produced with R to perform
+  a regression using mri_glm, the results may differ from those which
+  R would produce for the same regression.  This is because R uses
+  QR decomposition while mri_glm uses SVD decomposition.
+
+  <h4>Handling of the Split File(s)</h4>
+
+  The model formula must be written in terms of the factors specified
+  on the second line(s) of the split file(s), and must be written
+  in the standard format used by R.  
+
+  If the split file(s) given do not specify experimental conditions
+  for the full range of times and slices, the remaining entries will
+  be marked missing (NA).  Any conditions which are specified for
+  times or slices outside the specified ranges are ignored.
+
+  <h4>Interaction With R</h4>
+
+  A separate R slave process is run and a separate model matrix
+  is generated for every slice, because, of course, the model matrix
+  can vary by slice.  The actual R instructions used to generate the 
+  model matrix are:
+
+    options('na.action'=na.pass)
+    ...CONTRASTS SET HERE...
+    ...FACTOR DEFINITIONS HERE...
+    ...
+    df &lt;- data.frame( 'FacName1'=fac1, 'FacName2'=fac2, ... )
+    mm &lt;- model.matrix( 'Formula', df )
+
+  where the FACTOR DEFINITIONS lines depend on the factor and
+  treatment types. The 'Formula' is of course that specified on the 
+  command line, and FacName1 and etc. are the factor names specified 
+  by the split files(s). 
+
+  If the --unordered flag is given, or the --ordered flag is given
+  (or defaulted) with a treatment type other than "none", the contrast
+  types are set via:
+
+    options(contrasts=c('contr.treatment','contr.poly'))
+
+  where 'treatment' and 'poly' are replaced with the unordered and
+  ordered contrast methods specified.  Ordered factors are then
+  generated with R commands like:
+
+    fac1 &lt;- ordered(c( ...FACTOR VALUES... ),
+                    levels=c( ...FACTOR LEVELS... ))
+
+  where '...FACTOR VALUES...' and '...FACTOR LEVELS...' are the
+  values and levels specified by the split file(s).  Any
+  number of factors can occur; they are numbered sequentially and
+  treated as fac1 is in the example.   Unordered factors are generated
+  using the factor() function in place of the ordered() function.
+
+  If the --ordered flag is given (or defaulted) and --contrast is set 
+  to 'none' (or defaulted), the factors are
+  produced with commands like:
+
+    fac1 &lt;- c( ...FACTOR VALUES... )
+
+  which results in a very simple contrast pattern.  In this case,
+  factor levels are not explicitly defined.
+ 
+  The values collected from R include the dimensions of the design
+  matrix, the elements of the design matrix, and the column names.
+  These names are those produced by the R command:
+
+    attr(mm,'dimnames')[[2]]
+
+  If the first of these is '(Intercept)', the associated column of 1's
+  is dropped from the design matrix, because mri_glm automatically
+  adds an equivalent column.  If the first column label is not 
+  '(Intercept)' the first column is not dropped; this can occur if
+  the formula given explicitly excludes the intercept.  <b>NOTE</b> that 
+  mri_glm will still include an intercept column in this case!
+
+  <h4>Structure of the Output File</h4>
+
+  The labels of the columns are saved in the output file keys of 
+  the form 'images.label.v.N' where N is the column number (counting
+  from zero).  Thus, for example, one can recover the label for the
+  third column with the command:
+
+    mri_printfield -fld images.label.v.2 outfile
+
+  Missing (NA) values in the split file(s) will result in
+  corresponding NaN (not-a-number) IEEE floating point values in the
+  output dataset.  Note that this is model-dependent.  If some factor
+  for a given time and slice has an unknown value but that factor is
+  not included in the model, the corresponding matrix element will 
+  not be NaN.  The NaN's thus mark missing values in the output
+  design matrix.
+
+  To use this design matrix in a run of mri_glm, the corresponding
+  data elements must also be marked missing in the 'missing' chunk
+  of the input dataset, and the design matrix NaN's must be replaced
+  with zeros.  This will cause mri_glm to drop the associated rows
+  of the regression.  The NaN design matrix elements must be copied 
+  to the 'missing' chunk of the input dataset and replaced with 0's
+  in the design matrix itself before the design matrix can be used
+  as a factor matrix to mri_glm.
+
+</pre>
+<h2>paste_split.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  paste_split.py concatentates multiple 'intsplit'-style split files.
+
+   paste_split.py [-v][-d] --out outSplit --nimages dt --nslices dz
+      inSplit1 inSplit2 inSplit3 ...
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    --nslices dz is the number of slices, presumably the same for all
+      the input splitfiles
+    --nimages dt is the total number of images covered by all the 
+      input splitfiles
+    --out outSplit is the output splitfile to be created
+    inSplit1 and etc. are split files of the type read by 'intsplit'.
+
+  or
+
+   paste_split.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The output split file uses a general form, and thus may not look
+  like any of the input split files.  When fed to intsplit, however,
+  it describes the same set of conditions, factors, levels, and
+  slicewise condition assignments as the input split files.
+
+  Any input slice for which any input factor is unknown ('NA') will
+  be marked completely unknown- that is, all of its factors will
+  be marked unknown.
+
+</pre>
+<h2>align_by_permutation.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  align_by_permutation.py reorders datasets to match a prototype, for
+  example converting a saggital scan to have the data order of an
+  axial scan.
+
+   align_by_permutation.py [-v][-d] --out outDS inputDS protoDS
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    outDS is the output dataset to be created
+    inputDS is the input dataset.  It must have dimensions (v)xyz(t),
+      where the v and t extents are 1 if present.
+    protoDS is the prototype for outDS.  For example, if inputDS
+      is coronal and protoDS is axial, outDS will be axial.  protoDS
+      must have dimensions (v)xyz(t), where the v and t extents are 1 
+      if present.
+
+  or
+
+    align_by_permutation.py -help [topic]
+
+</pre>
+<h3>Usage</h3>
+<pre>
+
+  This program doesn't do alignment in the true sense, in that there
+  is no attempt to line up the individual pixels of the input and
+  prototype datasets.  Its purpose is to change scan slice
+  orientation, for example shuffling the data of a coronal scan so
+  that it matches an axial scan.  It makes no difference to this
+  routine whether the prototype is axial or oblique axial; only the
+  dominant component of the slice normal is considered.
+
+  The data in the input are shuffled around to have the layout 
+  appropriate for a scan of the type given by the prototype.  This
+  implies a redefinition of what the X, Y, and Z directions are, and
+  the corner coordinates (images.tlb and etc.) are modified to reflect
+  this.  
+
+  Some reorderings require rows of data to be reversed, so that (for 
+  example) the voxels of the nose move from earlier in the file than
+  those of the back of the head to later in the file.  When needed,
+  this is accomplished by doing two successive forward Fourier 
+  transforms.  A side effect of this procedure is that the data is
+  converted to floating point, and the data values are changed by
+  small amounts (on the order of rounding error).  Thus when row
+  reversals are necessary the output data is not precisely a
+  reshuffled version of the input, but it is very close.
+
+</pre>
+<h2>pca.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  pca.py performs principal component analysis on the first 2
+  dimensions of its input file, looping over any other dimensions.
+
+
+  pca.py [-v][-d] [-n nComponents] --eigenvectors evecDS
+    [--eigenvalues evalDS] [--leftvectors leftvecDS] [--methodthresh nThresh]
+    inputDS
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    -n nComponents requests the given number of eigenvectors.  The
+       default is all the eigenvectors.
+    --eigenvectors evecDS specifies the (right) eigenvector output
+       file.  This option is required.
+    --eigenvalues evalDS specifies the eigenvalue output file.  If
+       this option is omitted, eigenvalues are not produced.
+    --leftvectors leftvecDS specifies the left eigenvector output file.
+    --methodthresh nThresh specifies a matrix size threshold to change
+       between algorithms.  See 'Details' below.  The default is 256.
+
+  or
+
+  pca.py -help [topic]
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  Consider a test dataset, named 'test', with dimensions "stw" and
+  extents 8:28:17.  The command:
+
+   pca.py -n 6 --eigenvectors evecs --eigenvalues evals --leftvectors lvecs test
+
+  will produce the output datasets 'evecs', 'evals', and 'lvecs'.
+  They will have the following dimensions:  
+
+   evecs has dimensions taw, extents 28:6:17
+
+   evals has dimensions aw, extents 6:17
+
+   lvecs has dimensions saw, extents 8:6:17
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The dimension used for the components ('a' in the Example above) is
+  chosen to be distinct from any other dimension in the input matrix.
+  Other than that, it could turn out to be anything; no promise is
+  made that it will be 'a' in the Example above or that it won't
+  change in future releases.
+
+  If both of the first two dimensions of the input matrix have extents
+  less than nThresh, the result is computed directly via singular
+  value decomposition:
+
+           T
+    X = GLD
+
+  where G is the matrix of left eigenvectors, L is a diagonal matrix of
+  eigenvalues, and D (transposed in this equation) is the matrix of
+  eigenvectors.
+
+  If one or both dimensions has an extent above nThresh, and if the
+  first extent is less than the second extent, the PCA is done via
+  the covariance of X:
+
+                   T
+     compute M = XX   
+                                  2
+     find G and L such that MG = L M by eigenvector decomposition
+
+              T   T
+     compute d = G X
+
+                  -1
+     compute D = L  d
+
+  If one or both dimensions has an extent above nThresh, and if the
+  first extent is greater than or equal to the second extent, the PCA 
+  is done as follows
+
+                  T
+     compute Q = X X   
+                                  2
+     find D and L such that QD = L Q by eigenvector decomposition
+
+     compute g = XD
+
+              T   -1 T
+     compute G = L  g
+
+  Remember that there is a sign ambiguity in the solutions, and
+  different methods will produce results of different signs!
+
+
+</pre>
+<h2>icbm_to_tlrc.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  Warps a normalized brain in the 'MNI Standard' ICBM version of
+  Talairach space to roughly match the shape and dimensions of the 
+  Talairach version used by AFNI.
+
+  icbm_to_tlrc.py [-v] [-d] [--trilinear|--closest] inDS outDS
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    --trilinear requests trilinear interpolation, as is appropriate
+      for structural images.  This is the default.
+    --closest requests closest (zero'th order) interpolation, as is
+      appropriate for functional parameter estimates
+    inDS is the ICBM-space input file, a 181x217x181 grid
+    outDS is the AFNI-space output file, a 161x191x151 grid
+
+  or
+
+  icbm_to_tlrc.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  A pair of affine transformations are used, one for samples above the
+  anterior commisure and one for samples below.  The algorithm is that
+  described by Matthew Brett in the 14/2/02 version of 
+  <a href="http://www.mrc-cbu.cam.ac.uk/Imaging/Common/mnispace.shtml">http://www.mrc-cbu.cam.ac.uk/Imaging/Common/mnispace.shtml<a> .  Note
+  that the results are approximate!  Neither the MNI nor the AFNI 
+  Talairach normalizing transformation accounts for the anatomical 
+  variation between subjects, and adding another transformation on 
+  top of it will almost surely make matters worse.
+
+  Note that icbm_to_tlrc.py and tlrc_to_icbm.py are not exact
+  inverses!  Information is lost at the interface between the
+  two affine-transformed regions.  Also, in --closest mode, pixel 
+  location rounding leads to small pixel shifts in twice-transformed 
+  datasets.  For example, if you start with a dataset in ICBM space, 
+  transform to Talairach space, and then transform the result back to 
+  ICBM space, some voxels get values which originated 1 voxels away.  
+  Also, since the bounds of the ICBM volume are larger than those of 
+  the Talairach volume, some ICBM data can be lost around the edges of 
+  the data.
+
+
+</pre>
+<h2>tlrc_to_icbm.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  Warps a normalized brain in the AFNI version of Talairach space to 
+  roughly match the shape and dimensions of the Talairach version used
+  by 'MNI Standard' ICBM datasets
+
+  tlrc_to_icbm.py [-v] [-d] [--trilinear|--closest] inDS outDS
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    --trilinear requests trilinear interpolation, as is appropriate
+      for structural images.  This is the default.
+    --closest requests closest (zero'th order) interpolation, as is
+      appropriate for functional parameter estimates
+    inDS is the AFNI-space output file, a 161x191x151 grid
+    outDS is the ICBM-space input file, a 181x217x181 grid
+
+  or
+
+  tlrc_to_icbm.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  A pair of affine transformations are used, one for samples above the
+  anterior commisure and one for samples below.  The algorithm is that
+  described by Matthew Brett in the 14/2/02 version of 
+  <a href="http://www.mrc-cbu.cam.ac.uk/Imaging/Common/mnispace.shtml">http://www.mrc-cbu.cam.ac.uk/Imaging/Common/mnispace.shtml<a> .  Note
+  that the results are approximate!  Neither the MNI nor the AFNI 
+  Talairach normalizing transformation accounts for the anatomical 
+  variation between subjects, and adding another transformation on 
+  top of it will almost surely make matters worse.
+
+  Note that icbm_to_tlrc.py and tlrc_to_icbm.py are not exact
+  inverses!  Information is lost at the interface between the
+  two affine-transformed regions.  Also, in --closest mode, pixel 
+  location rounding leads to small pixel shifts in twice-transformed 
+  datasets.  For example, if you start with a dataset in ICBM space, 
+  transform to Talairach space, and then transform the result back to 
+  ICBM space, some voxels get values which originated 1 voxels away.  
+  Also, since the bounds of the ICBM volume are larger than those of 
+  the Talairach volume, some ICBM data can be lost around the edges of 
+  the data.
+
+</pre>
+<h2>calc_stats_over_roi.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  calc_stats_over_roi.py calculates a 5-number summary (min, 1q,
+  median, 3q, and max) of an input dataset within the bounds of
+  a mask.  It is designed to work specifically within the context
+  of the Fiasco implementation of normalized data.
+
+  calc_stats_over_roi.py [-v] [-d] [-l lowThresh] [-h highThresh]
+         [--basepath BasePath] -r RoiMaskDSet StatDS
+
+   where:
+    -v specifies verbose output
+    -d specifies debugging output
+    -l lowThresh specifies a minimum value in the normalized axial
+       dataset below which points are to be excluded (default 0.0)
+    -h highThresh specifies a maximum value in the normalized axial
+       dataset above which points are to be excluded (default 1e6)
+    --basePath BasePath specifies the path to the directory holding
+       the standard Fiasco subdirectories 'stat', 'anat', 
+       'generated_scripts', etc. (default ./)
+    -r RoiMaskDSet specifies the mask dataset (values 0=outside,
+       1=inside) for the region of interest.
+    StatDS specifies the statistic to sample.  This file must exist 
+       in the 'stat' subdirectory of BasePath; for example "GrandMean".
+
+  or
+
+  calc_stats_over_roi.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  To be included in the summary, a voxel in the StatDS dataset must
+  meet the following criteria:
+
+    - The value of RoiMaskDSet must be non-zero at that voxel.
+    - The value of normalized_anat/norm_warped_stripped_axial must
+      be greater than or equal to lowThresh at that voxel.
+    - The value of normalized_anat/norm_warped_stripped_axial must
+      be less than or equal to highThresh at that voxel.
+    - The value of StatDS must be finite (non NaN, Inf, NInf, or any
+      other funky non-finite IEEE floating point value) at that voxel.
+
+  If all of those criteria are met, the value at that voxel goes on
+  a list of valid voxels.  The output line of the script contains
+  the following values calculated from that list, in order:
+
+  min  1quartile  median  3quartile  max  count
+
+  where count is the number of valid samples.
+
+  Obviously, lowThresh and highThresh can be used to restrict sampling
+  to gray matter voxels, if the threshold values for gray matter in
+  the particular structural scan are known.
+
+  Note that the script will produce normalized versions of the
+  stripped axial dataset and the statistics dataset in question using
+  the appropriate generated scripts if those normalized datasets do
+  not exist.
+
+</pre>
+<h2>combine.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  combine.csh takes multiple Tmaps as input, and produces a Pmap as
+  output using any of several methods.
+
+  combine.csh -o outFile [-f] -m [fisher|stouffer] Tmap1 Tmap2 ...
+
+    -o outFile specifies the name of the output Pmap
+    -f specifies that a 'folded' Pmap is to be produced
+    -m specifies the method to be used:
+
+       fisher: use Fisher's method (default)
+       stouffer: use Stouffer's method 
+       binomial: use binomial method
+
+    Tmap1, Tmap2, etc. are input Tmaps.  (In the case of the binomial
+    method, samples from any symmetrical distribution can be used).
+    Note that they must each contain the appropriate 'counts1' and 
+    'counts2' chunks in addition to the 'images' chunk containing 
+    the T values themselves.
+
+  or
+
+  combine.csh -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The Fisher and Stouffer algorithms are as described in "Combining 
+  Brains: A Survey of Methods for Statistical Pooling of Information" 
+  by Nicole A. Lazar, Beatriz Luna, John A. Sweeney, and William F. 
+  Eddy, 2001.    A technical report version of the paper is available 
+  from the Reference section of http://www.stat.cmu.edu/~fiasco .
+
+  The binomial method simply counts the number of input T scores which
+  are greater than zero for each voxel, treats the result as a sample
+  from a binomial distribution, and produces the corresponding P
+  score.  This test is very weak, but it has the advantage of being
+  non-parametric and can samples from any symmetrical distribution as
+  input.
+
+  Note that the left tail of the combined P distribution corresponds
+  to the left tail of the input T distributions.  Because Fisher's
+  method is not symmetrical between the two tails, and because a
+  binary floating point number can store values near 0.0 much more
+  precisely than it can store values near 1.0, you may want to build
+  Pmaps for the left and right tails of the combined distribution
+  separately.  To do this, use mri_rpn_math to multiply each of the
+  input Tmaps by -1, swapping the two tails, and then feed these
+  tail-swapped Tmaps to combine.csh .  By convention in Fiasco, Pmaps
+  which have been swapped in this way have the suffix '_bar' in their
+  filenames.  Since false_discovery.py calculates the false discovery
+  threshold for the left tail of its input Pmap, swapping tails will
+  also be necessary if you want a false discovery threshold for a
+  right tail.  <b>NOTE</b> that subtracting a Pmap from 1.0 to swap its tails
+  is not as good a solution because of the poor numerical precision
+  of P scores near 1.0.  Use of the '-f' flag can avoid this problem
+  by producing folded Pmaps, which have values in the range (-0.5 to
+  0.5] with values near zero being most significant.
+
+  It is often convenient to convert P scores to Z scores, for example
+  when plotting or thresholding combined maps.  This can be done with
+  the command:
+
+    mri_rpn_math -out Zmap '$1,0,1,inv_cnormal' Pmap
+
+  If the input is a folded Pmap, substitute 'inv_fcnormal' for 
+  'inv_cnormal'.
+
+</pre>
+<h2>afni_estireg3d.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script is used to perform 3-D motion estimation on a
+  set of images, producing estimates of the motion, but by
+  using AFNI's 3dvolreg instead of FIASCO's estireg3d.  This
+  will cut down computation time but unfortunatly lose some
+  additional data computed by estireg3d.  The input data must
+  be organized as vxyzt or xyzt.  Essentially, this script wraps
+  3dvolreg so that it can be substituted for estireg3d.csh in
+  a FIASCO steps file.
+
+  To run afni_estireg3d use:
+    afni_estireg3d.csh infile [outfile]
+
+</pre>
+<h3>Infile</h3>
+<pre>
+ 
+  infile
+
+  Ex: Input_file
+
+  The value of infile specifies the input dataset. This argument is required.
+
+</pre>
+<h3>Outfile</h3>
+<pre>
+
+  outfile
+
+  Ex: Output_file
+
+  The value of the outfile specifies the output dataset.  This
+  arguement is optional; if it is not given the AFNI-format output
+  data produced by 3dvolreg is discarded (but the motion parameters
+  are still saved).
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  To substitute afni_estireg3d.csh for estireg3d.csh in a steps file,
+  simply change the name of the script while leaving the arguments
+  unchanged.  This will cause the motion estimates produced by 
+  3dvolreg to be translated to Fiasco format and used in lieu of
+  estireg3d's estimates in the standard processing stream.
+
+  Alternately, one can specify a second argument to afni_estireg3d.csh
+  and allow 3dvolreg to actually implement the registration, rather
+  then just estimating registration parameters.  (This prevents
+  smoothing of the time series of registration parameters, so it 
+  is believe to be a less accurate approach).
+
+  This script performs the following steps:
+
+  -Convert the input dataset to AFNI format
+  -Construct the mean or median, as required by F_EST3D_ALIGN
+  -Use AFNI's '3dvolreg' tool to estimate 3D registration parameters,
+   saving AFNI's notion of the registered output if an output Pgh MRI
+   file is requested.
+  -Translate the AFNI format registration parameters to Fiasco format
+   using par_translate.
+
+</pre>
+<h2>make_group_anat.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  make_group_anat.csh finds unweighted group means of several common
+  anatomical datasets: axial, inplane, stripped axial, and stripped
+  inplane scans.
+
+  make_group_anat.csh [-m namemap] [-d key=value] subj1 subj2 ...
+
+    -m namemap uses the specified mapfile (along with defaults in
+       F_MAP_PATH) to find subject directories.  Multiple -m
+       options may be used.
+    -d key=value defines the given additional key-value pair
+
+  or
+
+  make_group_anat.csh -help [topic]
+
+  All of the subjects must have been transformed into the same
+  coordinates, presumably Taliarach space.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This script uses map_name.py to find the anatomical datasets
+  associated with the file names Axial, StrippedAxial, Inplane,
+  and StrippedInplane (the association being defined by map_name.py's
+  name mapping tables).  Unweighted means are constructed for all
+  of the subject datasets which are found; those not found are simply
+  excluded from the means.  The output dataset names will be mean_Axial,
+  mean_StrippedAxial, mean_Inplane, and mean_StrippedInplane.  These
+  files are created in the directory from which make_group_anat.csh
+  is run.  If no subject has a dataset of a given type, no mean map 
+  for that type will be produced.
+
+</pre>
+<h2>convert_ifiles.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script is run in a directory full of GE LX Image subdirectories
+  to produce Pgh MRI datasets from the images.
+
+  convert_ifiles.py [-v] [-d]
+
+    -v specifies verbose output
+    -d specifies debugging output
+
+  or
+
+  convert_ifiles.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  Suppose a scan session consists of 4 series: a setup series, an
+  axial structural, an inplane structural, and a functional series.  
+  The directory containing the subdirectories with the GE image files
+  from this session would have a number of subdirectories with 
+  names like 001, 002, 003, 004, 024, 044, etc., each of which would
+  contain some number of files with names like I.001, I.002, etc.,
+  possibly up to I.999.  The images of the functional scan might be
+  spread over multiple directories, for example 004, 024, 044, etc.
+
+  When run in the directory containing these subdirectories, 
+  convert_ifiles.py does the following:
+
+   -renumber_ifiles.py is used to produce subdirectories containing
+    links to all the images for each particular series.
+
+   -smartreader is used to generate Pgh MRI datasets for each
+    particular series.
+
+   -Datasets which are identified as representing multiple times
+    (for example, functional datasets) have their first (guide)
+    volumes clipped off.
+
+  The result is a collection of datasets named series1.mri,
+  series2.mri, etc., which can then be processed with Fiasco tools.
+
+  <b>Note</b> that if smartreader doesn't identify a long
+  collection of images as being a time series of volumes, manual
+  intervention may be required to convert the dataset from a huge
+  stack of slices to the correct time series.  This can happen if
+  the slices in a stack are skewed or some are lost, for example.
+
+</pre>
+<h2>renumber_ifiles.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script is run in a directory full of GE LX Image subdirectories
+  to produce subdirectories of links, one subdirectory for each
+  series.
+
+  renumber_ifiles.py [-v] [-d]
+
+    -v specifies verbose output
+    -d specifies debugging output
+
+  or
+
+  renumber_ifiles.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  Suppose a scan session consists of 4 series: a setup series, an
+  axial structural, an inplane structural, and a functional series.
+  The directory containing the subdirectories with the GE image files
+  from this session would have a number of subdirectories with 
+  names like 001, 002, 003, 004, 024, 044, etc., each of which would
+  contain some number of files with names like I.001, I.002, etc.,
+  possibly up to I.999.  The images of the functional scan might be
+  spread over multiple directories, for example 004, 024, 044, etc.
+
+  Running renumber_ifiles.py in the directory containing all of 
+  these subdirectories would produce new subdirectories with the
+  names 'series1_links', 'series2_links', etc..  Each would contain
+  symbolic links with names like I.0001 (note the extra 0) linked to
+  the corresponding image in the appropriate original subdirectory.
+  These link subdirectories can then be used as input to smartreader
+  or other programs.
+
+</pre>
+<h2>multi_runner.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script is highly project-specific.  It takes input specifying
+  particular datasets, uses customize_local.py to customize the Fiasco
+  input files for those datasets, and runs the appropriate FIASCO
+  command on the customized input files
+
+  multi_runner.py [-v] [-d] [--src sourceDir] [--dest destDir] 
+    [--tag tagString] [--db_uname dbUname] [--db_passwd dbPasswd] 
+    [--infile inTbl]
+
+    -v specifies verbose output
+    -d specifies debugging output
+    --src sourceDir specifies the directory name from which prototype
+      scripts are to be read (typically '.')
+    --dest destDir specifies the subdirectory name for the outputs.
+      The complete path to this subdirectory is project-dependent
+    --tag tagStr specifies an arbitrary tag by which this group of
+      runs will be known
+    --db_uname dbUname specifies a database username, for example
+      for mySQL
+    --db_passwd dbUname specifies a database username, for example
+      for mySQL
+    --infile inTbl specifies an input table with information
+      specifying runs, one run per line
+
+  or
+
+  multi_runner.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  If any required information is not provided on the command line,
+  the script will query the user.
+
+  This script must be heavily customized for each new project.  It
+  needs information about the directory structure in which datasets
+  reside, the table format of inTbl, and the database of information
+  describing individual subjects.  It cooperates closely with
+  customize_local.py to customize the *.local.csh scripts.
+
+</pre>
+<h2>make_P_P_plots.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script takes one or more Pmaps and generates P-P plots from
+  them.  Multiple plots appear on a single Postscript page.
+
+  make_P_P_plots.csh [-out file.ps] [-fitdenom n] Pmap1 [ Pmap2 [ Pmap3...] ]
+
+    -out file.ps sets the name of the output file.  The default
+       "plot_P_P.ps"
+    -fitdenom sets the fraction of the P range over which the 
+       'diagonal' line will be fit.  For example, -fitdenom 10
+       causes the line to be fit over 1/10 of the range.  The
+       default is 2, fitting the line over the central half of the
+       data.
+    Pmap1, Pmap2, etc. are Pmap files, for example Pmap_1-2.mri .
+       Be sure to avoid overlayed Pmaps, like Pmap_1-2_q.mri
+
+  or
+
+  make_P_P_plots.csh -help [topic]
+
+</pre>
+<h2>coregister_makeps.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  coregister_makeps.py produces an image useful for verifying that
+  coregistration has been successful.  
+
+  coregister_makeps.py [-v] [-d] --out postscriptFile
+                 --func funcDS --strct structDS
+
+    -v requests verbose output
+    -d requests debugging output
+    --out postscriptFile specifies the name of the Postscript
+     output to be produced.
+    --func funcDS specifies the name of the coregistered functional
+     dataset.  In a standard Fiasco script, this is typically 
+     coregistered_func/aligned_GrandMean
+    --strct structDS specifies the name of the corresponding
+     structural dataset.  In a standard Fiasco script, this is
+     typically coregistered_anat/warped_axial_resampled .  The
+     structural dataset must occupy the same spatial bounds as
+     the functional dataset!
+
+  or
+
+  coregister_makeps.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This function simply overlays a masked version of the functional
+  data on the structural data, with the intention that the user will
+  be able to judge whether or not coregistration was successful by
+  examining the overlayed Postscript image.  The color parts of the
+  output image come from the functional data, while the gray scale
+  parts come from the structural.  
+
+  The output shows 3 slices each axial, sagittal, and coronal
+  directions.  The slices lie 1/3, 1/2, and 2/3 of the way through the
+  functional volume in each case.  Note that the bounds of the
+  structural image are never tested against those of the functional
+  image; it is the user's responsibility to input cobounded datasets.
+
+
+</pre>
+<h2>coregister.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  coregister.py implements automatic coregistration, given a
+  skull-stripped anatomical (typically axial) structural dataset, 
+  a skull-stripped in-plane structural dataset, and a functional mean dataset.
+
+  coregister.py [-v] [-d] 
+                 [--inplanealg inplaneAlgString]
+                 [--structalg structAlgString]
+                 [--warpalg warpAlgString]
+                 grandMean strippedInplane strippedStruct
+
+    -v requests verbose output
+    -d requests debugging output
+    --inplanealg inplaneAlgString specifies an algorithm for use
+         by coregister_inplane.py
+    --structalg structAlgString specifies an algorithm for use
+         by coregister_struct_to_inplane.py
+    --warpalg warpAlgString specifies an algorithm for use
+         by cowarp_inplane.py
+    grandMean is a mean functional dataset, for example GrandMean
+    strippedInplane is a skull-stripped inplane structural dataset
+    strippedStruct is a skull-stripped anatomical (typically axial)
+      structural dataset, in the same dominant direction as the
+      inplane dataset.  That is, if strippedInplane is oblique axial,
+      strippedStruct must be axial.
+
+  or
+
+  coregister.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  It uses coregister_struct_to_inplane.py, coregister_inplane.py,
+  coregister_inplane_to_inplane.py, and cowarp_inplane.py.  The 
+  generated csh scripts produced by the first two scripts are used
+  to generate aligned datasets for input to the third.
+
+</pre>
+<h2>coregister_struct_to_inplane.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  coregister_struct_to_inplane.py is used to align anatomical
+  (typically axial) structural data to in-plane structural scan data.
+  Its output is a generated shell script which can be applied to any 
+  anatomical structural Pgh MRI dataset of the same orientation to 
+  produce an inplane-aligned version.
+
+  coregister_struct_to_inplane.py [-v] [-d] [--oscript scriptName] 
+                 strippedInplane strippedStruct
+
+    -v requests verbose output
+    -d requests debugging output
+    --oscript scriptName specifies the name for the output shell
+       script which implements the alignment.  The default name
+       is "apply_coreg_struct_to_inplane.gen_csh"
+    --alg algString specifies an optimization algorithm.  The
+       default depends on the image types of the input images.
+    strippedInplane is a skull-stripped inplane structural dataset
+    strippedStruct is a skull-stripped anatomical (typically axial)
+      structural dataset.  It must be in the same dominant orientation
+      as strippedInplane- that is, if strippedInplane is oblique
+      axial than strippedStruct must be axial.
+
+  or
+
+  coregister_struct_to_inplane.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The script uses the following steps to estimate the aligning
+  transformation:
+
+    1) Geometrical information stored in the input datasets is
+       used to calculate an initial, approximate aligning
+       rotation and translation.
+    2) That transformation is used to produce a version of the
+       anatomical dataset in the inplane coordinate system.
+    3) The inplane-aligned anatomical dataset is downsampled in the
+       Z direction, and the inplane structurals are resampled
+       in the X and Y directions.  This produces a pair of datasets
+       at the same resolution and covering the same volume.
+       The Z extent of these datasets is actually larger than that
+       of the inplanes, to allow some empty space and to make a
+       Z dimension for which an efficient FFT is available.
+    4) Using this pair of datasets, an aligning transformation is 
+       estimated to correct for head motion between the acquisition
+       of the inplane and anatomical scans.
+    5) The transformations from steps (1) and (4) are merged
+       analytically to produce a single transformation that does
+       the total alignment.
+    6) A shell script is written which implements this transformation.
+
+  The output shell script can be called as follows:
+
+    apply_coreg_struct_to_inplane.gen_csh axialName outName resampName
+
+  where apply_coreg_struct_to_inplane.gen_csh is the (default) script 
+  name, axialName is an anatomical structural dataset, outName is the the
+  aligned version of the anatomical structurals, and resampName is
+  equivalent to outName but resampled to match the inplane structural
+  resolution.  The outName and resampName datasets are translated and
+  rotated to have the same center and axis alignment as the inplane
+  structural dataset.  The resampName dataset has the same corner
+  coordinates as the inplane structurals in the inplane coordinate
+  system; the outName dataset has corner coordinates appropriate to
+  its size in that coordinate system.
+
+  Note that the output dataset coordinates produced are specified
+  in the (oblique) inplane coordinate system, and not in scanner 
+  coordinates.  This means that, for example, the TLF and
+  TRB corners will have the same Z coordinate.
+
+  If the available anatomical dataset is not in the same dominant
+  orientation as the inplane dataset (for example, saggital
+  anatomicals and oblique axial inplanes), align_by_permutation.py
+  can be used to reorder the anatomical dataset to the correct
+  orientation.
+
+  Note that the skull-stripping must be done with another command.
+  Typically one would use the 'strip_skull.py' script, which in turn
+  uses software from external packages, for example AFNI's
+  3dSkullStrip.  The typical command to do so for an inplane structural
+  dataset called Inplane would be:
+
+    strip_skull.py -v Inplane strippedInplane
+
+  Note also that only rotation and translation are used to do the 
+  alignment, and that consequently the alignment estimate is limited
+  by the different distortions introduced by the imaging methods used
+  to create the input datasets.
+
+  The algorithm used to estimate the aligning transformation is
+  specified by the algString command line argument.  The format of
+  the algorithm string matches that for the estireg3d command, with
+  the addition of these terms:
+
+    "gradmag" : align gradient magnitudes of images rather than
+                the images themselves
+    "meanc" :   scale images so that masked mean intensities are
+                equal. (The masking threshold is currently hard-coded
+                in the script).
+
+  If the --alg algString option is not given, the default depends on 
+  whether the functional and inplane datasets are either both
+  T1-weighted or both T2-weighted (as determined by the "images.tr" 
+  tag in the dataset), or if they differ.  If the weightings match, 
+  the default algorithm is "opt=praxis,obj=mse,meanc".  If they
+  differ, the default algorithm is "opt=praxis,obj=jointentropy".
+
+</pre>
+<h2>coregister_inplane.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  coregister_inplane.py is used to align functional data with in-plane
+  structural scan data.  Its output is a generated shell script which
+  can be applied to any statistical Pgh MRI dataset to produce an
+  aligned version.
+
+  coregister_inplane.py [-v] [-d] [--oscript scriptName] [--alg algString]
+                 GrandMean strippedInplane
+
+    -v requests verbose output
+    -d requests debugging output
+    --oscript scriptName specifies the name for the output shell
+       script which implements the alignment.  The default name
+       is "apply_coreg_inplane.gen_csh"
+    --alg algString specifies an optimization algorithm.  The
+       default depends on the image types of the functional and
+       inplane datasets.
+    GrandMean  is a functional mean dataset, typically GrandMean
+    strippedInplane is a skull-stripped inplane structural dataset
+
+  or
+
+  coregister_inplane.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The script uses the following steps to estimate the aligning
+  transformation:
+
+    1) The stripped structural dataset is downsampled to the
+       functional resolution.
+    2) An aligning transformation (translation+rotation) is
+       estimated.
+    3) The output shell script is generated.  
+
+  The output shell script can be called as follows:
+
+    apply_coreg_inplane.gen_csh funcStat outName upsampName
+
+  where apply_coreg_inplane.gen_csh is the (default) script name,
+  funcStat is a functional statistical dataset (for example Tmap_1-2),
+  and outName is the name of the shifted and rotated output dataset,
+  and upsampName is a dataset like outName but upsampled to the
+  inplane structural resolution.  The outName and upsampName
+  datasets are translated and rotated to the location of the stripped
+  inplane structural dataset; the latter has the same voxel size and 
+  corner coordinates as that dataset.
+
+  Note that the skull-stripping must be done with another command.
+  Typically one would use the 'strip_skull.py' script, which in turn
+  uses software from external packages, for example AFNI's
+  3dSkullStrip.  The typical command to do so for an inplane structural
+  dataset called Inplane would be:
+
+    strip_skull.py -v Inplane strippedInplane
+
+  Note also that only rotation and translation are used to do the 
+  alignment, and that consequently the alignment estimate is limited
+  by the different distortions introduced by the imaging methods used
+  to create the input datasets.
+
+  The algorithm used to estimate the aligning transformation is
+  specified by the algString command line argument.  The format of
+  the algorithm string matches that for the estireg3d command, with
+  the addition of these terms:
+
+    "gradmag" : align gradient magnitudes of images rather than
+                the images themselves
+    "meanc" :   scale images so that mean intensities are equal
+
+  If the --alg algString option is not given, the default depends on 
+  whether the functional and inplane datasets are either both
+  T1-weighted or both T2-weighted (as determined by the "images.tr" 
+  tag in the dataset), or if they differ.  If the weightings match, 
+  the default algorithm is "opt=praxis,obj=mse,meanc".  If they
+  differ, the default algorithm is "opt=nelmin,obj=jointentropy".
+
+</pre>
+<h2>cowarp_inplane.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  cowarp_inplane.py is used to estimate an affine transformation to
+  compensate for distortion between structural and functional Pgh
+  MRI datasets.  Its output is a generated shell script which
+  can be applied to any statistical Pgh MRI dataset to produce a
+  warped version.
+
+  cowarp_inplane.py [-v] [-d] [--oscript scriptName] [--alg algString]
+                 GrandMean lowresInplane
+
+    -v requests verbose output
+    -d requests debugging output
+    --oscript scriptName specifies the name for the output shell
+       script which implements the alignment.  The default name
+       is "apply_coreg_inplane.gen_csh"
+    --alg algString specifies an optimization algorithm.  The
+       default depends on the image types of the functional and
+       inplane datasets.
+    GrandMean  is a functional mean dataset, typically GrandMean
+    lowresInplane is a version of the inplane structural dataset
+       which has been resampled to match the functional resolution.
+
+  or
+
+  cowarp_inplane.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The script uses the following steps to estimate the aligning
+  transformation:
+
+    1) An aligning warp (affine transformation) is
+       estimated.
+    2) The output shell script is generated.  
+
+  The output shell script can be called as follows:
+
+    apply_coreg_inplane.gen_csh structDS outName
+
+  where apply_coreg_inplane.gen_csh is the (default) script name,
+  structDS is a structural dataset (for example anat/inplane),
+  and outName is the name of the transformed output dataset.
+  The outName dataset has been warped to match the shape of the
+  anatomical dataset as closely as possible.  Because the script
+  implements a general 3D affine transformation, the input dataset
+  can be of any resolution so long as it is aligned with the
+  inplane dataset used to estimate the warp.  Because the bounding
+  volume of the warped output dataset is considered to be the same 
+  as that of the input dataset, the corner coordinates are not changed.
+
+  The algorithm used to estimate the affine transformation is
+  specified by the algString command line argument.  The format of
+  the algorithm string matches that for the estireg3d command, with
+  the addition of these terms:
+
+    "gradmag" : align gradient magnitudes of images rather than
+                the images themselves
+    "meanc" :   scale images so that mean intensities are equal
+
+  If the --alg algString option is not given, the default depends on 
+  whether the functional and inplane datasets are either both
+  T1-weighted or both T2-weighted (as determined by the "images.tr" 
+  tag in the dataset), or if they differ.  If the weightings match, 
+  the default algorithm is "opt=praxis,obj=mse,meanc,inplane".  If they
+  differ, the default algorithm is "opt=praxis,obj=jointentropy,inplane".
+
+</pre>
+<h2>pick_n_voxels.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  pick_n_voxels.py takes as input a desired count of active voxels and
+  a Pmap or Tmap , and produces the cutoff P or T score for the requested count.
+
+  pick_n_voxels.py [-v] [-d] [--twotails] [--mask maskDS] -T|-P|-F count mapDS
+
+   -v requests verbose output
+   -d requests debugging output
+   --twotails includes both tails of the distribution in the count.
+     This is incompatible with -F 
+   -T specifies that mapDS is a Tmap
+   -P specifies that mapDS is a Pmap
+   -F specifies that mapDS is an Fmap
+   --mask maskDS specifies that maskDS contains a mask for mapDS.
+      Only voxels within that map are counted.  All voxel values
+      should be either 0 or 1.
+   count is the desired number of active voxels (an integer)
+   mapDS is the name of the Pgh MRI dataset containing the Tmap or Pmap
+
+  or
+
+  pick_n_voxels.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  Without the --twotails or --mask options, this script simply sorts
+  the given voxel values and picks the lowest N.  For Pmaps or Tmaps
+  sorting is done in ascending order; for Fmaps the order is descending.
+
+  With --twotails, the values are first "folded" so that the high and
+  low tails of the distribution overlay each other.  For Tmaps this
+  implies multiplying all positive values by -1.  Thus if
+  pick_n_voxels.py returns a value V for a T threshold, V will be
+  negative and the high and low thresholds will be +V and -V.
+  For obvious reasons the --twotails option cannot be used with Fmaps.
+
+  When --twotails is applied to Pmaps, all P values above 0.5 are
+  replaced by (1-P).  Thus if pick_n_voxels.py returns a value V for a
+  P threshold, the two tails lie below P and above 1-P.
+
+  The mask dataset is a dataset of 0 and 1 values, typically made by
+  thresholding the GrandMean dataset to exclude voxels outside the
+  brain. Masking is implemented by replacing P scores outside the mask
+  with 1.0, and T and F scores outside the mask with 0.0.  This replacement
+  takes place after the folding-over of the right-hand tail if
+  --twotails is set.  Note that this algorithm can cause problems if 
+  the requested number of selected voxels is more than half of the 
+  number within the mask!  Fortunately this condition is obvious; all 
+  voxels outside the mask will suddenly be selected.  
+
+  There are special floating point values in the IEEE standard for
+  floating point numbers which represent "not a number" or "infinite"
+  values;  pick_n_voxels.py ignores those entries when it calculates
+  the P score cutoff.  This means that you can mask out parts of the
+  input data that you would like to ignore by setting them equal to
+  "NaN" using (for example) mri_rpn_math.  This is over and above any
+  masking implemented with the --mask flag.
+
+  If you request N voxels and then count the number of voxels actually
+  selected, you may find a number which is 1 or 2 off from N.  This
+  happens because of the difficulty of converting a high-precision
+  floating point number to base-10 ascii characters and back.  This
+  problem is more serious with Pmaps than with Tmaps, since a lot of 
+  the interesting P scores fall very close to the values 0.0 or 1.0.
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  A shell script would typically use pick_n_voxels.csh to generate
+  a T score cutoff, and then mask the Tmap using that threshold.  
+  For example, using the Fiasco "overlay" utility to highlight
+  the negative tail of the T distribution:
+
+    set val = `pick_n_voxels.py -T 2000 Tmap`
+
+    overlay.csh -inmap Tmap -inimage mean_image -headerout masked_t 
+      -highthresh 10000 -lowthresh $val
+
+  The high threshold is an unlikely T score of 10000; the low
+  threshold is inferred from the desired voxel count.  
+
+  Setting the high T value for a two-tailed overlay is tricky inside
+  a Cshell script because it involves floating point arithmetic
+  (multiplying a floating point number by -1).  Be sure to properly
+  implement this if you want two-tailed overlays!
+
+  To generate an overlay from only those voxels within the brain, one
+  might make a mask by thresholding the mean values for all image
+  voxels:
+
+    mri_rpn_math -out mymask '$1,800,&lt;' GrandMean
+    set val = `pick_n_voxels.py --mask mymask -T 2000 Tmap`
+    overlay.csh -inmap Tmap -inimage GrandMean -headerout masked_t 
+      -highthresh 10000 -lowthresh $val
+
+  Values can also be masked out by setting them to the IEEE value
+  "NaN" (meaning Not a Number).  For example,
+
+    mri_rpn_math -o Pmap_masked '$1,NaN,$2,800,&gt;,if_keep' Pmap GrandMean
+    set val = `pick_n_voxels.py -P 2000 Pmap_masked`
+    overlay.csh -inmap Pmap -inimage GrandMean -headerout masked_p 
+      -highthresh 2.0 -lowthresh $val
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  pick_n_voxels.py keeps scratch files in a temporary directory.
+  If the environment variable F_TEMP is defined this directory will 
+  be ${F_TEMP}/tmp_pickn_NN (where NN is the current process ID);
+  otherwise ./tmp_pickn_NN will be used.  The temporary directory is
+  deleted when pick_n_voxels.py is finished with it.
+
+</pre>
+<h2>customize_local.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script customizes the various Fiasco *.local.csh files for
+  a specific case.  Its implementation depends on the research
+  project for which it is to be used, and thus it is not portable
+  between projects.
+
+  customize_local.py [-v] [-d] [--src=srcDir] key1=val1 
+    key2=val2 ... fileToCustomize
+
+   -v requests verbose output
+   -d requests debugging output
+   --src=srcDir means read the original file from srcDir
+
+  if the --src option is not used, the source file will come from
+  the directory specified by the FIASCO environment variable.
+
+</pre>
+<h2>dataset_matches_env.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script checks to make sure that the Fiasco environment
+  variables match the internal values of a datafile.  Generally
+  the environment variables come from the .default.csh and .local.csh
+  files, while the dataset's values come from the input file(s) 
+  originally read by smartreader.
+
+  dataset_matches_env.py [-v] [-d] [-c chunk] MriFile
+
+   -v requests verbose output
+   -d requests debugging output
+   -c chunk checks the values in the given chunk (default "images")
+   MriFile is the Pgh MRI file to check.
+
+  If a mismatch is found, the script exits with a non-zero exit code.
+
+</pre>
+<h2>FIASCO</h2>
+<h3>Usage</h3>
+<pre>
+
+  FIASCO is the main script that drives the noise reduction and
+  analysis of an fMRI dataset.
+
+  FIASCO [epi|spiral]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The Fiasco script carries out the following very simple steps:
+
+  1) Create an output logfile with the name out/logfile, and write
+     a header into it.
+
+  2) Check for an executable file with the name arg.proc.csh, where
+     arg is the argument with which it was called.  For example,
+     epi fMRI data is processed by the file epi.proc.csh .  If this
+     file is found, it is executed with stdout and stderr redirected
+     to the logfile.  If no such file is found the script exits.
+
+  3) Write a trailer to the log file and exit.
+
+  The steps normally followed by the proc file are:
+
+  1) Source fiasco.local.csh to establish environment variables
+     required by Fiasco.
+
+  2) Source arg.defaults.csh (for example, epi.defaults.csh) to
+     establish the default variables for the analysis the user has
+     requested.
+
+  3) Source arg.local.csh (for example, epi.local.csh) to establish
+     environment variables specific to this particular run.
+
+  4) Create the $F_TEMP, out, and ps directories if they do not already 
+     exist.
+
+  5) If parallel execution is enabled via the F_PARALLEL environment
+     environment variable in fiasco.local.csh, source the script
+     $FIASCO/parallel.start.csh and exit if it reports failure.
+
+  6) Execute the arg.steps.csh (for example, epi.steps.csh) file to
+     perform the actual processing of the user's data.  This file
+     contains the actual processing steps the user has selected.  
+
+  7) If parallel execution is enabled, source
+     $FIASCO/parallel.finish.csh .
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  The environment variable FIASCO must be set to point to the location
+  of the Fiasco executables, and the environment variables PVM_ROOT
+  and must point to the location of PVM and to the machine
+  architecture type.  
+
+  The FIASCO script will immediately source the fiasco.local.csh, 
+  epi.defaults.csh, and epi.local.csh scripts (or their spiral
+  equivalents), defining many more environment variables.  With the
+  exception of MRI_TMP_DIR, all of these begin with "F_".
+
+</pre>
+<h2>groupcompare.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  groupcompare.csh takes mean, standard deviation, and count data for
+  multiple subjects in two groups in each of two conditions, and
+  produces F and P scores for the terms of a random effects model of
+  the data.  An overall mean is also produced for convenience in doing 
+  overlays, and a data set of total samples per voxel is produced as
+  a check that the regions of interest have been well sampled.
+
+  groupcompare.csh [-m namemap] [-d key=value] subj1 subj2 ...
+
+    -m namemap uses the specified mapfile (along with defaults in
+       F_MAP_PATH) to find subject directories.  Multiple -m
+       options may be used.
+    -d key=value defines the given additional key-value pair
+
+  or
+
+  groupcompare.csh -help [topic]
+
+  All of the subjects must have been transformed into the same
+  coordinates, presumably Taliarach space.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The statistical model used by groupcompare.csh is:
+
+    Y   = M + A  + B  + C  + (AB)   + (BC)   + (AC)   + (ABC)
+     ijk       i    j    k       ij       jk       ik        ijk
+
+  where M is the overall mean, 0&lt;i&lt;s identifies the s subjects, 0&lt;j&lt;2
+  represents the two groups, and 0&lt;k&lt;2 represents the 2 conditions.
+  These terms cover all of the degrees of freedom of the 2*s 
+  observations of Y.  This will be a mixed model, with subject being
+  a random effect and group and condition being fixed.
+
+  The direct effect of the two conditions is thus:
+
+    Y   - Y    = C - C   + (BC)  - (BC)   + (AC)  - (AC)   
+     ij1   ij0    1   0        j1      j0       i1      i0
+
+                + (ABC)    - (ABC)
+                       ij1        ij0
+
+  with the other terms cancelling.  Rewriting this equation using 
+  lower case to denote differences, 
+
+    y  = m + a + b + (ab)
+     ij       i   j      ij
+
+  This forms a two factor mixed effects model, with 'b' (the
+  difference of the (BC) terms) being fixed and 'a' random.
+  For this model, the relevant test statistics are:
+
+      Factor       Test
+
+        a        MSa/MSE   (random)
+
+        b        MSb/MSab  (fixed)
+
+       (ab)      MSab/MSE  (random)
+
+  (see "Applied Liner Statistical Models" by Neter et al, chapter 24).
+  Note that these summed squares apply to the subtracted model, not
+  the original model.
+
+  The needed sums of squares are computed by applying an appropriate 
+  regression to the unsubtracted Y values to deal with possible
+  imbalances.  Specifically,
+
+
+    Y' = X'V + E'
+
+  where Y' is the vector of scaled input observations, X' is the factor
+  matrix, V is the vector of parameters to be estimated, and E' is a
+  residual error term.  This regression is calculated independently
+  for each voxel in the input data.  Estimates and sums of squares for
+  the elements of V are calculated, and from them F and P scores 
+  for the terms of the model above are estimated.  
+
+  For s subjects Y' will be an n by 1 matrix, X' will be n by p, 
+  and V will be p by 1, where n=2s and p=s+2.
+
+  The algorithm used assumes that there are two groups and two
+  experimental conditions.  The Y' vector is given by:
+
+          /            
+          | mean(1,1)  |
+          | mean(1,2)  |
+    Y'= S | mean(2,1)  |
+          | mean(2,2)  |
+          | mean(3,1)  |
+          | mean(3,1)  |
+          |  etc.      |
+                      /
+
+  where mean(i,c) is the mean for subject i in condition c, and the
+  scaling matrix S is the diagonal matrix with elements:
+
+    S   = sqrt( N(k/2, k%2) )
+     k,k
+
+  in which N(i,c) is the number of observations of subject i in 
+  condition c and stdv(i,c) is the corresponding standard deviation.
+
+  The factor matrix X'=SX, where S is as above and X has the following
+  columns:
+
+   -The first column is all 1's and serves to de-mean the Y vector.  
+
+   -The second column is 1 for rows in condition 2 and -1 for rows
+    in condition 1.  This column implements term C in the unsubtracted
+    model.
+
+   -The third column is 1 for rows in group 2 and -1 for rows
+    in group 1.  This term implements term B in the model.
+
+   -The fourth column is the product of columns 2 and 3 and implements
+    the (BC) cross term.
+
+   - s-2 columns follow which reflect the (ABC) difference term in the
+    subtracted Y equation.  Each column is 1 for the corresponding
+    subject, 0 otherwise, de-meaned within group and condition,
+    multiplied by factor 2.  One column is dropped from each group
+    for orthogonality.  (Specifically, the column corresponding to
+    the last subject in the group is dropped).  
+
+  As an example of one of the subject columns, consider the specific
+  case of 20 subjects with 10 in each group.  There would be 9 subject
+  columns for each group.  The first subject column in the first group
+  would have the row values:
+
+    (-0.9, 0.9, 0.1, -0.1, 0.1, -0.1, ..., 0, 0, 0, 0, ...)
+
+  where there are a total of 9 (0.1, -0.1) pairs and 10 (0,0) pairs.
+  These pairs correspond to all subjects other than the first in group
+  1 and all 10 subjects in group 2 respectively.
+
+  Note that these are the factor values before scaling by S.
+  Multiple regression is performed on these factors, and the estimate
+  and variance for factors 1 through 3 are computed.  
+
+  The subject factors as described are orthogonal to the first four
+  factors, but missing subject data can break this orthogonality.  To
+  avoid this, the regression is actually calculated in two stages.  
+  An initial regression is performed on the Y values using the first
+  four factors, and a second regression is performed on the residuals
+  using the subject factors.
+
+  The mean squared errors of the various columns in this regression
+  correspond to mean squared terms needed in test statistics for the 
+  subtracted model.  Specifically, the mean square associated with
+  factor 4 above corresponds to MSab in the subtracted mixed effects
+  model, and the total mean square associated with the last (s-2)
+  columns correspond to the MSE of the subtracted mixed effects model.
+  (The MSE of the regression is made up of terms which are symmetric
+  in the experimental condition and hence do not contribute to the
+  subtracted model).  The mean square associated with factor 2 can be
+  used with the subtracted MSE to construct a test statistic for the
+  experimental condition.
+  
+
+    Original Model       Subtracted Model   DOF
+
+      factor 2 MS             MSm            1
+      factor 4 MS             MSab           1
+      factors &gt;=5 MS          MSE           s-2
+
+  P scores are calculated from the F test statistics using the
+  associated degrees of freedom.
+
+  A dataset named mean is returned containing the estimates for the
+  first (constant) factor.  
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  If subjects 1137, 1139, and 1143 are patients and subjects 2213,
+  2215, and 2219 are controls, and if the map file "subjmap" provides
+  a mapping between subject numbers and the mean, standard deviation,
+  and counts files for those subjects in Taliarach space, the command:
+
+    groupcompare.csh -m subjmap 1137 1139 1143 2213 2215 2219
+
+  will produce a between-groups comparison for these subjects.  The
+  subjects may appear in any order. The outputs of the script will be 
+  the following Pittsburgh MRI datasets: 
+
+    effect_f and effect_p - F and P scores for the average difference
+                            over all subjects between the two conditions
+      cross_f and cross_p - F and P scores for the difference in the
+                            response of the two groups to the two
+                            conditions 
+                     mean - overall mean
+              totalcounts - total samples across all subjects
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  groupcompare.csh keeps scratch files in a temporary directory.  If
+  the environment variable F_TEMP is defined this directory will be
+  ${F_TEMP}/groupcompare_tmp_NN (where NN is the current process ID);
+  otherwise ./groupcompare_tmp_NN will be used.  The temporary
+  directory is deleted when groupcompare.csh is finished with it.
+
+  Name map information (used in finding the locations of subjects'
+  data) will be read from the files in the environment variable
+  F_MAP_PATH if it is defined.  F_MAP_PATH is a colon-separated list
+  of file names.  Names appearing in files earlier in F_MAP_PATH
+  override those which appear later; files or definitions given on the
+  command line with -m or -d switches override any given in
+  F_MAP_PATH.
+
+</pre>
+<h2>testingroup.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  testingroup.csh takes mean, standard deviation, and count data for
+  multiple subjects in one group in each of two conditions, and
+  produces F and P scores for the response to the conditions based
+  on a random effects model.  An overall mean is also produced for
+  convenience in doing overlays, and a data set of total samples per 
+  voxel is produced as a check that the regions of interest have been 
+  well sampled.
+
+  testingroup.csh [-m namemap] [-d key=value] subj1 subj2 ...
+
+    -m namemap uses the specified mapfile (along with defaults in
+       F_MAP_PATH) to find subject directories.  Multiple -m
+       options may be used.
+    -d key=value defines the given additional key-value pair
+
+  or
+
+  testingroup.csh -help [topic]
+
+  All of the subjects must have been transformed into the same
+  coordinates, presumably Taliarach space.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The statistical model used by testingroup.csh is:
+
+    Y   = M + A  + B  + (AB)
+     ijk       i    j       ij
+
+  where M is the overall mean, 0&lt;i&lt;s identifies the s subjects and 
+  0&lt;j&lt;2 represents the 2 conditions.  These terms cover all of the 
+  degrees of freedom of the 2*s observations of Y.  This will be 
+  a mixed model, with subject being a random effect and group being 
+  fixed.  For this model, the relevant test statistics are:
+
+      Factor       Test
+
+        A        MSA/MSE   (random)
+
+        B        MSB/MSAB  (fixed)
+
+       (AB)      MSAB/MSE  (random)
+
+  (see "Applied Liner Statistical Models" by Neter et al, chapter 24).
+
+  The needed sums of squares are computed by applying an appropriate 
+  regression to the Y values.  Specifically,
+
+    Y' = X'V + E'
+
+  where Y' is the vector of scaled input observations, X' is the factor
+  matrix, V is the vector of parameters to be estimated, and E' is a
+  residual error term.  This regression is calculated independently
+  for each voxel in the input data.  Estimates and sums of squares for
+  the elements of V are calculated, and from them F and P scores 
+  for the terms of the model above are estimated.  
+
+  For s subjects Y' will be an n by 1 matrix, X' will be n by p, 
+  and V will be p by 1, where n=2s and p=s+3.
+
+  The algorithm used assumes that there are two groups and two
+  experimental conditions.  The Y' vector is given by:
+
+          /            
+          | mean(1,1)  |
+          | mean(1,2)  |
+    Y'= S | mean(2,1)  |
+          | mean(2,2)  |
+          | mean(3,1)  |
+          | mean(3,1)  |
+          |  etc.      |
+                      /
+
+  where mean(i,c) is the mean for subject i in condition c, and the
+  scaling matrix S is the diagonal matrix with elements:
+
+    S   = sqrt( N(k/2, k%2) )
+     k,k
+
+  in which N(i,c) is the number of observations of subject i in 
+  condition c.
+
+  The factor matrix X'=SX, where S is as above and X has the following
+  columns:
+
+   -The first column is all 1's and serves to de-mean the Y vector.  
+
+   -The second column is 1 for rows in condition 2 and -1 for rows
+    in condition 1.  This column implements term C in the unsubtracted
+    model.
+
+   - s-1 columns follow which reflect the (AB) difference term in the
+    subtracted Y equation.  Each column is 1 for the corresponding
+    subject, 0 otherwise, de-meaned within condition, multiplied by 
+    factor 2.  One column is dropped for orthogonality. (Specifically, 
+    the column corresponding to the last subject is dropped).  
+
+  As an example of one of the subject columns, consider the specific
+  case of 10 subjects.  There would be 9 subject columns, the first 
+  of which would have the row values:
+
+    (-0.9, 0.9, 0.1, -0.1, 0.1, -0.1, ...)
+
+  where there are a total of 9 (0.1, -0.1) pairs. These pairs
+  correspond to all subjects other than the first.
+
+  Note that these are the factor values before scaling by S.
+  Multiple regression is performed on these factors, and the estimate
+  and variance for factors 1 through 3 are computed.  
+
+  The subject factors as described are orthogonal to the first two
+  factors, but missing subject data can break this orthogonality.  To
+  avoid this, the regression is actually calculated in two stages.  
+  An initial regression is performed on the Y values using the first
+  two factors, and a second regression is performed on the residuals
+  using the subject factors.
+
+  The mean squared errors of the various columns in this regression
+  correspond to mean squared terms needed in test statistics for the 
+  subtracted model.  Specifically, the mean square associated with
+  factor 2 above corresponds to MSB in the mixed effects model, and 
+  the total mean square associated with the last (s-1) columns 
+  correspond to the MSAB of the mixed effects model.
+
+    Regression term       Mean Square       DOF
+
+      factor 2              MSB              1
+     factors &gt;=3            MSAB             s-1
+
+  An F statistic for the effect of the experimental conditions is 
+  constructed from MSB/MSAB.  P scores are calculated from this F
+  statistic using the appropriate cumulative distribution function.
+
+  A dataset named mean is returned containing the estimates for the
+  first (constant) factor.  
+
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  If subjects 1137, 1139, and 1143 are patients, and if the map file
+  "subjmap" provides a mapping between subject numbers and the mean,
+  standard deviation, and counts files for those subjects in Taliarach
+  space, the command:
+
+    testingroup.csh -m subjmap 1137 1139 1143
+
+  will produce an in-group test for these subjects.  The subjects may
+  appear in any order. The outputs of the script will be the following
+  Pittsburgh MRI datasets:
+
+    effect_f and effect_p - F and P scores for the average difference
+                            over all subjects between the two conditions
+                     mean - overall mean
+              totalcounts - total samples across all subjects
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  testingroup.csh keeps scratch files in a temporary directory.  If
+  the environment variable F_TEMP is defined this directory will be
+  ${F_TEMP}/testingroup_tmp_NN (where NN is the current process ID);
+  otherwise ./testingroup_tmp_NN will be used.  The temporary
+  directory is deleted when testingroup.csh is finished with it.
+
+  Name map information (used in finding the locations of subjects'
+  data) will be read from the files in the environment variable
+  F_MAP_PATH if it is defined.  F_MAP_PATH is a colon-separated list
+  of file names.  Names appearing in files earlier in F_MAP_PATH
+  override those which appear later; files or definitions given on the
+  command line with -m or -d switches override any given in
+  F_MAP_PATH.
+
+</pre>
+<h2>false_discovery.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  false_discovery.py takes as input a desired false discovery rate and
+  a Pmap, and produces the cutoff P score for the requested rate.
+
+  false_discovery.py [--independent] qrate pmap
+
+    --independent indicates that independent sample statistics are 
+      to be used.  (This is not generally appropriate)
+    qrate is a desired false discovery rate
+    pmap is a map of p-scores in Pgh MRI format
+
+  or
+
+  false_discovery.py -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  This is an implementation of the algorithms described in 
+  "Thresholding of Statistical Maps in Functional Neuroimaging
+  Using the False Discovery Rate" by C. R. Genovese, N.A. Lazar, 
+  and T. Nichols .  A technical report version of the paper is 
+  available from the Reference section of
+  http://www.stat.cmu.edu/~fiasco .
+
+  There are special floating point values in the IEEE standard for
+  floating point numbers which represent "not a number" or "infinite"
+  values;  false_discovery.py ignores those entries when it calculates
+  the P score cutoff.  This means that you can mask out parts of the
+  input data that you would like to ignore by setting them equal to
+  "NaN" using (for example) mri_rpn_math.
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  A shell script would typically use false_discovery.py to generate
+  a P score cutoff, and then mask the Pmap using that threshold.  
+  For example, using the Fiasco "overlay" utility:
+
+    set val = `false_discovery.py 0.15 Pmap`
+
+    overlay.csh -inmap Pmap -inimage mean_image -headerout masked_p 
+      -highthresh 2.0 -lowthresh $val
+
+  The high threshold is an impossible P score of 2.0; the low
+  threshold is inferred from the desired false discovery rate.
+
+  Sometimes results can be improved by considering only part of the
+  input Pmap, for example only the area inside the head.  If you have
+  a dataset called "mean" which you believe has values greater than 50
+  inside the head, you could do the following to compute the false
+  discovery cutoff using only that area:
+
+    mri_rpn_math -o Pmap_masked '$1,NaN,$2,50,&gt;,if_keep' Pmap mean
+
+    set val = `false_discovery.py 0.15 Pmap_masked`
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  false_discovery.py keeps scratch files in a temporary directory.
+  If the environment variable F_TEMP is defined this directory will 
+  be ${F_TEMP}/tmp_fd_NN (where NN is the current process ID);
+  otherwise ./tmp_fd_NN will be used.  The temporary directory is
+  deleted when false_discovery.py is finished with it.
+
+</pre>
+<h2>merge_fisher.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  merge_fisher.csh uses Fisher's Method to merge several separate
+  Fiasco runs, assumed to be in subdirectories of the current
+  directory. 
+
+    merge_fisher.csh dir1 dir2 ...
+
+  or
+
+    merge_fisher.csh -help [topic]
+
+  Note that versions of fiasco.local.csh and epi.local.csh must be 
+  present in the current directory;  see Environment below.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The steps performed by merge_fisher.csh are:
+
+  1) Find the 3D rotation and translation needed to align the Mean_1
+     dataset for each of the input directories to that of the first
+     input directory.
+
+  2) Produced aligned versions of each of the statistics files, 
+     with the orientation of the first directory as the standard.
+
+  3) Pool the means, counts, and standard deviations of the given
+     experimental conditions for the different directories.
+
+  4) Produce T scores for all pairs of experimental conditions by
+     combining T scores from the individual directories using
+     Fisher's method.
+
+  5) Produce output images just as is done for a normal Fiasco run
+
+  The assumption is made that the total number of degrees of freedom
+  is large enough that a normal distribution can be used in place of 
+  a t distribution.
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  fiasco.local.csh, ${FIASCO}/epi.defaults.csh, and epi.local.csh
+  are read by the script to provide values for F_XVOXEL, F_YVOXEL,
+  F_ZVOXEL, some standard Fiasco file names, and certain values 
+  used by makeps.csh as plot labels. Note that experimental paradigm 
+  information from epi.local.csh is not used;  that is taken from the 
+  individual runs.
+
+</pre>
+<h2>merge_detrend.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  merge_detrend.csh uses brute force alignment and concatenation 
+  to merge several Fiasco runs, assumed to be in subdirectories of 
+  the current directory. 
+
+    merge_detrend.csh dir1 dir2 ...
+
+  or
+
+    merge_detrend.csh -help [topic]
+
+  Note that versions of fiasco.local.csh and epi.local.csh must be 
+  present in the current directory;  see Environment below.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The steps performed by merge_detrend.csh are:
+
+  1) Find the 3D rotation and translation needed to align the Mean_1
+     dataset for each of the input directories to that of the first
+     input directory.
+
+  2) Produced aligned versions of each of the statistics files, 
+     with the orientation of the first directory as the standard.
+
+  3) Produce aligned versions of the detrend files for each
+     directory
+
+  4) Produce a concatenated detrend file containing all the aligned
+     images over all the directories
+
+  5) Produce a concatenated split file containing all the experimental
+     condition information over all the input directories
+
+  6) Produce statistics and plots for the merged dataset just as they
+     would normally be produced by Fiasco for a single dataset.
+
+  The assumption is made that the total number of degrees of freedom
+  is large enough that a normal distribution can be used in place of 
+  a t distribution.
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  fiasco.local.csh, ${FIASCO}/epi.defaults.csh, and epi.local.csh
+  are read by the script to provide values for F_XVOXEL, F_YVOXEL,
+  F_ZVOXEL, some standard Fiasco file names, and certain values 
+  used by makeps.csh as plot labels. Note that experimental paradigm 
+  information from epi.local.csh is not used;  that is taken from the 
+  individual runs.
+
+</pre>
+<h2>pooled_mean.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script produces pooled mean data from individual condition data
+  with included counts and DOF information, of the sort commonly
+  produced by the Fiasco "stats" tool.
+
+  pooled_mean.csh [-out outfile] Mean_1 [ Mean_2 ... ]
+
+  or
+
+  pooled_mean.csh -help [topic]
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -out outfile
+
+  ex: -out stat/Mean_all
+
+  specifies the name of the output dataset.  The default is "PooledMean".
+
+  
+
+</pre>
+<h3>Calculation</h3>
+<pre>
+
+  For Fiasco statistical summary data, the number of counts associated 
+  with a value is stored in a chunk named "counts" in the same
+  dataset.  Typically the counts value varies over slices but is
+  constant within a slice.  This is the format expected by this
+  script.
+
+  If M(i) is the mean of some voxel in input file i, and N(i) is
+  the corresponding number of counts, the result produced by this
+  script is:
+
+               sum( N(i)*M(i) )
+     M       = ----------------
+      pooled     sum( N(i) )
+
+  where the sums run over all i.
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  To produce a pooled mean from all of the condition means in the
+  subdirectory "stat", do:
+
+    pooled_mean.csh -out stat/Mean_all stat/Mean_*.mri
+
+</pre>
+<h2>pooled_stdv.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script produces pooled stdv data from individual condition data
+  with included counts and DOF information, of the sort commonly
+  produced by the Fiasco "stats" tool.
+
+  pooled_stdv.csh [-out outfile] Stdv_1 [ Stdv_2 ... ]
+
+  or
+
+  pooled_stdv.csh -help [topic]
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -out outfile
+
+  ex: -out stat/Stdv_all
+
+  specifies the name of the output dataset.  The default is "PooledStdv".
+
+  
+</pre>
+<h3>Calculation</h3>
+<pre>
+
+  For Fiasco statistical summary data, the number of counts associated 
+  with a value is stored in a chunk named "counts" in the same
+  dataset.  Typically the counts value varies over slices but is
+  constant within a slice.  This is the format expected by this
+  script.
+
+  Let S(i) be the stdv of some voxel in input file i, and N(i) is
+  the corresponding number of counts, and 1 &lt;= i &lt;= n.
+  The result produced by this script is:
+
+                                    2
+                     sum( (N(i)-1)*S (i) )
+     S       = sqrt( --------------------- )
+      pooled            sum( N(i) ) - n
+
+  where the sums run over all i.  The associated DOF are given as
+  the sum of the degrees off freedom associated with the individual
+  S(i).  
+
+  <b>NOTE</b> that this calculation does not include the standard
+  deviation of the associated means; in other words it is done as if
+  for a T test of the equality of the means.  
+
+  <b>NOTE</b> also that this script reports DOF as 
+
+    DOF = sum( N(i) ) - n
+
+  while the pooled_mean.csh script reports DOF=1 for the pooled mean.  
+
+</pre>
+<h3>Example</h3>
+<pre>
+
+  To produce a pooled stdv from all of the condition stdvs in the
+  subdirectory "stat", do:
+
+    pooled_stdv.csh -out stat/Stdv_all stat/Stdv_*.mri
+
+</pre>
+<h2>stats_to_floats.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  This script produces single-precision floating point versions of
+  various statistics files produced by Fiasco.  This is useful when
+  reading that data into other programs (like AFNI) which cannot
+  handle double precision.  It is meant to be called from the top
+  directory of a Fiasco run, which typically contains the subdirectory
+  "stat".  It finds files to convert by itself, and so needs no
+  parameters.  Output ends up in the subdirectory stat_float .
+
+    stats_to_floats.csh
+
+  or
+
+    stats_to_floats.csh -help [topic]
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The script finds interesting statistics files by sourcing 
+  $FIASCO/epi.defaults.csh and several local.csh files and then
+  searching for environment variables of the form "F_STAT_?PATH"
+  where ? is any character.  This picks up the directories used
+  by the "stats.csh" script among others.  Unique directories are
+  searched for .mri files to convert.
+
+  If the root filename found ends in _t, _f, or _q, the file is
+  ignored. These files are the thresholded statistics produced 
+  by makeps.csh and it makes no sense to read them in elsewhere.
+  If the "images" chunks of the remaining files are double precision 
+  and the filenames do not begin with Pmap the files are converted to
+  floats in the output directory.  Other remaining files are copied
+  as they are to the output directory.  
+
+  Pmap files are copied but not converted because the interesting
+  parts of a Pmap are values very near 0.0 or 1.0, and there may
+  not be enough bits in a float to represent that data with acceptable
+  accuracy.
+
+</pre>
+<h2>make_cine.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  make-cine.csh produces an MPEG animation from a Pgh MRI file
+  containing a time series of images.  The input file must have
+  dimensions xy(z)(t).
+
+    make_cine.csh myfile.mri
+
+  or
+
+    make_cine.csh -help [topic]
+
+  The output file will have the name myfile.mpg .
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -b  brightens image
+  -d  dims image
+  -r  reverses black and white
+  -n  min uses the given minimum value
+  -x  max uses the given maximum value
+
+  myfile.mri is the file to be converted to MPEG.  It will be mosaiced
+  so that all the Z slices appear on one frame.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  make_cine.csh uses the commands "convert" and "identify" to generate
+  the MPEG file.  If these tools are not installed on your system, 
+  make_cine.csh will complain and exit.  
+
+  The actual output image has intensity given by:
+
+   I= sqrt( (V - Vmin)/(Vmax - Vmin) )
+
+  where V is the input value for a pixel, and Vmax and Vmin are the
+  maximum and minimum values for all pixels over all times.  The
+  square root is done to produce a better visual distribution of
+  brightness.  A one pixel border is added around the individual
+  slices.
+
+  Intermediate files are produced in a directory with a name like
+  make_cine_tmp_??? where ??? is some integer (specifically the 
+  process ID).  This directory will be in $F_TEMP, or in the local
+  directory if the environment variable F_TEMP is not defined.  If
+  make_cine.csh should fail for any reason you will want to delete 
+  that directory, since the intermediate files can be fairly big.
+  If make_cine.csh finishes normally, it will clean up the directory.
+
+  make_cine.csh may also fail if the output image size is too large.
+  This can happen if there are a great many slices, or if the slices
+  are very large.  If this happens use mri_subset to create a dataset
+  with fewer slices.  It can also fail if your machine runs out of
+  swap space while the mpeg movie is being assembled.
+
+</pre>
+<h2>make_phase_cine.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  make-phase-cine.csh produces an MPEG animation from a Pgh MRI file
+  containing a time series of complex images.  The input file must have
+  dimensions vxy(z)(t), where the extent of v is 2.
+
+    make_phase_cine.csh [-b] [-d] [-r] myfile.mri
+
+  or
+
+    make_phase_cine.csh -help [topic]
+
+  The output file will have the name myfile.mpg .
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -b brightens the output images
+  -d dims the output images
+  -r reverses black and white
+
+  myfile.mri is the file to be converted to MPEG.  It will be mosaiced
+  so that all the Z slices appear on one frame.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  make_phase_cine.csh uses the commands "convert" and "identify" to generate
+  the MPEG file.  If these tools are not installed on your system, 
+  make_phase_cine.csh will complain and exit.  
+
+  make_phase_cine.csh uses color_by_phase.csh to generate the images
+  for individual frames; see the documentation for that script for
+  details about the mapping of complex numbers to colors.  A one pixel
+  border with complex phase pi/4 and maximum magnitude is added around
+  the individual slices.
+  The actual output image has intensity given by:
+
+   I= sqrt( (V - Vmin)/(Vmax - Vmin) )
+
+  where V is the input value for a pixel, and Vmax and Vmin are the
+  maximum and minimum values for all pixels over all times.  The
+  square root is done to produce a better visual distribution of
+  brightness.  A one pixel border is added.
+
+  Intermediate files are produced in a directory with a name like
+  make_phase_cine_tmp_??? where ??? is some integer (specifically the 
+  process ID).  This directory will be in $F_TEMP, or in the local
+  directory if the environment variable F_TEMP is not defined.  If
+  make_phase_cine.csh should fail for any reason you will want to delete 
+  that directory, since the intermediate files can be fairly big.
+  If make_phase_cine.csh finishes normally, it will clean up the directory.
+
+  make_phase_cine.csh may also fail if the output image size is too large.
+  This can happen if there are a great many slices, or if the slices
+  are very large.  If this happens use mri_subset to create a dataset
+  with fewer slices.  It can also fail if your machine runs out of
+  swap space while the mpeg movie is being assembled.
+
+</pre>
+<h2>color_by_phase.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  color_by_phase.csh produces a color image from a complex Pgh MRI
+  file.  The intensity of the image pixels represents magnitude;
+  the color represents complex phase (red being real).  The input
+  file must have dimensions vxy(z)(t), and the extent of v must be 2.
+
+    color_by_phase.csh [-b] [-d] [-r] [-g] [-png] filename
+
+  or
+
+    color_by_phase.csh -help [topic]
+
+  The output file has the name filename.ps, or filename.png if
+  the -png option is given.
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -b  brightens the image
+  -d  dims the image
+  -r  reverses black and white, blue and yellow, etc.
+  -p  produces PNG rather than postscript.
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  The RGB colors generated are produced by treating the magnitude and
+  phase of the input as the value and hue components of an HSV
+  color, with saturation 1.  See "Computer Graphics Principles and 
+  Practice" by Foley, van Dam, Feiner, and Hughes, chapter 13, for
+  information on the HSV color system and for the algorithm used
+  to implement HSV-&gt;RGB conversion.
+
+  If the input dataset is byte data (type uchar8) the magnitude is
+  scaled within an assumed range of 0 to 255; otherwise the maximum
+  and minimum magnitudes are found and the magnitude is scaled between
+  them.  The resulting scaled magnitude with value between 0.0 and 1.0
+  serves as the HLS lightness.
+  
+  Intermediate files are produced in a directory with a name like
+  color_by_phase_tmp_??? where ??? is some integer (specifically the 
+  process ID).  This directory will be in $F_TEMP, or in the local
+  directory if the environment variable F_TEMP is not defined.  If
+  color_by_phase.csh should fail for any reason you will want to delete 
+  that directory.  If color_by_phase.csh finishes normally, it will clean 
+  up the directory.
+
+</pre>
+<h2>overlay.csh</h2>
+<h3>Usage</h3>
+<pre>
+
+  overlay.csh is designed to replace the deprecated tool "overlay".  
+  It is used to threshold a map and overlay the thresholded pixels 
+  onto an image
+
+  overlay.csh [-inmap Map-header-file] [-inimage Image-header-file]
+          [-headerout Output-header-file]
+          [-lowthresh Lower-threshold] [-highthresh Higher-threshold]
+          [-mingray Minimum-gray-value] [-maxgray Maximum-gray-value]
+
+  overlay.csh -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  -inmap Map-header-file         (-inm Map-header-file)
+
+     Specifies that the header for the dataset which contains the
+       map to be thresholded is located in Map-header-file.
+     Default value is "map.mri".
+     Map-header-file is not allowed to have the same name
+       as Output-header-file.
+
+     overlay.m accepts only standard real-valued images with
+       dimension order "vxyzt" or "xyzt" as input.  The dimensions
+       must match those of Image-header-file exactly.
+
+  -inimage Image-header-file     (-ini Image-header-file)
+
+     Specifies that the header for the dataset which contains the
+       images onto which to overlay is located in Map-header-file.
+     Default value is "input.mri".
+     Image-header-file is not allowed to have the same name
+       as Output-header-file.
+
+     overlay.m accepts only standard real-valued images with
+       dimension order "vxyzt" or "xyzt" as input.  The dimensions
+       must match those of Map-header-file exactly.
+
+  -headerout Output-header-file  (-h Output-header-file)
+
+     Specifies that the header for the output dataset should
+       be written to Output-header-file.
+     Default value is "overlay.mri".
+     Output-header-file is not allowed to have the same name
+       as Map-header-file or Image-header-file.
+
+  -lowthresh Lower-threshold     (-low Lower-threshold)
+                                 (-l Lower-threshold)
+
+     Specifies that all pixels in the mapping dataset which are less
+       than Lower-threshold are mapped to 0.
+     Default value is -6.0.
+
+  -highthresh Higher-threshold   (-high Higher-threshold)
+                                 (-hi Higher-threshold)
+
+     Specifies that all pixels in the mapping dataset which are greater
+       than Higher-threshold are mapped to 255.
+     Default value is 6.0.
+
+  -mingray Minimum-gray-value    (-min Minimum-gray-value)
+                                 (-mi Minimum-gray-value)
+
+     Specifies that the gray-level (unsigned char value) for
+       the pixel with minimum value in an image from the
+       Image dataset is Minimum-gray-value.
+     Default value is 50.
+
+  -maxgray Maximum-gray-value    (-max Maximum-gray-value)
+                                 (-ma Maximum-gray-value)
+
+     Specifies that the gray-level (unsigned char value) for
+       the pixel with maximum value in an image from the
+       Image dataset is Maximum-gray-value.
+     Default value is 204.
+
+</pre>
+<h2>physio_correct_triggered.py</h2>
+<h3>Usage</h3>
+<pre>
+
+  physio_correct_triggered.py [-d] [-v] [--samptime sampTime]
+                  [--ndisdaq nDisDAqs] [--syncchannel syncChannel]
+                  [--cardiochannel cardioChannel] [--respchannel respChannel]
+                  [--syncthresh syncThreshold] inDS outDS missingDS physioDS
+
+  physio_correct_triggered.py -help [topic]
+
+  Command Line Options (see Usage:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+            or starting the interactive help system otherwise.
+
+</pre>
+<h3>Arguments</h3>
+<pre>
+
+  inDS      specifies the input Pittsburgh MRI dataset.  This dataset
+            must have rightmost dimensions zt.  Since the data will
+            presumably be complex, the leftmost dimension will presumably 
+            be v with extent 2.  The data chunk defaults to "samples"
+            but can be changed via the environment variable
+            F_PHYS_SAMPCHUNK.
+
+  outDS     is the output Pittsburgh MRI dataset to be created.  Its
+            dimensions and extents will match those of inDS.
+
+  missingDS contains a missing chunk to be applied to inDS.  It is
+            common to repeat inDS for this argument, but it is
+            sometimes convenient to supply the missing data separately.
+
+  physioDS  is a Pittsburgh MRI dataset containing a time series of 
+            physiological sensor measurements sampled at a much higher
+            sampling rate than the TR of inDS.  The dimensions of
+            physioDS are assumed to be vt, where v varies over the
+            sensors (for example, trigger, cardio, and respiratory
+            channels) and t represents the different sampled
+            timepoints.  One channel must be the triggering signal of
+            the scanner.  This data is assumed to be in the "images"
+            chunk of physioDS.
+
+  -d requests debugging output
+
+  -v requests verbose output
+
+  --samptime sampTime
+
+             specifies the sampling interval of the physiological
+             signal.  The default is 10 millisecond; this can also
+             be set with the environment variable F_PHYS_SAMPTIME
+
+  --ndisdaq nDisDAqs
+
+             specifies the number of discarded data acquisitions at
+             the beginning of each scan.  The default is 7; this can
+             also be set with the environment variable F_PHYS_NDISDAQS
+
+  --syncchannel syncChannel
+
+             specifies the channel (offset in v) of the scanner
+      trigger signal in physioDS.  The default is 0; this can
+             also be set with the environment variable F_PHYS_CHSYNC
+
+  --cardiochannel cardioChannel
+
+             specifies the channel (offset in v) of the pulseox
+      signal in physioDS.  The default is 1; this can
+             also be set with the environment variable F_PHYS_CHCARDIO
+
+  --respchannel respChannel
+
+             specifies the channel (offset in v) of the respiratory
+      signal in physioDS.  The default is 2; this can
+             also be set with the environment variable F_PHYS_CHRESP
+
+  --syncthresh syncThreshold
+
+             specifies the threshold value for identifying the leading
+             edge of the scanner trigger pulses.  This value is
+             compared against the time derivative of that data channel.
+             The analysis is fairly insensitive to this value as long
+             as the trigger input signal is clean.  The default is
+             -500; this can also be set with the environment variable 
+             F_PHYS_SYNCTHRESH
+
+</pre>
+<h3>Details</h3>
+<pre>
+
+  At no point does the algorithm actually require that inDS be
+  complex, so it would not be complete foolishness to attempt to run 
+  this script on image-space data.  The (trivial) v dimension in inDS
+  must be present, however.
+
+  The processing steps are:
+
+  1) Find the leading edges of the trigger pulses by taking d/dx of that
+  time series and thresholding with syncThreshold.
+
+  2) Scan for breaks in the acquisition sequence by looking for long
+  gaps between trigger pulses.  These breaks occur when the study
+  session consists of multiple acquisitions with intervening breaks.
+  This produces a set of blocks, each of which is expected to
+  correspond to one acquisition.
+
+  3) Working backwards from the end of the session, calculate the
+  number of images (TRs) in each block, eliminating the DisDAqs.
+  If any block contains a number of triggers which is not equal to
+  (N*nImages + nDisDaqs) * nSlices, emit a warning message; such
+  'lost' triggers are common.
+
+  4) The resulting set of "clean" triggers theoretically correspond to
+  the set of actual slice acquisitions.  Subsample the respiratory and
+  cardio channels according to those triggers.  Construct a "session
+  time" dataset corresponding to absolute time within the session from
+  the timebase of the physio dataset, and subsample that also.  This
+  produces cardio, respiratory, and session time datasets sampled at
+  the slice acquisition times.
+
+  5) Fold the subsampled datasets from simple time series order to
+  zt order, respecting the order of slice acquisition by the scanner.
+
+  6) Fit a general linear model to the complex time series of each
+  scanner sample in inDW, regressing against the subsampled cardio, 
+  respiration, and session time, respecting the "missing" information 
+  in missingDS.
+
+  7) Produce the output dataset by adding the constant term of the
+  estimated regression parameters back into the complex residuals.
+
+</pre>
+<h3>Environment</h3>
+<pre>
+
+  physio_correct_triggered.py respects the following environment
+  variables:
+  <table cellpadding=4 border=1>
+  <tr><td>F_TEMP 
+    <td>temporary directory; defaults to ./
+  <tr><td>F_PHYS_SAMPTIME 
+    <td>physiological sampling interval; defaults to 10 millisec
+  <tr><td>F_PHYS_NDISDAQS 
+    <td>number of discarded data acquisitions; defaults to 7
+  <tr><td>F_PHYS_CHTRIG
+    <td>physio data channel for scanner trigger; defaults to 0
+  <tr><td>F_PHYS_CHCARDIO
+    <td>physio data channel for pulseox/cardio; defaults to 1
+  <tr><td>F_PHYS_CHRESP
+    <td>physio data channel for respiration; defaults to 2
+  <tr><td>F_PHYS_SYNCTHRESH
+    <td>trigger sync detection threshold; defaults to -500
+  <tr><td>F_PHYS_SYNC
+    <td>name for the extracted trigger sync dataset; defaults 
+    to "data/sync"
+  <tr><td>F_PHYS_TRIGGER
+    <td>name for the thresholded trigger sync dataset; defaults
+    to "data/sync_thresh"
+  <tr><td>F_PHYS_CLEANTRIGGER
+    <td>name for trigger dataset after thresholding and removal
+    of DisDAqs; defaults to "data/clean_sync_thresh"
+  <tr><td>F_PHYS_CARDIO
+    <td>name for the extracted cardio dataset; defaults to "data/cardio"
+  <tr><td>F_PHYS_SSCARDIO
+    <td>name for the cardio dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/cardio_subsampled"
+  <tr><td>F_PHYS_RESP
+    <td>name for the extracted respiratory dataset; defaults to "data/resp"
+  <tr><td>F_PHYS_SSRESP
+    <td>name for the respiratory dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/resp_subsampled"
+  <tr><td>F_PHYS_TIME
+    <td>name for the session time dataset; defaults to "data/time"
+  <tr><td>F_PHYS_SSTIME
+    <td>name for the session time dataset after subsampling and scan
+    folding to match the fMRI acquisition; defaults 
+    to "data/time_subsampled"
+  <tr><td>F_PHYS_PARAM
+    <td>name for the dataset containing regression parameters;
+    defaults to "stat/physio".  See the documentation for 
+    <b>mri_glm</b> for details on the structure of this dataset.
+  <tr><td>F_PHYS_SAMPCHUNK
+    <td>name of the chunk within inDS where the samples to be
+    corrected are found; defaults to "samples".
+  </table>
+</pre>
+    <hr>
+    (automatically generated by FiascoScripts version of Sat Jan  2 22:50:39 2010)
+  </body>
+</html>

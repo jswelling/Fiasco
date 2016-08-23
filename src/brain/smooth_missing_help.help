@@ -1,0 +1,29 @@
+*Usage
+
+  smooth_missing scans a scalar dataset in time series order
+  (dimensions txyz or vtxyz for v of extent 1), linearly interpolating
+  over "missing" regions.  The "images" chunk in the input data
+  is updated according to the contents of the "missing" chunk.
+  Output data is of type float.
+
+  smooth_missing -input infile -headerout outheader -dataout outdata
+
+    -input or -i specifies the name of the input mri file (default
+     "input.mri").
+    -headerout or -h specifies the name of the output header 
+     (default "smooth_missing.mri")
+    -dataout or -d specifies the name of the output data file
+     (default ".dat")
+
+*Calculation
+
+  Each time series of the input data is scanned for elements
+  which have been marked missing.  When runs of one or more
+  missing elements are found, they are patched as follows.
+  If valid data is known at both ends of the run, the values
+  within the run are set by linear interpolation between the
+  valid values.  If the run comes at the beginning or end of
+  the time series, the values in the run are set to equal 
+  that of the closest known value.  If all the values in the
+  time series are missing, they are all set to 0.0 .
+
