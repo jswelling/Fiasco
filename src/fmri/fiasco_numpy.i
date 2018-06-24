@@ -61,7 +61,7 @@ $action
 }
 
 %feature("autodoc","1");
-typedef struct Regressor {
+typedef struct regressor_struct{
   %extend {
     Regressor() { return glm_create_llsq_regressor(); }
     ~Regressor() { self->destroy_self(self); }
@@ -86,10 +86,10 @@ typedef struct Regressor {
 } Regressor;
 
 %{
-void Regressor_fit(Regressor* r, double* obs, int nobs,
-		   const double* factors, int nfactors_1, int nfactors_2,
-		   const double* counts, int ncounts,
-		   double* param_out, int nparam) {
+void regressor_struct_fit(struct regressor_struct* r, double* obs, int nobs,
+			  const double* factors, int nfactors_1, int nfactors_2,
+			  const double* counts, int ncounts,
+			  double* param_out, int nparam) {
   if (nfactors_1 != nobs) {
     PyErr_SetString(PyExc_RuntimeError,
 		    "factor vector length does not match obs vector");
