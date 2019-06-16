@@ -15,7 +15,7 @@ if [ $python = "none" ] ; then
   echo 'You must have at least Python v2.0 to build Fiasco'
   exit -1 ;
 fi
-version=`$python -c 'import sys; print sys.hexversion'`
+version=`$python -c 'import sys; print(sys.hexversion)'`
 echo 'Found python = ' $python ', hexversion ' $version
 if [ ${version} -lt 33554432 ]; then
   echo 'You must have at least Python v2.0 to build Fiasco'
@@ -25,6 +25,8 @@ exec $python - $* << EOF
 ######
 # End of preamble; we are now in the land of python.
 ######
+from __future__ import print_function
+import six
 import sys
 import os
 import os.path
@@ -311,7 +313,7 @@ def libExists(libName,path,arch):
                             result=1
                             break
                         else:
-                            if not libsWarnedAbout.has_key(fullPath):
+                            if fullPath not in libsWarnedAbout:
                                 Message("%s exists but has no symbols"%\
                                         fullPath)
                             libsWarnedAbout[fullPath]= 1
@@ -334,7 +336,7 @@ def incLocRequiresExplicitPath(path,arch):
             and path!='/usr/local/include')
 
 def maybeWrite(o,dict,key):
-    if dict.has_key(key):
+    if key in dict:
         o.write("%s = %s\n"%(key,dict[key]))
     else:
         o.write("#%s = ????\n"%key)
@@ -374,7 +376,7 @@ for key in defsOfInterest:
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"dh",optParseList)
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -410,7 +412,11 @@ if (not os.access("src/fmri/lapack.h",os.R_OK)):
     sys.exit("Either %s is not being run from the top of the FIASCO\n"\
              %sys.argv[0] \
              +"source tree, or src/fmri/lapack.h is missing")
-    
+#
+# Where are we?
+#
+newDict['topdir']=os.path.dirname(os.path.abspath(__file__))
+
 #
 # What type of machine is this?
 #
@@ -418,7 +424,7 @@ if (not os.access("src/fmri/lapack.h",os.R_OK)):
 if rc != None:
     sys.exit("I can't figure out this machine's architecture!")
 else:
-    arch= string.strip(lines[0])
+    arch= lines[0].strip()
     if arch == "UNKNOWN":
         sys.exit("I can't figure out this machine's architecture!")
     else:
@@ -444,12 +450,12 @@ if os.access(ofile,os.R_OK):
     f.close()
     for line in lines:
         if line.find('This file was generated for architecture')>=0:
-            words= string.split(line)
+            words= line.split()
             oldDict['arch']= words[-1]
         elif line.find(': configure,v')>=0:
-            oldDict['configure_version']= string.split(line)[3]
+            oldDict['configure_version']= line.split()[3]
         else:
-            words= string.split(line)
+            words= line.split()
             if len(words)>=2 and words[1]=='=' and words[0][0]!='#':
                 s= ""
                 for word in words[2:]:
@@ -457,11 +463,11 @@ if os.access(ofile,os.R_OK):
                 # strip old quotes. We avoid just using strip() because
                 # of worries about the python version.
                 if len(s)>0:
-                  for iStart in xrange(len(s)):
+                  for iStart in range(len(s)):
                       if not s[iStart] in string.whitespace \
                          and s[iStart]!='"' \
                          and s[iStart]!="'": break
-                  for iEnd in xrange(len(s)):
+                  for iEnd in range(len(s)):
                       if not s[-(iEnd+1)] in string.whitespace \
                          and s[-(iEnd+1)]!='"' \
                          and s[-(iEnd+1)]!="'": break
@@ -475,9 +481,9 @@ if os.access(ofile,os.R_OK):
             
     # Update old entries appropriately for obsolete versions of config.mk
     # If FFTW_INCLUDE came from a pre-1.27 revision, prepend -I
-    if oldDict.has_key('configure_version') and \
+    if 'configure_version' in oldDict and \
            float(oldDict['configure_version'])<1.27:
-        if oldDict.has_key('FFTW_INCLUDE'):
+        if 'FFTW_INCLUDE' in oldDict:
             oldDict['FFTW_INCLUDE']= '-I'+oldDict['FFTW_INCLUDE']
 else:
     pass
@@ -486,23 +492,23 @@ else:
 # Try to find useful things in old config or command line, or
 # finally in the environment.
 #
-if oldDict.has_key('arch'):
+if 'arch' in oldDict:
     Message("Previous version of %s was generated for %s"%\
             (ofile,oldDict['arch']))
     if oldDict['arch'] == newDict['arch']:
         Message("Looking for values in old %s"%ofile)
         for key in defsOfInterest:
-            if oldDict.has_key(key):
+            if key in oldDict:
                 Message("  %s found"%key)
                 newDict[key]= oldDict[key]
     else:
         Message("Architecture has changed; I don't trust old %s"%ofile)
 for key in defsOfInterest:
-    if os.environ.has_key(key):
+    if key in os.environ:
         Message("Using environment value for %s"%key)
         newDict[key]= os.environ[key]
 for key in defsOfInterest:
-    if clDict.has_key(key):
+    if key in clDict:
         Message("Using command line value for %s"%key)
         newDict[key]= clDict[key]
 if debugFlag: Message("imported and command line values: %s"%newDict)
@@ -510,7 +516,7 @@ if debugFlag: Message("imported and command line values: %s"%newDict)
 #
 # If the old config specified a C compiler, does it work?
 #
-if newDict.has_key('CC'):
+if 'CC' in newDict:
   Message("Testing C compiler from previous version of %s"%ofile)
   tfile= open("configure_tmp.c","w")
   tfile.write(cTestProg)
@@ -525,7 +531,7 @@ if newDict.has_key('CC'):
 #
 # Can we find the C compiler?
 #
-if not newDict.has_key('CC'):
+if 'CC' not in newDict:
     Message("Finding the C compiler")
     tfile= open("configure_tmp.c","w")
     tfile.write(cTestProg)
@@ -538,7 +544,7 @@ if not newDict.has_key('CC'):
             break
     os.unlink("configure_tmp.c")
     deleteCompiledExe("configure_tmp",arch)
-    if newDict.has_key('CC'):
+    if 'CC' in newDict:
         Message("Found that %s is a working C compiler."%newDict['CC'])
     else:
         sys.exit("Unable to find the C compiler!  You must have a working\n"+\
@@ -547,9 +553,9 @@ if not newDict.has_key('CC'):
 #
 # First look for PVM
 #
-if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+if 'PAR_LIBS' not in newDict or 'PAR_CFLAGS' not in newDict:
     Message("Looking for a parallelism method")
-    if os.environ.has_key('PVM_ROOT'):
+    if 'PVM_ROOT' in os.environ:
         if os.access(os.path.join(os.environ['PVM_ROOT'],"lib",\
                                   newDict['arch']),
                      os.R_OK):
@@ -559,7 +565,7 @@ if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
         if os.access(os.path.join(os.environ['PVM_ROOT'],'include'),
                      os.R_OK):
             newDict['PAR_CFLAGS']= "-DPVM -I${PVM_ROOT}/include"
-if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+if 'PAR_LIBS' not in newDict or 'PAR_CFLAGS' not in newDict:
     if newDict['arch']=='CRAY':
         Message("Selecting parallelism method based on architecture")
         newDict['PAR_LIBS']= "-L/afs/psc/packages/pvm/@sys/lib"
@@ -569,7 +575,7 @@ if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
 # Look for MPI
 #
 oldCC= None
-if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
+if 'PAR_LIBS' not in newDict or 'PAR_CFLAGS' not in newDict:
     (rc1,lines1)= runCmd("which mpirun")
     (rc2,lines2)= runCmd("which mpicc")
     if rc1==None and len(lines1[0].split())==1 \
@@ -583,7 +589,7 @@ if not newDict.has_key('PAR_LIBS') or not newDict.has_key('PAR_CFLAGS'):
 #
 # Test guesses about parallelism
 #
-if newDict.has_key('PAR_LIBS') and newDict.has_key('PAR_CFLAGS'):
+if 'PAR_LIBS' in newDict and 'PAR_CFLAGS' in newDict:
     Message("Testing parallelism")
     cflags= newDict['PAR_CFLAGS']
     libs= newDict['PAR_LIBS'] + " -lm"
@@ -606,7 +612,7 @@ if newDict.has_key('PAR_LIBS') and newDict.has_key('PAR_CFLAGS'):
 #
 # Did we find a parallelism method?
 #
-if not newDict.has_key('PAR_CFLAGS') or not newDict.has_key('PAR_LIBS'):
+if 'PAR_CFLAGS' not in newDict or 'PAR_LIBS' not in newDict:
   Message("I can't find PVM or MPI.  If PVM is installed, set the environment")
   Message("  variable PVM_ROOT to point to the appropriate directory and")
   Message("  re-run configure.  If MPI is installed, make sure mpirun and")
@@ -619,7 +625,7 @@ if not newDict.has_key('PAR_CFLAGS') or not newDict.has_key('PAR_LIBS'):
 #
 # Location of FFTW library
 #
-if not newDict.has_key('FFTW_LIB'):
+if 'FFTW_LIB' not in newDict:
     Message("Looking for FFTW library")
     for loc in possibleLibLocs:
         if libExists('fftw',loc,newDict['arch']):
@@ -637,27 +643,27 @@ if not newDict.has_key('FFTW_LIB'):
                 newDict['FFTW_LIB']= "-lfftw3"
             break
                
-if not newDict.has_key('FFTW_LIB'):
-    if oldDict.has_key('FFTW_LIB'):
+if 'FFTW_LIB' not in newDict:
+    if 'FFTW_LIB' in oldDict:
         Message("I will try the old location for the FFTW library.")
         newDict['FFTW_LIB']= oldDict['FFTW_LIB']
 
-if newDict.has_key('FFTW_LIB') and not newDict.has_key('fftwversion'):
+if 'FFTW_LIB' in newDict and 'fftwversion' not in newDict:
     if newDict['FFTW_LIB'].find('fftw3')>=0:
         newDict['fftwversion']= 3
     else:
         newDict['fftwversion']= 2
 
-if not newDict.has_key('FFTW_LIB'):
+if 'FFTW_LIB' not in newDict:
     Message("I can't find the FFTW library!  This library is required.")
-if newDict.has_key('FFTW_LIB') and not newDict.has_key('fftwversion'):
+if 'FFTW_LIB' in newDict and 'fftwversion' not in newDict:
     sys.exit("I can't figure out what version of FFTW you are using!")
    
 #
 # Location of FFTW includes
 #
-if not newDict.has_key('FFTW_INCLUDE'):
-    if newDict.has_key('fftwversion'):
+if 'FFTW_INCLUDE' not in newDict:
+    if 'fftwversion' in newDict:
         Message("Looking for FFTW includes")
         if newDict['fftwversion']==2: incName= "fftw.h"
         elif newDict['fftwversion']==3: incName= "fftw3.h"
@@ -673,16 +679,16 @@ if not newDict.has_key('FFTW_INCLUDE'):
     else:
         Message("I can't look for FFTW includes because I don't know the FFTW version!")
                      
-if not newDict.has_key('FFTW_INCLUDE'):
-    if oldDict.has_key('FFTW_INCLUDE'):
+if 'FFTW_INCLUDE' not in newDict:
+    if 'FFTW_INCLUDE' in oldDict:
         Message("I will try the old location for the FFTW library.")
         newDict['FFTW_INCLUDE']= oldDict['FFTW_INCLUDE']
 
-if not newDict.has_key('FFTW_INCLUDE'):
+if 'FFTW_INCLUDE' not in newDict:
     Message("I can't find the FFTW include file!  This file is required.")
 
-if not newDict.has_key('FFTW_CFLAGS'):
-    if newDict.has_key('fftwversion'):
+if 'FFTW_CFLAGS' not in newDict:
+    if 'fftwversion' in newDict:
         if newDict['fftwversion']==2: newDict['FFTW_CFLAGS']= '-DFFTW2'
         elif newDict['fftwversion']==3: newDict['FFTW_CFLAGS']= '-DFFTW3'
         else: sys.exit("configure internal error: fftwversion should be 2 or 3!")
@@ -692,8 +698,8 @@ if not newDict.has_key('FFTW_CFLAGS'):
 #
 # Test guesses about FFTW
 #
-if newDict.has_key('FFTW_INCLUDE') and newDict.has_key('FFTW_LIB')\
-   and newDict.has_key('FFTW_CFLAGS'):
+if 'FFTW_INCLUDE' in newDict and 'FFTW_LIB' in newDict\
+   and 'FFTW_CFLAGS' in newDict:
     Message("Testing locations for FFTW")
     cflags= ""
     if len(newDict['FFTW_INCLUDE'])>0:
@@ -720,7 +726,7 @@ if newDict.has_key('FFTW_INCLUDE') and newDict.has_key('FFTW_LIB')\
 #
 # Location of LAPACK and BLAS
 #
-if not newDict.has_key('LAPACK_LIBS'):
+if 'LAPACK_LIBS' not in newDict:
     Message("Looking for LAPACK and BLAS libraries")
     if newDict['arch']=='DARWIN':
         newDict['LAPACK_LIBS']= '-framework vecLib -lm'
@@ -756,18 +762,18 @@ if not newDict.has_key('LAPACK_LIBS'):
         if guess:
             newDict['LAPACK_LIBS']= guess
 
-if not newDict.has_key('LAPACK_LIBS'):
-    if oldDict.has_key('LAPACK_LIBS'):
+if 'LAPACK_LIBS' not in newDict:
+    if 'LAPACK_LIBS' in oldDict:
         Message("I will try the old location for the LAPACK libraries.")
         newDict['LAPACK_LIBS']= oldDict['LAPACK_LIBS']
 
-if not newDict.has_key('LAPACK_LIBS'):
+if 'LAPACK_LIBS' not in newDict:
     Message("I can't find the LAPACK and BLAS libraries! They are required.")
 
 #
 # Test guesses about LAPACK and BLAS
 #
-if newDict.has_key('LAPACK_LIBS'):
+if 'LAPACK_LIBS' in newDict:
     Message("Testing locations for LAPACK and BLAS")
     cflags= ""
     libs= newDict['LAPACK_LIBS'] + " -lm"
@@ -788,7 +794,7 @@ if newDict.has_key('LAPACK_LIBS'):
 #
 # Test guesses about FIFF
 #
-if newDict.has_key('FIFF_CFLAGS'):
+if 'FIFF_CFLAGS' in newDict:
     Message("Testing location for FIFF")
     cflags= "%s"%newDict['FIFF_CFLAGS']
     tfile= open("configure_tmp.c","w")
@@ -804,15 +810,15 @@ if newDict.has_key('FIFF_CFLAGS'):
                  newDict['FIFF_CFLAGS'])
         del newDict['FIFF_CFLAGS']
 
-if (not newDict.has_key("fftwversion")) or newDict['fftwversion']==2:
+if ("fftwversion" not in newDict) or newDict['fftwversion']==2:
     Message("NFFT skipped, because it requires FFTW version 3")
-    if newDict.has_key('NFFT_CFLAGS'): del newDict['NFFT_CFLAGS']
-    if newDict.has_key('NFFT_LIBS'): del newDict['NFFT_LIBS']
+    if 'NFFT_CFLAGS' in newDict: del newDict['NFFT_CFLAGS']
+    if 'NFFT_LIBS' in newDict: del newDict['NFFT_LIBS']
 else:
     #
     # Location of NFFT library
     #
-    if not newDict.has_key('NFFT_LIBS'):
+    if 'NFFT_LIBS' not in newDict:
         Message("Looking for NFFT library")
         for loc in possibleLibLocs:
             if libExists('nfft',loc,newDict['arch']):
@@ -822,18 +828,18 @@ else:
                     newDict['NFFT_LIBS']= "-lnfft"
                 break
 
-    if not newDict.has_key('NFFT_LIBS'):
-        if oldDict.has_key('NFFT_LIBS'):
+    if 'NFFT_LIBS' not in newDict:
+        if 'NFFT_LIBS' in oldDict:
             Message("I will try the old location for the NFFT library.")
             newDict['NFFT_LIBS']= oldDict['NFFT_LIBS']
 
-    if not newDict.has_key('NFFT_LIBS'):
+    if 'NFFT_LIBS' not in newDict:
         Message("I did not find the NFFT library.")
 
     #
     # Location of NFFT includes
     #
-    if not newDict.has_key('NFFT_CFLAGS'):
+    if 'NFFT_CFLAGS' not in newDict:
         for loc in possibleIncLocs:
             if incExists("nfft.h",loc,newDict['arch']):
                 if incLocRequiresExplicitPath(loc,newDict['arch']):
@@ -842,20 +848,20 @@ else:
                     newDict['NFFT_CFLAGS']= "-DUSE_NFFT"
                 break
 
-    if not newDict.has_key('NFFT_CFLAGS'):
-        if oldDict.has_key('NFFT_CFLAGS'):
+    if 'NFFT_CFLAGS' not in newDict:
+        if 'NFFT_CFLAGS' in oldDict:
             Message("I will try the old location for the NFFT include files.")
             newDict['NFFT_CFLAGS']= oldDict['NFFT_CFLAGS']
 
-    if not newDict.has_key('NFFT_CFLAGS'):
+    if 'NFFT_CFLAGS' not in newDict:
         Message("I did not find the NFFT include file.")
 
     #
     # Test guesses about NFFT
     #
-    if newDict.has_key('NFFT_CFLAGS') and newDict.has_key('NFFT_LIBS')\
-           and newDict.has_key('FFTW_INCLUDE') and newDict.has_key('FFTW_CFLAGS')\
-           and newDict.has_key('FFTW_LIB'):
+    if 'NFFT_CFLAGS' in newDict and 'NFFT_LIBS' in newDict\
+           and 'FFTW_INCLUDE' in newDict and 'FFTW_CFLAGS' in newDict\
+           and 'FFTW_LIB' in newDict:
         Message("Testing locations for NFFT")
         cflags= "%s %s "%(newDict['FFTW_CFLAGS'],newDict['NFFT_CFLAGS'])
         if len(newDict['FFTW_INCLUDE'])>0:
@@ -879,22 +885,22 @@ else:
 #
 # Location of Splus or equivalent
 #
-if not newDict.has_key('SPLUSEXE'):
+if 'SPLUSEXE' not in newDict:
     Message("Looking for R or Splus")
     (rc,lines)= runCmd('which R')
     if rc==None and len(lines[0].split())==1:
-        newDict['SPLUSEXE']= "%s --no-save"%string.strip(lines[0])
+        newDict['SPLUSEXE']= "%s --no-save"%lines[0].strip()
     else:
         (rc,lines)= runCmd('which Splus')
         if rc==None and len(lines[0].split())==1:
-            newDict['SPLUSEXE']= "%s"%string.strip(lines[0])
+            newDict['SPLUSEXE']= "%s"%lines[0].strip()
             
-if not newDict.has_key('SPLUSEXE'):
-    if oldDict.has_key('SPLUSEXE'):
+if 'SPLUSEXE' not in newDict:
+    if 'SPLUSEXE' in oldDict:
         Message("Will try value from old %s"%ofile)
         newDict['SPLUSEXE']= oldDict['SPLUSEXE']
 
-if newDict.has_key('SPLUSEXE'):
+if 'SPLUSEXE' in newDict:
     Message("Testing R/Splus")
     tfile= open("configure_tmp.R","w")
     tfile.write(rTestProg)
@@ -906,18 +912,18 @@ if newDict.has_key('SPLUSEXE'):
                 newDict['SPLUSEXE'])
         del newDict['SPLUSEXE']
 
-if newDict.has_key('SPLUSEXE'):
-    if not newDict.has_key('SPLUSDIRS'):
+if 'SPLUSEXE' in newDict:
+    if 'SPLUSDIRS' not in newDict:
         newDict['SPLUSDIRS']= 'script dlo_src'
 else:
     Message("Cannot find R or SPlus (but that's OK)")
-    if newDict.has_key('SPLUSDIRS'): del newDict['SPLUSDIRS']
+    if 'SPLUSDIRS' in newDict: del newDict['SPLUSDIRS']
 
 
 #
 # Is there a writeable AFS file system?
 #
-if not newDict.has_key('AFS_FLAG'):
+if 'AFS_FLAG' not in newDict:
     (rc,lines)= runCmd('which fs')
     if rc==None and len(lines[0].split())==1:
         (rc,lines)= runCmd('fs sys')
@@ -929,7 +935,7 @@ if not newDict.has_key('AFS_FLAG'):
     else:
         newDict['AFS_FLAG']= '-DNOAFS'
 
-if newDict.has_key('AFS_FLAG') and newDict['AFS_FLAG']=='-DNOAFS':
+if 'AFS_FLAG' in newDict and newDict['AFS_FLAG']=='-DNOAFS':
     Message("No writable AFS file system (which makes life easy)")
 
 #
@@ -938,7 +944,7 @@ if newDict.has_key('AFS_FLAG') and newDict['AFS_FLAG']=='-DNOAFS':
 #
 # Location of PNG library
 #
-if not newDict.has_key('PNG_LIBS'):
+if 'PNG_LIBS' not in newDict:
     Message("Looking for PNG library")
     pngLibLoc= None
     for loc in possibleLibLocs:
@@ -960,18 +966,18 @@ if not newDict.has_key('PNG_LIBS'):
         else:
             newDict['PNG_LIBS']= "%s -lz"%newDict['PNG_LIBS']
 
-if not newDict.has_key('PNG_LIBS'):
-    if oldDict.has_key('PNG_LIBS'):
+if 'PNG_LIBS' not in newDict:
+    if 'PNG_LIBS' in oldDict:
         Message("I will try the old location for the PNG library.")
         newDict['PNG_LIBS']= oldDict['PNG_LIBS']
 
-if not newDict.has_key('PNG_LIBS'):
+if 'PNG_LIBS' not in newDict:
     Message("I did not find the PNG library.")
 
 #
 # Location of PNG includes
 #
-if not newDict.has_key('PNG_CFLAGS'):
+if 'PNG_CFLAGS' not in newDict:
     for loc in possibleIncLocs:
         if incExists("png.h",loc,newDict['arch']):
             if incLocRequiresExplicitPath(loc,newDict['arch']):
@@ -980,18 +986,18 @@ if not newDict.has_key('PNG_CFLAGS'):
                 newDict['PNG_CFLAGS']= "-DUSE_PNG"
             break
 
-if not newDict.has_key('PNG_CFLAGS'):
-    if oldDict.has_key('PNG_CFLAGS'):
+if 'PNG_CFLAGS' not in newDict:
+    if 'PNG_CFLAGS' in oldDict:
         Message("I will try the old location for the PNG include files.")
         newDict['PNG_CFLAGS']= oldDict['PNG_CFLAGS']
 
-if not newDict.has_key('PNG_CFLAGS'):
+if 'PNG_CFLAGS' not in newDict:
     Message("I did not find the PNG include file.")
 
 #
 # Test guesses about PNG
 #
-if newDict.has_key('PNG_CFLAGS') and newDict.has_key('PNG_LIBS'):
+if 'PNG_CFLAGS' in newDict and 'PNG_LIBS' in newDict:
     Message("Testing locations for PNG")
     cflags= "%s "%newDict['PNG_CFLAGS']
     if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
@@ -1021,7 +1027,7 @@ if newDict.has_key('PNG_CFLAGS') and newDict.has_key('PNG_LIBS'):
 #
 # Location of FITS library
 #
-if not newDict.has_key('FITSIO_LIBS'):
+if 'FITSIO_LIBS' not in newDict:
     Message("Looking for FITSIO library")
     fitsLibLoc= None
     for loc in possibleLibLocs:
@@ -1034,18 +1040,18 @@ if not newDict.has_key('FITSIO_LIBS'):
         else:
             newDict['FITSIO_LIBS']= "-lcfitsio"
 
-if not newDict.has_key('FITSIO_LIBS'):
-    if oldDict.has_key('FITSIO_LIBS'):
+if 'FITSIO_LIBS' not in newDict:
+    if 'FITSIO_LIBS' in oldDict:
         Message("I will try the old location for the FITSIO library.")
         newDict['FITSIO_LIBS']= oldDict['FITSIO_LIBS']
 
-if not newDict.has_key('FITSIO_LIBS'):
+if 'FITSIO_LIBS' not in newDict:
     Message("I did not find the FITSIO library.")
 
 #
 # Location of FITSIO includes
 #
-if not newDict.has_key('FITSIO_CFLAGS'):
+if 'FITSIO_CFLAGS' not in newDict:
     for loc in possibleIncLocs:
         if incExists("fitsio.h",loc,newDict['arch']):
             if incLocRequiresExplicitPath(loc,newDict['arch']):
@@ -1054,18 +1060,18 @@ if not newDict.has_key('FITSIO_CFLAGS'):
                 newDict['FITSIO_CFLAGS']= "-DUSE_FITSIO"
             break
 
-if not newDict.has_key('FITSIO_CFLAGS'):
-    if oldDict.has_key('FITSIO_CFLAGS'):
+if 'FITSIO_CFLAGS' not in newDict:
+    if 'FITSIO_CFLAGS' in oldDict:
         Message("I will try the old location for the FITSIO include files.")
         newDict['FITSIO_CFLAGS']= oldDict['FITSIO_CFLAGS']
 
-if not newDict.has_key('FITSIO_CFLAGS'):
+if 'FITSIO_CFLAGS' not in newDict:
     Message("I did not find the FITS include file.")
 
 #
 # Test guesses about FITSIO
 #
-if newDict.has_key('FITSIO_CFLAGS') and newDict.has_key('FITSIO_LIBS'):
+if 'FITSIO_CFLAGS' in newDict and 'FITSIO_LIBS' in newDict:
     Message("Testing locations for FITSIO")
     cflags= "%s "%newDict['FITSIO_CFLAGS']
     if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
@@ -1078,7 +1084,7 @@ if newDict.has_key('FITSIO_CFLAGS') and newDict.has_key('FITSIO_LIBS'):
                        (newDict['CC'],cflags,libs))
     os.unlink("configure_tmp.c")
     if rc==None:
-        print "clause 1"
+        print("clause 1")
         if compiledExeExists("configure_tmp",arch):
             deleteCompiledExe("configure_tmp",arch)
     if rc!=None:
@@ -1093,7 +1099,7 @@ if newDict.has_key('FITSIO_CFLAGS') and newDict.has_key('FITSIO_LIBS'):
 #
 # Location of TIFF library
 #
-if not newDict.has_key('TIFF_LIBS'):
+if 'TIFF_LIBS' not in newDict:
     Message("Looking for TIFF library")
     tiffLibLoc= None
     for loc in possibleLibLocs:
@@ -1106,18 +1112,18 @@ if not newDict.has_key('TIFF_LIBS'):
         else:
             newDict['TIFF_LIBS']= "-ltiff"
 
-if not newDict.has_key('TIFF_LIBS'):
-    if oldDict.has_key('TIFF_LIBS'):
+if 'TIFF_LIBS' not in newDict:
+    if 'TIFF_LIBS' in oldDict:
         Message("I will try the old location for the TIFF library.")
         newDict['TIFF_LIBS']= oldDict['TIFF_LIBS']
 
-if not newDict.has_key('TIFF_LIBS'):
+if 'TIFF_LIBS' not in newDict:
     Message("I did not find the TIFF library.")
 
 #
 # Location of TIFF includes
 #
-if not newDict.has_key('TIFF_CFLAGS'):
+if 'TIFF_CFLAGS' not in newDict:
     for loc in possibleIncLocs:
         if incExists("tiff.h",loc,newDict['arch']) and \
                incExists("tiffio.h",loc,newDict['arch']):
@@ -1127,18 +1133,18 @@ if not newDict.has_key('TIFF_CFLAGS'):
                 newDict['TIFF_CFLAGS']= "-DUSE_TIFF"
             break
 
-if not newDict.has_key('TIFF_CFLAGS'):
-    if oldDict.has_key('TIFF_CFLAGS'):
+if 'TIFF_CFLAGS' not in newDict:
+    if 'TIFF_CFLAGS' in oldDict:
         Message("I will try the old location for the TIFF include files.")
         newDict['TIFF_CFLAGS']= oldDict['TIFF_CFLAGS']
 
-if not newDict.has_key('TIFF_CFLAGS'):
+if 'TIFF_CFLAGS' not in newDict:
     Message("I did not find the TIFF include file.")
 
 #
 # Test guesses about TIFF
 #
-if newDict.has_key('TIFF_CFLAGS') and newDict.has_key('TIFF_LIBS'):
+if 'TIFF_CFLAGS' in newDict and 'TIFF_LIBS' in newDict:
     Message("Testing locations for TIFF")
     cflags= "%s "%newDict['TIFF_CFLAGS']
     if not newDict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
@@ -1163,18 +1169,18 @@ if newDict.has_key('TIFF_CFLAGS') and newDict.has_key('TIFF_LIBS'):
 #
 # Look for swig interface generator
 #
-if not newDict.has_key('SWIG'):
+if 'SWIG' not in newDict:
     Message("Looking for swig interface generator")
     (rc,lines)= runCmd('which swig')
     if rc==None and len(lines[0].split())==1:
         newDict['SWIG']= "swig"
             
-if not newDict.has_key('SWIG'):
-    if oldDict.has_key('SWIG'):
+if 'SWIG' not in newDict:
+    if 'SWIG' in oldDict:
         Message("Will try value from old %s"%ofile)
         newDict['SWIG']= oldDict['SWIG']
 
-if newDict.has_key('SWIG'):
+if 'SWIG' in newDict:
     Message("Testing swig")
     (rc,lines)= runCmd("%s -version 2>&1 | cat "%newDict['SWIG'])
     if rc==None:
@@ -1183,7 +1189,7 @@ if newDict.has_key('SWIG'):
             words= line.split()
             if "SWIG" in words and "Version" in words:
                 vstring= words[-1].strip()
-                print "swig version <%s>"%vstring
+                print("swig version <%s>"%vstring)
                 break
         if not vstring:
             Message("My guess of %s failed."%newDict['SWIG'])
@@ -1192,13 +1198,13 @@ if newDict.has_key('SWIG'):
         Message("My guess of %s failed."%newDict['SWIG'])
         del newDict['SWIG']
 
-if not newDict.has_key('SWIG'):
+if 'SWIG' not in newDict:
     Message("Cannot find swig interface generator (but that's OK)")
 
 #
 # Make a note of the location of the Python include file.
 #
-if not newDict.has_key('PYTHON_INCLUDE') or \
+if 'PYTHON_INCLUDE' not in newDict or \
     not incExists("Python.h",newDict['PYTHON_INCLUDE'],newDict['arch']):
     newDict['PYTHON_INCLUDE']= os.path.join(sys.prefix,"include",\
 	"python%s"%sys.version[:3])
@@ -1208,18 +1214,18 @@ if not newDict.has_key('PYTHON_INCLUDE') or \
 #
 Message("Found the following values:")
 for key in defsOfInterest:
-    if newDict.has_key(key):
+    if key in newDict:
         Message("  %s: <%s>"%(key,newDict[key]))
     else:
         Message("  %s: no value found"%key)
 missingNeeded= 0
 for key in defsMustHave:
-    if not newDict.has_key(key):
+    if key not in newDict:
         missingNeeded += 1
 if missingNeeded:
     Message("Please install the following third-party packages and re-configure.")
     for key in defsMustHave:
-        if not newDict.has_key(key):
+        if key not in newDict:
             Message("  %s"%key)
 
 #
@@ -1245,11 +1251,16 @@ o.write(\
 #
 
 #
+# When this file was generated, configure was run from this directory:
+#
+TOPDIR = %s
+
+#
 # The following line controls which C compiler will be used to 
 # build Fiasco.  Note that if MPI is to be used for parallelism,
 # you probably want mpicc!
 #
-"""%(rcsid,newDict['arch']))
+"""%(rcsid,newDict['arch'], newDict['topdir']))
 maybeWrite(o,newDict,'CC')
 
 o.write(\
@@ -1303,7 +1314,7 @@ o.write(\
 """)
 maybeWrite(o,newDict,'SPLUSDIRS')
 # Because Makefiles are stupid...
-if newDict.has_key('SPLUSEXE') and len(string.split(newDict['SPLUSEXE']))>1:
+if 'SPLUSEXE' in newDict and len(newDict['SPLUSEXE'].split())>1:
     o.write('SPLUSEXE = ""%s""\n'%newDict['SPLUSEXE'])
 else:
     maybeWrite(o,newDict,'SPLUSEXE')
