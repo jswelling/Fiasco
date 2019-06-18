@@ -9,8 +9,8 @@
 #
 
 PKG          = brain
-PKG_LIBS     = $(LAPACK_LIBS) -lfmri -lcrg -lmri -lpar -lbio -lacct -lmisc \
-	-larray -lm
+PKG_LIBS     = -lfmri -lcrg -lmri -lpar -lbio -lacct -lmisc \
+	-larray $(LAPACK_LIBS) -lm
 PKG_MAKEBINS = $(CB)/vmpfx $(CB)/generate_vmpfx_in $(CB)/byte_extract \
 	$(CB)/smooth_missing
 

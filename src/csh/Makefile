@@ -48,7 +48,8 @@ copy_csh:
 make_docs:
 	@( for i in $(SCRIPTSWITHDOCS) ; do \
 	  echo "%%%% Generating $$i.html %%%%" ; \
-          PATH="$B:$(PATH)" $B/$$i -help htmldoc > $D//$$i.html 2> /dev/null ;\
+          env PATH="$B:$(PATH)" $B/$$i -help htmldoc > $D//$$i.html 2> /dev/null ; \
+	  : ; \
 	done )
 
 releaseprep:

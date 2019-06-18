@@ -18,6 +18,7 @@ PNG_LIBS = ""
 TIFF_CFLAGS = ""
 TIFF_LIBS = ""
 SWIG = $(FMRI)/src/fiat_scripts/dummy_swig.csh
+
 include config.mk
 
 CFLAGS = $(ARCH_CFLAGS) -D$(ARCH) -I$(FMRI)/include/$(ARCH) \
@@ -56,7 +57,7 @@ FIAT_MAKEFILES = Makefile Makefile.common Makefile.ALPHA Makefile.CRAY \
 	Makefile.SUN4SOL2 Makefile.T3D Makefile.T3E src/Makefile.pkg \
 	Makefile.SGIMP64 Makefile.LINUX Makefile.SGI6 Makefile.DARWIN \
 	Makefile.LINUXI386 Makefile.LINUXX86_64 Makefile.CYGWIN \
-	config.mk.sample configure 
+	config.mk.sample
 MAKEFILES = $(FIAT_MAKEFILES) splus/Makefile.splus
 DOCFILES = doc/fiasco_executables.html doc/fiasco_install.html \
 	doc/fiasco_instruct.html \
@@ -65,9 +66,12 @@ DOCFILES = doc/fiasco_executables.html doc/fiasco_install.html \
 DATADIRS = epidata spiraldata tsdata atlases
 SCRIPTFILES = 
 FIAT_MISCFILES = bin/placeholder include/placeholder lib/placeholder \
-	obj/placeholder doc/generated/placeholder 
+	obj/placeholder doc/generated/placeholder configure 
 MISCFILES = $(FIAT_MISCFILES) splus/formula \
-	splus/dlo/placeholder splus/S/placeholder 
+	splus/dlo/placeholder splus/S/placeholder
+
+include Makefile.$(ARCH)
+include config.mk
 
 all:
 	@(for i in $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
@@ -187,6 +191,7 @@ checkout:
 	for i in $(SRCDIRS); do \
 	    if [ $$i = $@ ]; then \
 	        cd src/$$i; \
+		echo '#### making all in ' `pwd` ; \
 		$(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) all; \
 		cd ../..;  \
 		found=yes; \

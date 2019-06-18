@@ -7,11 +7,16 @@
 #
 
 #
+# When this file was generated, configure was run from this directory:
+#
+TOPDIR = /home/welling/git/Fiasco
+
+#
 # The following line controls which C compiler will be used to 
 # build Fiasco.  Note that if MPI is to be used for parallelism,
 # you probably want mpicc!
 #
-CC = cc
+CC = mpicc
 
 #
 # Fiasco uses the FFTW package, available from 
@@ -20,9 +25,9 @@ CC = cc
 # Set the following lines to be the appropriate include and library
 # paths for the fftw software on your system.
 #
-#FFTW_INCLUDE = ????
-#FFTW_LIB = ????
-#FFTW_CFLAGS = ????
+FFTW_INCLUDE = 
+FFTW_LIB = -lfftw3
+FFTW_CFLAGS = -DFFTW3
 
 #
 # Fiasco uses the LAPACK and BLAS (basic linear algebra subroutines)
@@ -32,7 +37,7 @@ CC = cc
 # following line to be the appropriate library path for the LAPACK
 # and BLAS (basic linear algebra subroutines) on your system.
 #
-#LAPACK_LIBS = ????
+LAPACK_LIBS = -llapack -lblas
 
 #
 # If your system includes a writable AFS file system, uncomment the
@@ -51,8 +56,8 @@ AFS_FLAG = -DNOAFS
 # like:
 #   SPLUSEXE = ""/usr/statlocal/bin/R --no-save""
 #
-#SPLUSDIRS = ????
-#SPLUSEXE = ????
+SPLUSDIRS = script dlo_src
+SPLUSEXE = ""/usr/bin/R --no-save""
 
 #
 # If your system supports parallel programs with PVM or MPI, set the
@@ -60,14 +65,14 @@ AFS_FLAG = -DNOAFS
 # defined or are defined to have no value, Fiasco will be compiled
 # without parallelism.
 #
-PAR_CFLAGS = 
+PAR_CFLAGS = -DMPI
 PAR_LIBS = 
 
 #
 # If Python.h is not in the default include path, its path should be
 # specified here.
 #
-PYTHON_INCLUDE = /home/welling/myEnv/include/python2.7
+PYTHON_INCLUDE = /home/welling/anaconda3/envs/py3Env/include/python3.7
 
 #
 # If the include files describing the FIFF file format are available,
@@ -82,7 +87,7 @@ PYTHON_INCLUDE = /home/welling/myEnv/include/python2.7
 # PNG_CFLAGS = -DUSE_PNG -Isomedirectory
 # PNG_LIBS = -Lsomeotherdirectory -lpng
 #
-PNG_CFLAGS = -DUSE_PNG
+#PNG_CFLAGS = ????
 #PNG_LIBS = ????
 
 #

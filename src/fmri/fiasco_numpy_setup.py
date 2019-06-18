@@ -10,7 +10,7 @@ undefList= []
 otherCompileFlags= []
 otherLinkFlags= []
 
-if os.environ.has_key('CFLAGS'):
+if 'CFLAGS' in os.environ:
     cflags= os.environ['CFLAGS']
 else:
     cflags= ''
@@ -31,7 +31,7 @@ for word in words:
     else:
         otherCompileFlags.append(word)
 
-if os.environ.has_key('LFLAGS'):
+if 'LFLAGS' in os.environ:
     lflags= os.environ['LFLAGS']
 else:
     lflags= ''

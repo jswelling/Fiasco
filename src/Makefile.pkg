@@ -7,6 +7,16 @@
 #		9/96	Written by Greg Hood (PSC)
 #
 
+ifndef $(ARCH)
+ifeq ("$(wildcard config.mk)", "")
+include ../../config.mk   # this is being included from a subdirectory
+else
+include config.mk   # this is being included from top level
+endif
+
+FMRI = $(TOPDIR)
+endif
+
 SHELL  = /bin/sh
 O      = $(FMRI)/obj/$(ARCH)/$(PKG)
 L      = $(FMRI)/lib/$(ARCH)

@@ -1,14 +1,14 @@
-#! /bin/sh
+#! /bin/bash +x
 ######
 # This preamble uses sh to check for the existence of python, then
 # exec's python.
 ######
 python="none"
 if ( which python > /dev/null 2>&1 ) ;
-then python=`which python`;
+then python=`which python` ;
 else
-  if ( which python2 > /dev/null 2>&1 );
-  then python=`which python2`;
+  if ( which python2 > /dev/null 2>&1 ) ;
+  then python=`which python2` ;
   fi ;
 fi
 if [ $python = "none" ] ; then

@@ -6,12 +6,15 @@
 #
 
 SHELL        = /bin/sh
-FMRI         = `pwd`
-ARCH         = `src/fiat_scripts/fiasco_getarch.csh`
-COMPILE_ARCH = `src/fiat_scripts/fiasco_getarch.csh`
+ARCH         := $(shell src/fiat_scripts/fiasco_getarch.csh)
+COMPILE_ARCH = $(ARCH)
+
+include Makefile.common
+
+FMRI         = $(TOPDIR)
 DEFINES      = ARCH=$(ARCH) COMPILE_ARCH=$(COMPILE_ARCH) FMRI="$(FMRI)"
 
 all depend .DEFAULT:
-	@$(MAKE) $(DEFINES) -f Makefile.$(ARCH) $@ 2>&1 | \
-		grep -v "commands for target"
+	$(MAKE) $(DEFINES) -f Makefile.common $@ 2>&1 | \
+		grep -v 'recipe for target'
 

@@ -16,46 +16,46 @@ def testRegressor( r, obs, counts, factors,
     nfactors= factors.shape[1]
     nobs= len(obs)
 
-    print "No options set: nparam is %d"%r.n_params(nfactors)
+    print("No options set: nparam is %d"%r.n_params(nfactors))
     for (optName,opt) in options:
         if r.is_settable(opt):
-            print "Setting %s"%optName
+            print("Setting %s"%optName)
             r.set(opt,1)
         else:
-            print "Option %s is not settable"%optName
-    print "All available options set: nparam is %d"%r.n_params(nfactors)
+            print("Option %s is not settable"%optName)
+    print("All available options set: nparam is %d"%r.n_params(nfactors))
 
     params= numpy.zeros(r.n_params(nfactors))
     r.fit(obs, factors, counts, params)
     betas= params[0:nfactors]
-    print "betas out: %s"%str(betas)
+    print("betas out: %s"%str(betas))
     if r.get(GLM_COVARIANCES):
         covElements= []
         offset= nfactors
-        for i in xrange(nfactors):
+        for i in range(nfactors):
             covElements.append(params[offset:offset+nfactors])
             offset += nfactors
         covariance= numpy.matrix(covElements)
-        print "covariance:"
-        print covariance
-        print "standard errors:"
-        for i in xrange(nfactors):
-            print "beta= %g has std err %g"%(betas[i],math.sqrt(covariance[i,i]))
-            print "vs. R beta %g with std err %g"%(rBeta[i],rStdErr[i])
+        print("covariance:")
+        print(covariance)
+        print("standard errors:")
+        for i in range(nfactors):
+            print("beta= %g has std err %g"%(betas[i],math.sqrt(covariance[i,i])))
+            print("vs. R beta %g with std err %g"%(rBeta[i],rStdErr[i]))
     if r.get(GLM_DEVIANCE):
         deviance= params[offset]
-        print "deviance: %g vs. %g reported by R"%(deviance,rDeviance)
+        print("deviance: %g vs. %g reported by R"%(deviance,rDeviance))
     if r.get(GLM_RESIDUALS):
-        print "deviance residuals: %s"%str(obs)
-        print "vs. R deviance residuals: %s"%str(rDevianceResiduals)
+        print("deviance residuals: %s"%str(obs))
+        print("vs. R deviance residuals: %s"%str(rDevianceResiduals))
 
 # Blindness-by-age example from 'Intro to R'
 # Notes: 
-print """
+print("""
 ###########################
 # Blindness-by-age example from Intro to R
 ###########################
-"""
+""")
 obs= numpy.array([6.,17.,26.,37.,44.],dtype=numpy.float)
 counts= numpy.array([50.,50.,50.,50.,50.],dtype=numpy.float)
 factorsT= numpy.matrix([[1.,1.,1.,1.,1.],
@@ -77,11 +77,11 @@ testRegressor(r,obs,counts,factors, rBeta, rStdErr, rDeviance,
 # G. Rodrigues' birth control regression dataset
 # Notes: this example treats age group as continuous- should be catagorical
 #        Need correct R results
-print """
+print("""
 ###########################
 # G. Rodrigues' birth control regression dataset
 ###########################
-"""
+""")
 obs= numpy.array([6., 4., 52., 10.,
                   14., 10., 54., 27.,
                   33., 80., 46., 78.,
@@ -128,11 +128,11 @@ testRegressor(r,obs,counts,factors, rBeta, rStdErr, rDeviance,
 
 # From R 'example(glm)'
 # Notes- why doesn't counts=None work?
-print """
+print("""
 ###########################
 # Poisson example from R's 'example(glm)'
 ###########################
-"""
+""")
 
 obs= numpy.array([18., 17., 15., 20., 10., 20., 25., 13., 12.],
                  dtype= numpy.double)
