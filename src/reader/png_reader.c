@@ -164,7 +164,7 @@ static void pngProcessHeader( FileHandler* self, KVHash* info,
    * so we only need to worry about the 8 and 16 bit depth cases.
    */
   if (color_type == PNG_COLOR_TYPE_GRAY &&
-      bit_depth < 8) png_set_gray_1_2_4_to_8(data->png_ptr);
+      bit_depth < 8) png_set_expand_gray_1_2_4_to_8(data->png_ptr);
   if (bit_depth==16) {
     kvDefInt(info,"datatype_in",SRDR_UINT16);
     Warning(1,"%s: PNG image pixel data is unsigned shorts; this format is not completely supported!\n",progname);
