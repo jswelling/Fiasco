@@ -658,6 +658,7 @@ static void do_page( const char* creDate, const char* prtDate,
       char minBuf[64];
       char maxBuf[64];
       int bytesPerPixel= 0;
+      int color_type;
       
       if (pageNum>1) {
 	/* checks elsewhere should prevent this from happening */
@@ -675,7 +676,7 @@ static void do_page( const char* creDate, const char* prtDate,
 	Abort("%s: unable to create png data structure! (2)\n",progname);
       }
 
-      if (setjmp(png_ptr->jmpbuf)) {
+      if (setjmp(png_jmpbuf(png_ptr))) {
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 	Abort("%s: fatal error in png libraries!\n",progname);
       }
@@ -685,23 +686,23 @@ static void do_page( const char* creDate, const char* prtDate,
       if (opts->g_flg) bar_width= col_out/16;
       else bar_width= 0;
 
-      info_ptr->width= col_out + bar_width;
-      info_ptr->height= row_out;
-
       switch (img->vdim) {
       case GRAY:
-	info_ptr->color_type= PNG_COLOR_TYPE_GRAY;
+	color_type= PNG_COLOR_TYPE_GRAY;
 	bytesPerPixel= 1;
 	break;
       case OPACITY:
       case COLOR:
-	info_ptr->color_type= PNG_COLOR_TYPE_RGB;
+	color_type= PNG_COLOR_TYPE_RGB;
 	bytesPerPixel= 3;
       }
 
-      info_ptr->bit_depth= 8;
-
-      info_ptr->gamma= opts->gamma;
+      png_set_IHDR(png_ptr, info_ptr,
+		   col_out + bar_width, row_out,
+		   8, color_type,
+		   PNG_INTERLACE_NONE,
+		   PNG_COMPRESSION_TYPE_DEFAULT,
+		   PNG_FILTER_TYPE_DEFAULT);
 
       if (!(notes= (png_text*)malloc(10*sizeof(png_text))))
 	Abort("%s: unable to allocate %d bytes!\n",10*sizeof(png_text));
@@ -741,9 +742,7 @@ static void do_page( const char* creDate, const char* prtDate,
       notes[7].text_length= strlen(maxBuf);
       notes[7].compression= -1;
 
-      info_ptr->num_text= 8;
-      info_ptr->max_text= 10;
-      info_ptr->text= notes;
+      png_set_text(png_ptr, info_ptr, notes, 8);
 
       png_write_info(png_ptr, info_ptr);
 
