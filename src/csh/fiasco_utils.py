@@ -26,6 +26,8 @@
 # This script should not be run directly; it's library routines
 # for other Python scripts.
 #
+from __future__ import print_function
+
 _idString_= "$Id: fiasco_utils.py,v 1.33 2007/04/12 23:44:35 welling Exp $"
 
 import sys
@@ -102,14 +104,14 @@ def safeRun(cmd):
         cmdout= os.popen(cmd)
         cmdout.readlines() # Throw away the output
     if cmdout.close() != None :
-	sys.exit("Command failed: <%s>"%cmd)
+        sys.exit("Command failed: <%s>"%cmd)
 
 def readCmdOutputToList(cmd):
     debugMessage("running <%s>"%cmd)
     cmdout= os.popen(cmd)
     result= cmdout.readlines()
     if cmdout.close() != None :
-	sys.exit("Command failed: <%s>"%cmd)
+        sys.exit("Command failed: <%s>"%cmd)
     debugMessage("read %d entries"%len(result))
     return result
 
@@ -134,7 +136,7 @@ def getField(mrifile,chunk,field):
     cmdout= os.popen(cmd)
     xstr= cmdout.read()
     if cmdout.close() != None :
-	sys.exit("mri_printfield failed for %s.%s on %s!"%(chunk,field,mrifile))
+        sys.exit("mri_printfield failed for %s.%s on %s!"%(chunk,field,mrifile))
     return string.strip(xstr)
 
 def getFieldNofail(mrifile,chunk,field):
@@ -143,7 +145,7 @@ def getFieldNofail(mrifile,chunk,field):
     cmdout= os.popen(cmd)
     xstr= cmdout.read()
     if cmdout.close() != None :
-	sys.exit("mri_printfield failed for %s.%s on %s!"%(chunk,field,mrifile))
+        sys.exit("mri_printfield failed for %s.%s on %s!"%(chunk,field,mrifile))
     xstr= string.strip(xstr)
     if len(xstr)>0:
         return xstr
@@ -180,7 +182,7 @@ def chunkExists( thisDS, chunk ):
     cmdout= os.popen(cmd)
     xstr= cmdout.read()
     if cmdout.close() != None :
-	sys.exit("mri_printfield failed for %s on %s!"%(chunk,thisDS))
+        sys.exit("mri_printfield failed for %s on %s!"%(chunk,thisDS))
     xstr= string.strip(xstr)
     return (xstr=='[chunk]')
 
@@ -481,7 +483,7 @@ class MRIDataset:
     def __str__(self):
         chStr= ""
         for ch in self.chunks:
-            print str(ch)
+            print(str(ch))
             chStr= chStr + "<%s> "%str(ch)
         return "dataset %s: orphans %s, chunks <%s>"%\
                (self.fname,str(self.orphans),chStr)
@@ -543,7 +545,7 @@ class Transform:
     def __init__(self,dList=[1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,\
                              0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0]):
         if len(dList) != 16:
-            raise TypeError, 'bad Transform initialization list'
+            raise TypeError('bad Transform initialization list')
         self.data= copy.copy(dList)
     def __str__(self): return str(self.data)
     def __repr__(self): return "Transform(%s)"%repr(self.data)

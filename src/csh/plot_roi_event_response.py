@@ -25,16 +25,16 @@
 # *                                                          *
 # ************************************************************
 #
-
+from __future__ import print_function
 import sys
 import os
 import os.path
 import string
 import getopt
 import threading
-import popen2
+import subprocess
 import types
-if os.environ.has_key("FIASCO"):
+if 'FIASCO' in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 import customize_local
@@ -66,7 +66,8 @@ def runChildProcess(rCommand, allEventTupleDict, trendlineTupleDict,
     stderrLines= []
     clrList= ["black","red","blue","green"]
     debugMessage("Starting <%s>"%rCommand)
-    childHook= popen2.Popen3(rCommand,True)
+    p= subprocess.Popen(rCommand, shell=True)
+    childHook= (p.stdout, p.stdin, p.stderr)
     stdoutThread= threading.Thread(group=None,target=slurpThisPipe,\
                                    args=(childHook.fromchild,stdoutLines))
     stdoutThread.start()
@@ -340,7 +341,7 @@ def writeForGnuplot( format, name, tList ):
 rCommand= "R --slave --no-save --no-restore-history --no-restore-data"
 #rCommand= "R --no-save --no-restore-history --no-restore-data"
 #rCommand= "cat"
-if os.environ.has_key('SPLUS'):
+if 'SPLUS' in os.environ:
     rCommand= os.environ['SPLUS']
 if rCommand.find('R') >= 0:
     if rCommand.find('--no-save')<0: rCommand += ' --no-save'
@@ -352,11 +353,11 @@ elif rCommand.find('Splus')>=0:
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+            sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdlr:",["out=","title=",
@@ -364,7 +365,7 @@ try:
                                                        "ttl=","phrase=",
                                                        "iqr","nosamp"])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 

@@ -32,6 +32,7 @@
 # This directory wants to be in LD_LIBRARY_PATH to access DB by that
 # mechanism.
 #
+from __future__ import print_function
 
 import sys
 import os
@@ -41,8 +42,11 @@ import getopt
 import urllib
 import re
 import math
-import cPickle
-if os.environ.has_key("FIASCO"):
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
+if 'FIASCO' in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -114,14 +118,14 @@ def dbAccessPrep():
         sys.path.append(
             '/home/IMALIK/sai/MySQL-python-0.9.2/build/lib.linux-i686-2.2')
         import MySQLdb
-    except ImportError, e:
+    except ImportError as e:
         debugMessage("Failed to set up MySQLdb: %s"%e)
     try:
         dbCursor = MySQLdb.connect(host='temper',
                                    user=transDict['db_uname'],
                                    passwd=transDict['db_passwd'],
                                    db='Concussion_Study').cursor()
-    except Exception, e:
+    except Exception as e:
         debugMessage("Failed to connect to MySQL database: %s"%e)
 
 def termsFromQuery( dict, dbTable, qualifierList, orderList=[] ):
@@ -169,7 +173,7 @@ def termsFromQuery( dict, dbTable, qualifierList, orderList=[] ):
         url= url+"db_table=%s"%dbTable
         for qual in qualifierList:
             key, val= qual
-            if urlKeyTransDict.has_key(key):
+            if key in urlKeyTransDict:
                 key= urlKeyTransDict[key]
             url= url+"&%s=%s"%(key,val)
         if len(orderList)>0:
@@ -192,7 +196,7 @@ def fillDbDict( dict ):
         termsFromQuery( dict, 'CS_STROOP', [("ID",transDict["subj"]),
                                             ("RUN",transDict["runnum"])],
                         ['BLOCK','TRIAL'])
-    if string.upper(transDict['task']) == 'NBACK' and dbDict.has_key('NBACK'):
+    if string.upper(transDict['task']) == 'NBACK' and 'NBACK' in dbDict:
         pattern= dict['NBACK']
         if len(pattern)==1:
             tmpDict= {}
@@ -206,7 +210,7 @@ def fillDbDict( dict ):
         tmpDict= {}
         termsFromQuery( tmpDict, 'CS_VOLUMES', [("ID",transDict["subj"]),
                                           ("RUN",transDict["runnum"])] )
-        if tmpDict.has_key('CS_VOLUMES_columns'):
+        if 'CS_VOLUMES_columns' in tmpDict:
             rows= tmpDict['CS_VOLUMES']
             cols= tmpDict['CS_VOLUMES_columns']
             fnameOffset= None
@@ -460,7 +464,7 @@ def refpMethod( line ):
                         %pfileDir)
     fileList= sortByPfileOrder(fileList)
     # Good opportunity to make sure the directory and the DB match
-    if dbDict.has_key('PFILES'): # some don't have this entry
+    if 'PFILES' in dbDict: # some don't have this entry
         dbVersionOfFileList= sortByPfileOrder(dbDict['PFILES'].keys())
         if fileList != dbVersionOfFileList:
             raise Exception("Pfile directory %s is not consistent with the database!"\
@@ -471,7 +475,7 @@ def headerMethod( line ):
     global envDict, catDict, transDict, dbDict
     result= "'subj %s %s %s"%(transDict["subj"],transDict["task"],\
                               transDict["runnum"])
-    if transDict.has_key('tag'):
+    if 'tag' in transDict:
         result= "%s %s'"%(result,transDict['tag'])
     else:
         result= "%s'"%(result)
@@ -493,7 +497,7 @@ def diag1Method( line ):
 
 def ageMethod( line ):
     global envDict, catDict, transDict, dbDict
-    if dbDict.has_key('SDATE') and dbDict.has_key('DOB'):
+    if 'SDATE' in dbDict and 'DOB' in dbDict:
         birthDate= string.strip(dbDict['DOB'])
         if len(birthDate)==0:
             return ''
@@ -635,8 +639,8 @@ def nbackV1SplitMethod( ofile, line ):
                     if nDisdaqs != 0 or nRefs != 0:
                         ofile.write("NA %d\n"%(nRefs+nDisdaqs))
                     ofile.write("%dBack %d\n"%(int(c),(35-nRefs)))
-    except Exception,e:
-        print "Caught exception: %s"%e
+    except Exception as e:
+        print("Caught exception: %s"%e)
         raise Exception("Generation of NBACK V1 split failed!")
 
 ##############################
@@ -768,8 +772,8 @@ def nbackV2SplitMethod( ofile, line ):
             image += imagesThisAcq
             block += blocksThisAcq
 
-    except Exception,e:
-        print "Caught exception: %s"%e
+    except Exception as e:
+        print("Caught exception: %s"%e)
         raise Exception("Generation of NBACK V2 split failed!")
     
 ##############################
@@ -1079,7 +1083,7 @@ def arrowsV1BuildStateListFromDB(acq):
         raise Exception("Cannot find pickled behavioral record <%s>!"%\
                         fullStateFileName)
     f= open(fullStateFileName,"rb")
-    rawStatesThisAcq= cPickle.load(f)
+    rawStatesThisAcq= pickle.load(f)
     f.close()
 
     # Adjust the raw state list for the scanner
@@ -1110,8 +1114,8 @@ def arrowsV1SplitMethod( ofile, line ):
                            len(arrowV1FactorNames)*'NA ',
                            markRefMissing )
             image += imagesThisAcq
-    except Exception,e:
-        print "Caught exception: %s"%e
+    except Exception as e:
+        print("Caught exception: %s"%e)
         raise Exception("Generation of ARROWS_V1 split failed!")
 
 
@@ -1253,12 +1257,12 @@ def arrowsV2SplitMethod( ofile, line ):
             else:
                 condTuple= ("NA", # subject got it wrong; mark missing
                             1)    # one repetition of this
-            if trialOrderDict.has_key(acq):
+            if acq in trialOrderDict:
                 blockDict= trialOrderDict[acq]
             else:
                 blockDict= {}
                 trialOrderDict[acq]= blockDict
-            if blockDict.has_key(block):
+            if block in blockDict:
                 trialList= blockDict[block]
             else:
                 trialList= []
@@ -1300,8 +1304,8 @@ def arrowsV2SplitMethod( ofile, line ):
                            image, image+imagesThisAcq, 'NA',
                            markRefMissing )
             image += imagesThisAcq
-    except Exception,e:
-        print "Caught exception: %s"%e
+    except Exception as e:
+        print("Caught exception: %s"%e)
         raise Exception("Generation of ARROWS_V2 split failed!")
     
 ##############################
@@ -1548,22 +1552,22 @@ scannerHookDict= { "SIEMENS":{},
 def checkInitialDefs( dict ):
     errStr= ""
     errFlag= 0
-    if not dict.has_key('subj'):
+    if not 'subj' in dict:
         errFlag= 1
         errStr= errStr + " subj=subjectID (int)"
-    if not dict.has_key('task'):
+    if not 'task' in dict:
         errFlag= 1
         errStr= errStr + " task=taskname (string)"
-    if not dict.has_key('runnum'):
+    if not 'runnum' in dict:
         errFlag= 1
         errStr= errStr + " runnum=N (int)"
-    if not dict.has_key('tag'):
+    if not 'tag' in dict:
         errFlag= 1
         errStr= errStr + " tag=tagString (string)"
-    if not dict.has_key('db_uname'):
+    if not 'db_uname' in dict:
         errFlag= 1
         errStr= errStr + " db_uname=databaseUsername (string)"
-    if not dict.has_key('db_passwd'):
+    if not 'db_passwd' in dict:
         errFlag= 1
         errStr= errStr + " db_passwd=databasePassword (string)"
     if errFlag:
@@ -1574,21 +1578,21 @@ def checkInitialDefs( dict ):
 def overlayTaskSpecificMethods( baseEnvDict, baseCatDict, baseHookDict, task ):
     global taskEnvDict, taskCatDict;
     envDict= baseEnvDict.copy()
-    if taskEnvDict.has_key(task):
+    if task in taskEnvDict:
         dict= taskEnvDict[task]
         for k in dict.keys():
             envDict[k]= dict[k]
     else:
         raise Exception("No task-specific environment variable methods for task %s!"%task)
     catDict= baseCatDict.copy()
-    if taskCatDict.has_key(task):
+    if task in taskCatDict:
         dict= taskCatDict[task]
         for k in dict.keys():
             catDict[k]= dict[k]
     else:
         raise Exception("No task-specific cat methods for task %s!"%task)
     hookDict= baseHookDict.copy()
-    if taskHookDict.has_key(task):
+    if task in taskHookDict:
         dict= taskHookDict[task]
         for k in dict.keys():
             hookDict[k]= dict[k]
@@ -1600,21 +1604,21 @@ def overlayScannerSpecificMethods( baseEnvDict, baseCatDict, baseHookDict,
                                    scanner ):
     global scannerEnvDict, scannerCatDict;
     envDict= baseEnvDict.copy()
-    if scannerEnvDict.has_key(scanner):
+    if scanner in scannerEnvDict:
         dict= scannerEnvDict[scanner]
         for k in dict.keys():
             envDict[k]= dict[k]
     else:
         raise Exception("No scanner-specific environment variable methods for scanner %s!"%scanner)
     catDict= baseCatDict.copy()
-    if scannerCatDict.has_key(scanner):
+    if scanner in scannerCatDict:
         dict= scannerCatDict[scanner]
         for k in dict.keys():
             catDict[k]= dict[k]
     else:
         raise Exception("No scanner-specific cat methods for scanner %s!"%task)
     hookDict= baseHookDict.copy()
-    if scannerHookDict.has_key(scanner):
+    if scanner in scannerHookDict:
         dict= scannerHookDict[scanner]
         for k in dict.keys():
             hookDict[k]= dict[k]
@@ -1642,8 +1646,8 @@ def populateMethodTables( localTransDict ):
     global transDict, dbDict, envDict, catDict, hookDict
     transDict= localTransDict
     # Check environment for database password if it's not already set
-    if not transDict.has_key('db_passwd'):
-        if os.environ.has_key('F_DB_PASSWD'):
+    if not 'db_passwd' in transDict:
+        if 'F_DB_PASSWD' in os.environ:
             transDict['db_passwd']= os.environ['F_DB_PASSWD']
 
     # Do I have the initial definitions I need?
@@ -1654,30 +1658,30 @@ def populateMethodTables( localTransDict ):
     dbAccessFinalize()
 
     # Check DB for inconsistencies
-    if not dbDict.has_key("GENDER"):
+    if not 'GENDER' in dbDict:
         sys.exit("No subject id %s found in database!"%transDict["subj"])
-    if not dbDict.has_key("SDATE"):
+    if not 'SDATE' in dbDict:
         sys.exit("No scan %s for subject id %s found in database!"%\
                  (transDict["runnum"],transDict["subj"]))
-    if dbDict.has_key('DID_NBK_V1') and dbDict.has_key('DID_NBK_V2'):
+    if 'DID_NBK_V1' in dbDict and 'DID_NBK_V2' in dbDict:
         if int(dbDict['DID_NBK_V1']) and int(dbDict['DID_NBK_V2']):
             sys.exit("Inconsistent version of NBACK task for subject id %s!"%\
                      transDict["subj"])
-    if string.upper(transDict['task'])=='NBACK' and dbDict.has_key('DID_NBK_V1') \
-           and dbDict.has_key('DID_NBK_V2'):
+    if string.upper(transDict['task'])=='NBACK' and 'DID_NBK_V1' in dbDict \
+           and 'DID_NBK_V2' in dbDict:
         if not int(dbDict['DID_NBK_V1']) \
                and not int(dbDict['DID_NBK_V2']):
             sys.exit("Inconsistent version of NBACK task for subject id %s!"%\
                      transDict["subj"])
     # patch: db dosn't contain DID_ARROW_V2, and no subject has it set
     dbDict['DID_ARROW_V2']= 0
-    if dbDict.has_key('DID_ARROW_V1') and dbDict.has_key('DID_ARROW_V2'):
+    if 'DID_ARROW_V1' in dbDict and 'DID_ARROW_V2' in dbDict:
         if int(dbDict['DID_ARROW_V1']) and int(dbDict['DID_ARROW_V2']):
             sys.exit("Inconsistent version of ARROW task for subject id %s!"%\
                      transDict["subj"])
     if string.upper(transDict['task'])=='ARROW' \
-           and dbDict.has_key('DID_ARROW_V1') \
-           and dbDict.has_key('DID_ARROW_V2'):
+           and 'DID_ARROW_V1' in dbDict \
+           and 'DID_ARROW_V2' in dbDict:
         if not int(dbDict['DID_ARROW_V1']) \
                and not int(dbDict['DID_ARROW_V2']):
             sys.exit("Inconsistent version of ARROW task for subject id %s!"%\
@@ -1761,7 +1765,7 @@ def main(argv=None):
     (dbDict,envDict,catDict,hookDict)= populateMethodTables(transDict)
 
     if srcDir==None:
-        if not os.environ.has_key('FIASCO'):
+        if not 'FIASCO' in os.environ:
             sys.exit("No source directory given and FIASCO environment variable is not set!")
         srcDir= os.environ['FIASCO']
 
@@ -1796,7 +1800,7 @@ def main(argv=None):
                 words= string.split(trimmedLine)
                 if words[0]=='setenv':
                     debugMessage("found setenv of <%s>"%words[1])
-                    if envDict.has_key(words[1]):
+                    if words[1] in envDict:
                         debugMessage("found translation method for setenv <%s>"%\
                                      words[1])
                         mthd= envDict[words[1]]
@@ -1808,7 +1812,7 @@ def main(argv=None):
                     else:
                         ofile.write(line)
                 elif words[0]=='cat' and words[1]=='>' and words[3]=='<<':
-                    if catDict.has_key(words[2]):
+                    if words[2] in catDict:
                         mthd= catDict[words[2]]
                         if mthd==None:
                             raise Exception("Missing needed method to customize %s!"%\
@@ -1821,7 +1825,7 @@ def main(argv=None):
                         ofile.write(line)
                 else:
                     ofile.write(line)
-    except Exception, e:
+    except Exception as e:
         sys.exit("Customization failed: %s"%e)
 
     ofile.close()
