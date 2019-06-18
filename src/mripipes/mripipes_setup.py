@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 from distutils.core import setup, Extension
@@ -10,7 +11,7 @@ undefList= []
 otherCompileFlags= []
 otherLinkFlags= []
 
-if os.environ.has_key('CFLAGS'):
+if 'CFLAGS' in os.environ:
     cflags= os.environ['CFLAGS']
 else:
     cflags= ''
@@ -31,7 +32,7 @@ for word in words:
     else:
         otherCompileFlags.append(word)
 
-if os.environ.has_key('LFLAGS'):
+if 'LFLAGS' in os.environ:
     lflags= os.environ['LFLAGS']
 else:
     lflags= ''
@@ -45,18 +46,18 @@ for word in words:
     else:
         otherLinkFlags.append(word)
 
-if not os.environ.has_key('SRCFILES'):
+if 'SRCFILES' not in os.environ:
     sys.exit("Required environment variable SRCFILES is not set!")
 srcFileList= os.environ['SRCFILES'].split()
 
-## print "incDirList: <%s>"%incDirList
-## print "libDirList: <%s>"%libDirList
-## print "libList: <%s>"%libList
-## print "defList: <%s>"%defList
-## print "undefList: <%s>"%undefList
-## print "otherCompileFlags: <%s>"%otherCompileFlags
-## print "otherLinkFlags: <%s>"%otherLinkFlags
-print "srcFileList: <%s>"%srcFileList
+## print("incDirList: <%s>"%incDirList)
+## print("libDirList: <%s>"%libDirList)
+## print("libList: <%s>"%libList)
+## print("defList: <%s>"%defList)
+## print("undefList: <%s>"%undefList)
+## print("otherCompileFlags: <%s>"%otherCompileFlags)
+## print("otherLinkFlags: <%s>"%otherLinkFlags)
+print("srcFileList: <%s>"%srcFileList)
 
 setup(name="mripipes",
       version='1.0',
