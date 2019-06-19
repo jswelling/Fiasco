@@ -45,6 +45,14 @@ for word in words:
     else:
         otherLinkFlags.append(word)
 
+# print('incDirList: ', incDirList)
+# print('libDirList: ', libDirList)
+# print('libList: ', libList)
+# print('defList: ', defList)
+# print('undefList: ', undefList)
+# print('otherCompileFlags: ', otherCompileFlags)
+# print('otherLinkFlags: ', otherLinkFlags)
+
 setup(name="quaternion",
       version='1.0',
       py_modules=['quaternion'],

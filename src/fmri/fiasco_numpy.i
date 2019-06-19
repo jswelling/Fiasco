@@ -11,6 +11,7 @@
 %module fiasco_numpy
 %{
 #define SWIG_FILE_WITH_INIT
+#include "numpy/old_defines.h"
 #include "glm.h"
 #include "optimizer.h"
 #include "quaternion.h"
@@ -291,12 +292,17 @@ enum { INTRP_OPT_DEBUG=0, INTRP_OPT_FASTBLK, INTRP_OPT_EXTENT,
   bcopy($1,temp,sizeof(Transform));
 }
 %typemap(in) (FILE* ofile) {
+%#if PY_MAJOR_VERSION < 3  
   if (PyFile_Check($input)) {
     $1= PyFile_AsFile($input);
   } else {
     PyErr_SetString(PyExc_ValueError,"Input must be a file");
     return NULL;
   }
+%#else
+  PyErr_SetString(PyExc_ValueError,"Python 3 does not support use of files in this way");
+  return NULL;
+%#endif
 }
 
 %typemap(in) (double* data, long sz) (PyArrayObject* array=NULL) {

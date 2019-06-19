@@ -22,6 +22,7 @@ PKG_MAKEBINS = $(CB)/smoother_tester $(CB)/quat_tester \
 	$(CB)/optimizer_tester $(CB)/exception_tester $(CB)/fft3d_tester \
 	$(CB)/slicepattern_tester $(CB)/glm_tester \
 	$(CB)/fiasco_numpy.py $(CB)/_fiasco_numpy.$(SHR_EXT) \
+	build_envs.bash
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 PKG_CFLAGS   = -I$(PYTHON_INCLUDE)
@@ -68,6 +69,8 @@ FMRI_OBJ= $O/fmri.o $O/fft2d.o $O/fshrot.o $O/polyt.o $O/glm.o \
 	$O/linwarp.o $O/rpn_engine.o $O/entropy.o $O/fexceptions.o \
 	$O/closest_warp.o $O/spline.o $O/interpolator.o $O/slicepattern.o \
 	$O/kalmanfilter.o
+
+.PHONY: build_envs.bash
 
 include ../Makefile.pkg
 
@@ -233,6 +236,13 @@ $(CB)/_fiasco_numpy.$(SHR_EXT) $(CB)/fiasco_numpy.py: \
 	@env CFLAGS='$(CFLAGS)' \
 		LFLAGS='-L$(L) -lmisc -lfmri $(LAPACK_LIBS)' \
 		python fiasco_numpy_setup.py build --build-lib $(CB) 
+
+build_envs.bash:
+	# This target captures the build environment in a sourceable file
+	echo CFLAGS='"'$(FMRI_CFLAGS) -I$(PYTHON_INCLUDE)'"' \
+		> build_envs.bash
+	echo LFLAGS='"'-L$(L) $(FMRI_LFLAGS) $(FMRI_LIBS) $(PKG_LIBS)'"' \
+		>> build_envs.bash
 
 releaseprep:
 	echo "no release prep from " `pwd`
