@@ -37,17 +37,13 @@ static char rcsid[] = "$Id: helphelp.c,v 1.13 2006/07/10 22:41:59 welling Exp $"
 #include   <stdarg.h>
 #include   <string.h>
 #include   <ctype.h>
-#if ( defined(HPPA) || defined(DARWIN) || defined(CYGWIN) )
+#if ( defined(HPPA) || defined(DARWIN) || defined(CYGWIN) || defined(__linux__) )
 #include   <sys/ioctl.h>
 #else
 #include   <stropts.h>
 #endif
 
-#ifdef LINUX
-#include   <asm/termios.h>
-#else
 #include   <termios.h>
-#endif
 #include   <errors.h>
 #include   "stdcrg.h"
 #include   "slist.h"
