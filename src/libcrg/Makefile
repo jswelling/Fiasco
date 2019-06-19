@@ -61,7 +61,7 @@ $(CB)/buildhelp_stage1: $O/buildhelp.o $O/helpblank.o $O/slist.o \
 		$(PKG_MAKELIBS)
 	@echo "%%%% Linking buildhelp_stage1 %%%%"
 	@$(LD) $(LFLAGS) -o $(CB)/buildhelp_stage1 $O/buildhelp.o \
-		$O/helpblank.o $O/slist.o $O/helphelp.o $(LIBS)
+		$O/helpblank.o $O/slist.o $O/helphelp.o $(PKG_LIBS) -lm
 
 $O/buildhelp.o: buildhelp.c
 	$(CC_RULE)
@@ -77,7 +77,7 @@ $O/helpblank.o: helpblank.c
 
 $(CB)/buildhelp: $(CB)/buildhelp_stage1 $(PKG_OBJS) $(PKG_MAKELIBS)
 	@-rm -f $(CB)/buildhelp_stage1
-	$(MULTI_LD)
+	@$(LD) $(LFLAGS) -o $B/$(@F) $(PKG_OBJS) $(PKG_LIBS) -lm
 
 releaseprep:
 	echo "no release prep from " `pwd`
