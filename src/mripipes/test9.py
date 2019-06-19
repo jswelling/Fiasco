@@ -1,3 +1,4 @@
+from __future__ import print_function
 #! /bin/env python
 import sys
 import os
@@ -26,9 +27,9 @@ t1.getSink(0).connect(infile.getSourceByName('images'))
 out.getSink(1).connect(t1.getSource(0))
 
 if not a.init():
-    print "Initialization failed!"
+    print("Initialization failed!")
 else:
-    print "Initialization OK!"
+    print("Initialization OK!")
     if not a.execute():
-        print "Execution failed!"
+        print("Execution failed!")
     

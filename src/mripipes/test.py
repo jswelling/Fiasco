@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 sys.path.append(os.environ['FIASCO'])
@@ -12,9 +13,9 @@ s2= mripipes.createBaseDataSource();
 s2.setName('missing')
 t1.addDataSource(s2)
 
-print t1.getDataSource(0).getName()
-print t1.getDataSource(1).getName()
-print t1.getDataSource(0).getName()
+print(t1.getDataSource(0).getName())
+print(t1.getDataSource(1).getName())
+print(t1.getDataSource(0).getName())
 
 mystery= t1.getSourceByName('missing')
-print mystery.getName()
+print(mystery.getName())

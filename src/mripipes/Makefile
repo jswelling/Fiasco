@@ -11,7 +11,8 @@
 PKG          = mripipes
 PKG_EXPORTS  = mripipes.h
 PKG_MAKELIBS = 
-PKG_MAKEBINS = $(CB)/_mripipes.$(SHR_EXT) $(CB)/mripipes.py
+PKG_MAKEBINS = $(CB)/_mripipes.$(SHR_EXT) $(CB)/mripipes.py \
+	build_envs.bash
 
 PKG_CFLAGS   = -I$(PYTHON_INCLUDE)
 PKG_LIBS     = -lfmri -lmri -lbio -lcrg -lmisc -ldcdf $(LAPACK_LIBS) -lm
@@ -28,7 +29,9 @@ DOCFILES=
 # mripipes.i is a SWIG input file to generate mripipes_wrap.c .  It
 # won't normally be needed, but is included for completeness.
 #
-MISCFILES= mripipes.i mripipes.py mripipes_setup.py
+MISCFILES= mripipes.i mripipes.py mripipes_setup.py install_py_modules.bash
+
+.PHONY: build_envs.bash
 
 include ../Makefile.pkg
 
@@ -43,6 +46,14 @@ mripipes_wrap.c mripipes.py: mripipes.i
 	@echo "%%%% using SWIG to regenerate python mripipes wrapper! %%%%"
 	$(SWIG) -python mripipes.i
 	cp mripipes.py $(CB)
+
+build_envs.bash:
+	# This target captures the build environment in a sourceable file
+	echo CFLAGS='"'$(FMRI_CFLAGS) -I$(PYTHON_INCLUDE)'"' \
+		> build_envs.bash
+	echo LFLAGS='"'-L$(L) $(FMRI_LFLAGS) $(FMRI_LIBS) $(PKG_LIBS)'"' \
+		>> build_envs.bash
+	echo SRCFILES='"'$(CSOURCE)'"' >> build_envs.bash
 
 releaseprep:
 	echo "no release prep from " `pwd`

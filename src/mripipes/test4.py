@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 sys.path.append(os.environ['FIASCO'])
@@ -8,7 +9,7 @@ t1= mripipes.createMRIFileInputTool(a,'test')
 nSources= t1.getNSources()
 for i in range(nSources):
     src= t1.getSource(i)
-    print src.getName()
+    print(src.getName())
 t2= mripipes.createMRIFileOutputTool(a,"junk")
 t3= mripipes.createPassthruTool(a);
 t2.getSink(0).connect(t1.getSourceByName('factor1'))

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 sys.path.append(os.environ['FIASCO'])
@@ -24,9 +25,9 @@ t1.getSink(1).connect(r2.getSourceByName('images'))
 out.getSink(0).connect(r1.getSourceByName('orphans'))
 out.getSink(1).connect(t1.getSource(0))
 if not a.init():
-    print "Initialization failed!"
+    print("Initialization failed!")
 else:
-    print "Initialization OK!"
+    print("Initialization OK!")
     if not a.execute():
-        print "Execution failed!"
+        print("Execution failed!")
     
