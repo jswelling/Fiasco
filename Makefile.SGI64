@@ -17,4 +17,3 @@ NEWER = /usr/lib/desktop/newer
 SHR_EXT = so
 SHR_LD = cc -shared
 
-include Makefile.common

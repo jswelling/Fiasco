@@ -18,4 +18,3 @@ SHR_EXT = so
 SHR_LD = cc -flat_namespace -bundle -undefined suppress
 
 
-include Makefile.common

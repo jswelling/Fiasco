@@ -17,4 +17,3 @@ NEWER = newer
 SHR_EXT = sl
 SHR_LD = ld -b
 
-include Makefile.common

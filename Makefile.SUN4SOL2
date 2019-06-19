@@ -16,4 +16,3 @@ NEWER = $(FMRI)/src/fiat_scripts/test_newer.csh
 SHR_EXT = so
 SHR_LD = cc -G
 
-include Makefile.common
