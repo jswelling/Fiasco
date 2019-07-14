@@ -90,13 +90,13 @@ install: docs
 fiattarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
 	tar rvf /tmp/fiat.tar -C $(FMRI) \
-		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
+		` $(B)/prefix $(REL_DIR)/ $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
 
 tarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
 	tar rvf /tmp/fiasco.tar -C $(FMRI) \
-		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
+		` $(B)/prefix $(REL_DIR)/ $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
 
 dirs:

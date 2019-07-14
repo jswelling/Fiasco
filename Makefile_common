@@ -92,14 +92,32 @@ __check_defined = \
 
 MKALL_DIRS = $(PREREQ_SRCDIRS:%=mkall-%) $(SRCDIRS:%=mkall-%)
 MKINSTALL_DIRS = $(PREREQ_SRCDIRS:%=mkinstall-%) $(SRCDIRS:%=mkinstall-%)
+MKRELEASEPREP_DIRS = $(PREREQ_SRCDIRS:%=mkreleaseprep-%) $(SRCDIRS:%=mkreleaseprep-%)
+MKFIATTARFILE_DIRS = $(PREREQ_SRCDIRS:%=mkfiattarfile-%) $(SRCDIRS:%=mkfiattarfile-%)
+MKTARFILE_DIRS = $(PREREQ_SRCDIRS:%=mktarfile-%) $(SRCDIRS:%=mktarfile-%)
+MKDEPEND_DIRS = $(PREREQ_SRCDIRS:%=mkdepend-%) $(SRCDIRS:%=mkdepend-%)
 MKCLEAN_DIRS = $(PREREQ_SRCDIRS:%=mkclean-%) $(SRCDIRS:%=mkclean-%)
 
-.PHONY: make-all $(MKALL_DIRS) make-clean $(MKCLEAN_DIRS) make-install $(MKINSTALL_DIRS)
+.PHONY: make-all $(MKALL_DIRS) make-clean $(MKCLEAN_DIRS) make-install $(MKINSTALL_DIRS) \
+		make-releaseprep $(MKRELEASE_DIRS) make-fiattarfile $(MKFIATTARFILE_DIRS) \
+		make-fiattarfile-create make-tarfile $(MKTARFILE_CIRS) make-tarfile-create \
+		make-depend $(MKDEPEND_DIRS)
 
 all: make-all
 
 install: make-install
 	@:$(call check_defined, PREFIX)
+
+releaseprep: make-releaseprep
+	chmod +x configure
+
+fiattarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
+		$(SCRIPTFILES) $(MISCFILES) make-fiattarfile-create make-fiattarfile
+
+tarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
+		$(SCRIPTFILES) $(MISCFILES) make-tarfile-create make-tarfile
+
+depend: make-depend
 
 clean: make-clean
 	rm -rf include/$(ARCH)
@@ -120,6 +138,36 @@ make-install: $(MKINSTALL_DIRS)
 
 $(MKINSTALL_DIRS):
 	$(MAKE) $(DEFINES) -C src/$(@:mkinstall-%=%) REL_DIR=src/$(@:mkinstall-%=%) install
+
+make-releaseprep: $(MKRELEASEPREP_DIRS)
+
+$(MKRELEASEPREP_DIRS):
+	@($(MAKE) $(DEFINES) -C src/$(@:mkreleaseprep-%=%) REL_DIR=src/$(@:mkreleaseprep-%=%) releaseprep)
+
+make-fiattarfile-create:
+	tar cvf /tmp/fiat.tar $(HFILES) $(CSOURCE) \
+		$(FIAT_MAKEFILES) $(DOCFILES) $(SCRIPTFILES) \
+		$(MISCFILES)	
+
+make-fiattarfile: $(MKFIATTARFILE_DIRS)
+
+$(MKFIATTARFILE_DIRS):
+	@($(MAKE) $(DEFINES) -C src/$(@:mkfiattarfile-%=%) REL_DIR=src/$(@:mkfiattarfile-%=%) fiattarfile)
+
+make-tarfile-create:
+	tar cvf /tmp/fiasco.tar $(HFILES) $(CSOURCE) \
+		$(ALL_MAKEFILES) $(DOCFILES) $(SCRIPTFILES) $(DATADIRS) \
+		$(MISCFILES)
+
+make-tarfile: $(MKTARFILE_DIRS)
+
+$(MKTARFILE_DIRS):
+	@($(MAKE) $(DEFINES) -C src/$(@:mktarfile-%=%) REL_DIR=src/$(@:mktarfile-%=%) tarfile)
+
+make-depend: $(MKDEPEND_DIRS)
+
+$(MKDEPEND_DIRS):
+	@($(MAKE) $(DEFINES) -C src/$(@:mkdepend-%=%) REL_DIR=src/$(@:mkdepend-%=%) depend)
 
 make-clean: $(MKCLEAN_DIRS)
 
@@ -159,13 +207,6 @@ $(MKCLEAN_DIRS):
 #	   fi ); fi; \
 #	done)
 
-releaseprep:
-	chmod +x configure
-#	@(for i in $(PREREQ_SRCDIRS) $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
-#	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) \
-#		releaseprep ; \
-#             then cd ../..; else exit 1;  fi; fi; \
-#             done)
 #	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
 #	   if [ $$i != dummy ] ; \
 #	      then \
@@ -176,25 +217,11 @@ releaseprep:
 #	   fi ); fi; \
 #	done)
 
-fiattarfile:: $(HFILES) $(CSOURCE) $(FIAT_MAKEFILES) $(DOCFILES) \
-		$(SCRIPTFILES) $(MISCFILES)
-	tar cvf /tmp/fiat.tar $(HFILES) $(CSOURCE) \
-		$(FIAT_MAKEFILES) $(DOCFILES) $(SCRIPTFILES) \
-		$(MISCFILES)
 #	(for i in $(PREREQ_SRCDIRS) $(FIAT_SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
 #	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" fiattarfile ; \
 #             then cd ../..; else exit 1;  fi; fi; \
 #         done)
 
-tarfile:: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
-		$(SCRIPTFILES) $(MISCFILES)
-	tar cvf /tmp/fiasco.tar $(HFILES) $(CSOURCE) \
-		$(ALL_MAKEFILES) $(DOCFILES) $(SCRIPTFILES) $(DATADIRS) \
-		$(MISCFILES)
-#	(for i in $(PREREQ_SRCDIRS) $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
-#	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" tarfile ; \
-#             then cd ../..; else exit 1;  fi; fi; \
-#             done)
 #	(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
 #	   if [ $$i != dummy ] ; \
 #	      then \
