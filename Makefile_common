@@ -151,6 +151,12 @@ mkall-libmri: mkall-libcrg
 mkall-libcrg: mkall-util
 $(SRCDIRS:%=mkall-%) : $(PREREQ_SRCDIRS:%=mkall-%) 
 
+mkdepend-fmri: mkdepend-libdcdf
+mkdepend-libdcdf: mkdepend-libmri
+mkdepend-libmri: mkdepend-libcrg
+mkdepend-libcrg: mkdepend-util
+$(SRCDIRS:%=mkdepend-%) : $(PREREQ_SRCDIRS:%=mkdepend-%) 
+
 make-install: $(MKINSTALL_DIRS)
 
 make-install-splus: $(MKINSTALL_SPLUSDIRS)
