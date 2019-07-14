@@ -29,14 +29,29 @@ local:
 
 all: dirs $(PKG_MAKETARGETS)
 
+install: all
+	@:$(call check_defined, PREFIX)
+	mkdir -p $(PREFIX)/lib
+	for fname in $(PKG_MAKEOBJS) ; do cp $${fname} $(PREFIX)/lib ; done ;
+
 releaseprep:
-	echo "no release prep from " `pwd`
+	@(echo "no release prep from " `pwd`)
 
 tarfile: $(CSOURCE) $(HFILES) $(SSOURCE) $(MISCFILES) $(MAKEFILES)
-	tar rvf /usr/tmp/fiasco.tar -C $(FMRI) \
-		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+	tar rvf /tmp/fiasco.tar -C $(FMRI) \
+		` $(B)/prefix $(REL_DIR)/ $(HFILES) $(CSOURCE) $(MAKEFILES) \
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) $(SSOURCE) \
 		depend.mk.dummy `
+
+depend: $(CSOURCE) $(HFILES)
+	@echo "%%%% Generating dependencies in $(PWD) %%%%"
+	@-rm -f depend.mk.$(ARCH)
+	@echo '#Automatically generated; do not edit.' > depend.mk.$(ARCH) 
+	@makedepend -p$(O)/ -f depend.mk.$(ARCH) -DMAKING_DEPEND -- \
+		 $(CFLAGS) -- $(CSOURCE) 
+
+depend.mk.$(ARCH):
+	touch depend.mk.$(ARCH)
 
 dirs:
 	@-mkdir -p $(DIRS) >/dev/null 2>&1; exit 0
@@ -45,8 +60,6 @@ dirs:
 	$(CC) -c $(CFLAGS) -o $O/$@ $<
 
 clean:
+	-@echo "%%%% Cleaning $(PKG) %%%%"
 	-rm -rf ${DIRS}
 
-checkout:
-	-(for i in $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
-		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)

@@ -137,10 +137,6 @@ depend: $(CSOURCE) $(HFILES)
 depend.mk.$(ARCH):
 	touch depend.mk.$(ARCH)
 
-checkout:
-	-(for i in $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
-		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)
-
 CC_RULE = @( echo "%%%% Compiling $(@F:.o=.c) %%%%" ; \
              $(CC) -c $(CFLAGS) -o $@ $(@F:.o=.c) )
 HELP_RULE = @( echo "%%%% Compiling $(@F:.o=.help) %%%%" ; \

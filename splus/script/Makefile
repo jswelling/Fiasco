@@ -9,13 +9,14 @@
 
 PKG          = script
 PKG_MAKETARGETS = S_files
+PKG_MAKEOBJS =
 
 SSOURCE= anova.S epiprintpar.S printregist.S printregist3d.S \
 	spiralprintpar.S tsprintpar.S read.S
 MISCFILES= 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 
-include ../Makefile.splus
+include ../Makefile_splus
 
 S_files: read.S
 	@echo '%%%% read.S is no longer compiled by default %%%%'

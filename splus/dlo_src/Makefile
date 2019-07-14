@@ -7,17 +7,18 @@
 #		12/96	Written by William F. Eddy (CMU)
 #
 
-PKG          = script
-PKG_MAKETARGETS = dyn_lnk_objs
+PKG          = dlo_src
 
 SRC= read_mri.c
 CSOURCE= read.c read_mri.c splus_libbio.c splus_libmri.c 
 HFILES= mr.h splus_libbio.h splus_libmri.h
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
+PKG_MAKETARGETS = splus_dlos
+PKG_MAKEOBJS = $(DLO)/read_mri.o $(DLO)/splus_libmri.o $(DLO)/splus_libbio.o
 
-include ../Makefile.splus
+include ../Makefile_splus
 
-dyn_lnk_objs: $(DLO)/read_mri.o $(DLO)/splus_libmri.o $(DLO)/splus_libbio.o
+splus_dlos: $(PKG_MAKEOBJS)
 
 $(DLO)/read_mri.o: read_mri.c
 	@echo "%%%% Compiling $(@F:.o=.c) %%%%" 

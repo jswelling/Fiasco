@@ -12,7 +12,7 @@ FFTW_LIB = -lfftw
 FFTW_CFLAGS = ""
 AFS_FLAG= 
 SPLUSDIRS= 
-SPLUSEXE= /usr/statlocal/bin/Splus
+SPLUSEXE= :      # no-op
 PNG_CFLAGS = ""
 PNG_LIBS = ""
 TIFF_CFLAGS = ""
@@ -60,7 +60,7 @@ FIAT_MAKEFILES = Makefile Makefile_common Makefile.ALPHA Makefile.CRAY \
 	Makefile.SGIMP64 Makefile.LINUX Makefile.SGI6 Makefile.DARWIN \
 	Makefile.LINUXI386 Makefile.LINUXX86_64 Makefile.CYGWIN \
 	config.mk.sample
-ALL_MAKEFILES = $(FIAT_MAKEFILES) splus/Makefile.splus
+ALL_MAKEFILES = $(FIAT_MAKEFILES) splus/Makefile_splus
 DOCFILES = doc/fiasco_executables.html doc/fiasco_install.html \
 	doc/fiasco_instruct.html \
 	doc/fiasco_parallel.html doc/mri_pgh.html \
@@ -98,34 +98,51 @@ MKTARFILE_DIRS = $(PREREQ_SRCDIRS:%=mktarfile-%) $(SRCDIRS:%=mktarfile-%)
 MKDEPEND_DIRS = $(PREREQ_SRCDIRS:%=mkdepend-%) $(SRCDIRS:%=mkdepend-%)
 MKCLEAN_DIRS = $(PREREQ_SRCDIRS:%=mkclean-%) $(SRCDIRS:%=mkclean-%)
 
+MKALL_SPLUSDIRS = $(SPLUSDIRS:%=mkall-%)
+MKINSTALL_SPLUSDIRS = $(SPLUSDIRS:%=mkinstall-%)
+MKRELEASEPREP_SPLUSDIRS = $(SPLUSDIRS:%=mkreleaseprep-%)
+MKTARFILE_SPLUSDIRS = $(SPLUSDIRS:%=mktarfile-%)
+MKDEPEND_SPLUSDIRS = $(SPLUSDIRS:%=mkdepend-%)
+MKCLEAN_SPLUSDIRS = $(SPLUSDIRS:%=mkclean-%)
+
 .PHONY: make-all $(MKALL_DIRS) make-clean $(MKCLEAN_DIRS) make-install $(MKINSTALL_DIRS) \
 		make-releaseprep $(MKRELEASE_DIRS) make-fiattarfile $(MKFIATTARFILE_DIRS) \
 		make-fiattarfile-create make-tarfile $(MKTARFILE_CIRS) make-tarfile-create \
-		make-depend $(MKDEPEND_DIRS)
+		make-depend $(MKDEPEND_DIRS) make-clean-splus $(MKCLEAN_SPLUSDIRS) \
+		make-all-splus $(MKALL_SPLUSDIRS) make-install-splus $(MKINSTALL_SPLUSDIRS) \
+		make-releaseprep-splus $(MKRELEASEPREP_SPLUSDIRS) \
+		make-tarfile-splus $(MKTARFILE_SPLUSDIRS) make-depend-splus $(MKDEPEND_SPLUSDIRS)
 
-all: make-all
+all: make-all make-all-splus
 
-install: make-install
+install: make-install make-install-splus
 	@:$(call check_defined, PREFIX)
+	mkdir -p $(PREFIX)/doc
+	cp doc/*.html $(PREFIX)/doc
 
-releaseprep: make-releaseprep
+releaseprep: make-releaseprep make-releaseprep-splus
 	chmod +x configure
 
-fiattarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
+fiattarfile: $(HFILES) $(CSOURCE) $(FIAT_MAKEFILES) $(DOCFILES) $(DATADIRS) \
 		$(SCRIPTFILES) $(MISCFILES) make-fiattarfile-create make-fiattarfile
 
 tarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
-		$(SCRIPTFILES) $(MISCFILES) make-tarfile-create make-tarfile
+		$(SCRIPTFILES) $(MISCFILES) make-tarfile-create make-tarfile make-tarfile-splus
 
-depend: make-depend
+depend: make-depend make-depend-splus
 
-clean: make-clean
+clean: make-clean make-clean-splus
 	rm -rf include/$(ARCH)
 
 make-all: $(MKALL_DIRS)
 
+make-all-splus: $(MKALL_SPLUSDIRS)
+
 $(MKALL_DIRS):
 	@($(MAKE) $(DEFINES) -C src/$(@:mkall-%=%) REL_DIR=src/$(@:mkall-%=%) DEP_NM=$(ARCH) all)
+	
+$(MKALL_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mkall-%=%) REL_DIR=splus/$(@:mkall-%=%) DEP_NM=$(ARCH) all)
 	
 # Impose some order on the make process
 mkall-fmri: mkall-libdcdf
@@ -136,13 +153,23 @@ $(SRCDIRS:%=mkall-%) : $(PREREQ_SRCDIRS:%=mkall-%)
 
 make-install: $(MKINSTALL_DIRS)
 
+make-install-splus: $(MKINSTALL_SPLUSDIRS)
+
 $(MKINSTALL_DIRS):
 	$(MAKE) $(DEFINES) -C src/$(@:mkinstall-%=%) REL_DIR=src/$(@:mkinstall-%=%) install
 
+$(MKINSTALL_SPLUSDIRS):
+	$(MAKE) $(DEFINES) -C splus/$(@:mkinstall-%=%) REL_DIR=splus/$(@:mkinstall-%=%) install
+
 make-releaseprep: $(MKRELEASEPREP_DIRS)
+
+make-releaseprep-splus: $(MKRELEASEPREP_SPLUSDIRS)
 
 $(MKRELEASEPREP_DIRS):
 	@($(MAKE) $(DEFINES) -C src/$(@:mkreleaseprep-%=%) REL_DIR=src/$(@:mkreleaseprep-%=%) releaseprep)
+
+$(MKRELEASEPREP_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mkreleaseprep-%=%) REL_DIR=splus/$(@:mkreleaseprep-%=%) releaseprep)
 
 make-fiattarfile-create:
 	tar cvf /tmp/fiat.tar $(HFILES) $(CSOURCE) \
@@ -161,104 +188,32 @@ make-tarfile-create:
 
 make-tarfile: $(MKTARFILE_DIRS)
 
+make-tarfile-splus: $(MKTARFILE_SPLUSDIRS)
+
 $(MKTARFILE_DIRS):
 	@($(MAKE) $(DEFINES) -C src/$(@:mktarfile-%=%) REL_DIR=src/$(@:mktarfile-%=%) tarfile)
 
+$(MKTARFILE_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mktarfile-%=%) REL_DIR=splus/$(@:mktarfile-%=%) tarfile)
+
 make-depend: $(MKDEPEND_DIRS)
+
+make-depend-splus: $(MKDEPEND_SPLUSDIRS)
 
 $(MKDEPEND_DIRS):
 	@($(MAKE) $(DEFINES) -C src/$(@:mkdepend-%=%) REL_DIR=src/$(@:mkdepend-%=%) depend)
 
+$(MKDEPEND_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mkdepend-%=%) REL_DIR=splus/$(@:mkdepend-%=%) depend)
+
 make-clean: $(MKCLEAN_DIRS)
+
+make-clean-splus: $(MKCLEAN_SPLUSDIRS)
 
 $(MKCLEAN_DIRS):
 	@($(MAKE) $(DEFINES) -C src/$(@:mkclean-%=%) REL_DIR=src/$(@:mkclean-%=%) clean)
 
+$(MKCLEAN_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mkclean-%=%) REL_DIR=splus/$(@:mkclean-%=%) clean)
 
-#	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
-#	   if [ $$i != dummy ] ; \
-#	      then \
-#		cd splus/$$i ; \
-#		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
-#		  DEP_NM=$(ARCH) all ; \
-#		then cd ../..; else exit 1; fi \
-#	   fi ); fi; \
-#	  done)
-
-#	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
-#	   if [ $$i != dummy ] ; \
-#	      then \
-#		cd splus/$$i ; \
-#		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
-#		  DEP_NM=$(ARCH) install ; \
-#		then cd ../..; else exit 1; fi \
-#	   fi ); fi; \
-#	done)
-#	mkdir -p $(PREFIX)/doc
-#	cp doc/*.html $(PREFIX)/doc
-
-#	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
-#	   if [ $$i != dummy ] ; \
-#	      then \
-#		cd splus/$$i ; \
-#		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
-#		  DEP_NM=$(ARCH) clean ; \
-#		then cd ../..; else exit 1; fi \
-#	   fi ); fi; \
-#	done)
-
-#	@(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
-#	   if [ $$i != dummy ] ; \
-#	      then \
-#		cd splus/$$i ; \
-#		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
-#		  DEP_NM=$(ARCH) releaseprep ; \
-#		then cd ../..; else exit 1; fi \
-#	   fi ); fi; \
-#	done)
-
-#	(for i in $(PREREQ_SRCDIRS) $(FIAT_SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
-#	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" fiattarfile ; \
-#             then cd ../..; else exit 1;  fi; fi; \
-#         done)
-
-#	(for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then ( \
-#	   if [ $$i != dummy ] ; \
-#	      then \
-#		cd splus/$$i ; \
-#		if $(MAKE) $(DEFINES) REL_DIR="splus/$$i/" \
-#		  DEP_NM=$(ARCH) tarfile ; \
-#		then cd ../..; else exit 1; fi \
-#	   fi ); fi; \
-#	done)
-
-#depend:
-#	@(for i in $(PREREQ_SRCDIRS) $(SRCDIRS); do if [ -d src/$$i ] ; then cd src/$$i; \
-#	     $(MAKE) $(DEFINES) dirs include_updated ; \
-#	     if $(MAKE) $(DEFINES) REL_DIR="src/$$i/" depend ; \
-#             then cd ../..; else exit 1;  fi; fi; \
-#             done)
-
-#.DEFAULT:
-#	@(found=; \
-#	for i in $(PREREQ_SRCDIRS) $(SRCDIRS); do \
-#	    if [ $$i = $@ ]; then \
-#	        cd src/$$i; \
-#		echo '#### making all in ' `pwd` ; \
-#		$(MAKE) $(DEFINES) REL_DIR="src/$$i/" DEP_NM=$(ARCH) all; \
-#		cd ../..;  \
-#		found=yes; \
-#		fi  \
-#	done; \
-#	for i in $(SPLUSDIRS) dummy; do if [ -d splus/$$i ] ; then \
-#	   if [ $$i != dummy -a $$i = $@ ] ; then \
-#		cd splus/$$i ; \
-#		$(MAKE) $(DEFINES) REL_DIR="splus/$$i/" DEP_NM=$(ARCH) all ; \
-#		cd ../..; \
-#		found=yes; \
-#		fi; fi;  \
-#	done; \
-#	if [ ! "$$found" ]; then \
-#		echo $@ is not a valid target.; \
-#	fi);
 
