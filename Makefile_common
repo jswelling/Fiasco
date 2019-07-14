@@ -97,6 +97,7 @@ MKFIATTARFILE_DIRS = $(PREREQ_SRCDIRS:%=mkfiattarfile-%) $(SRCDIRS:%=mkfiattarfi
 MKTARFILE_DIRS = $(PREREQ_SRCDIRS:%=mktarfile-%) $(SRCDIRS:%=mktarfile-%)
 MKDEPEND_DIRS = $(PREREQ_SRCDIRS:%=mkdepend-%) $(SRCDIRS:%=mkdepend-%)
 MKCLEAN_DIRS = $(PREREQ_SRCDIRS:%=mkclean-%) $(SRCDIRS:%=mkclean-%)
+MKPREP_DIRS = $(PREREQ_SRCDIRS:%=mkprep-%) $(SRCDIRS:%=mkprep-%)
 
 MKALL_SPLUSDIRS = $(SPLUSDIRS:%=mkall-%)
 MKINSTALL_SPLUSDIRS = $(SPLUSDIRS:%=mkinstall-%)
@@ -104,16 +105,19 @@ MKRELEASEPREP_SPLUSDIRS = $(SPLUSDIRS:%=mkreleaseprep-%)
 MKTARFILE_SPLUSDIRS = $(SPLUSDIRS:%=mktarfile-%)
 MKDEPEND_SPLUSDIRS = $(SPLUSDIRS:%=mkdepend-%)
 MKCLEAN_SPLUSDIRS = $(SPLUSDIRS:%=mkclean-%)
+MKPREP_SPLUSDIRS = $(SPLUSDIRS:%=mkprep-%)
 
 .PHONY: make-all $(MKALL_DIRS) make-clean $(MKCLEAN_DIRS) make-install $(MKINSTALL_DIRS) \
 		make-releaseprep $(MKRELEASE_DIRS) make-fiattarfile $(MKFIATTARFILE_DIRS) \
-		make-fiattarfile-create make-tarfile $(MKTARFILE_CIRS) make-tarfile-create \
+		make-fiattarfile-create make-tarfile $(MKTARFILE_DIRS) make-tarfile-create \
 		make-depend $(MKDEPEND_DIRS) make-clean-splus $(MKCLEAN_SPLUSDIRS) \
 		make-all-splus $(MKALL_SPLUSDIRS) make-install-splus $(MKINSTALL_SPLUSDIRS) \
 		make-releaseprep-splus $(MKRELEASEPREP_SPLUSDIRS) \
-		make-tarfile-splus $(MKTARFILE_SPLUSDIRS) make-depend-splus $(MKDEPEND_SPLUSDIRS)
+		make-tarfile-splus $(MKTARFILE_SPLUSDIRS) make-depend-splus $(MKDEPEND_SPLUSDIRS) \
+		make-prep $(MKPREP_DIRS) $(MKPREP_SPLUSDIRS)
+		
 
-all: make-all make-all-splus
+all: depend make-all make-all-splus
 
 install: make-install make-install-splus
 	@:$(call check_defined, PREFIX)
@@ -129,7 +133,9 @@ fiattarfile: $(HFILES) $(CSOURCE) $(FIAT_MAKEFILES) $(DOCFILES) $(DATADIRS) \
 tarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) $(DATADIRS) \
 		$(SCRIPTFILES) $(MISCFILES) make-tarfile-create make-tarfile make-tarfile-splus
 
-depend: make-depend make-depend-splus
+depend: prep make-depend make-depend-splus
+
+prep: make-prep make-prep-splus
 
 clean: make-clean make-clean-splus
 	rm -rf include/$(ARCH)
@@ -211,6 +217,16 @@ $(MKDEPEND_DIRS):
 
 $(MKDEPEND_SPLUSDIRS):
 	@($(MAKE) $(DEFINES) -C splus/$(@:mkdepend-%=%) REL_DIR=splus/$(@:mkdepend-%=%) depend)
+
+make-prep: $(MKPREP_DIRS)
+
+make-prep-splus: $(MKPREP_SPLUSDIRS)
+
+$(MKPREP_DIRS):
+	@($(MAKE) $(DEFINES) -C src/$(@:mkprep-%=%) REL_DIR=src/$(@:mkprep-%=%) prep)
+
+$(MKPREP_SPLUSDIRS):
+	@($(MAKE) $(DEFINES) -C splus/$(@:mkprep-%=%) REL_DIR=splus/$(@:mkprep-%=%) prep)
 
 make-clean: $(MKCLEAN_DIRS)
 
