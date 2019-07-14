@@ -17,7 +17,7 @@ PKG_MAKEBINS =
 PKG_LIBS     = -lcdf -lfmri -lmri -lpar -lbio -lacct \
 	     -lcrg -lmisc -lrttraj $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_ALL_MAKEFILES= Makefile
 CSOURCE= libacct.c libarray.c libbio.c libmdbg.c libmisc.c libpar.c \
 	ptest.c libpulse.c librttraj.c
 HFILES= acct.h array.h bio.h mdbg.h misc.h par.h errors.h pulse.h rttraj.h
@@ -27,7 +27,7 @@ SCRIPTFILES=
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a $L/libpulse.a $L/librttraj.a
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $L/libacct.a: $O/libacct.o
 	@echo "%%%% Building $(@F) %%%%"
@@ -95,4 +95,6 @@ $O/librttraj.o: librttraj.c
 
 releaseprep:
 	echo "no release prep from " `pwd`
+
+
 

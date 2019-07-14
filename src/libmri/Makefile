@@ -20,13 +20,13 @@ PKG_MAKEBINS =
 
 PKG_LIBS     = -lmri -lbio -lcrg -lmisc -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= complex.c create.c endian.c halve.c imean.c import.c libmri.c \
 	mcopy.c mean.c mpull.c mpush.c msplit.c single.c 
 HFILES= mri.h
 DOCFILES= README mri-c.doc mri-pgh.doc ref.doc 
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $L/libmri.a: $O/libmri.o
 	@echo "%%%% Building $(@F) %%%%"

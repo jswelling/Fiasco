@@ -12,13 +12,13 @@ PKG_MAKEBINS = $(CB)/mri_anova
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= mri_anova.c 
 HFILES= 
 DOCFILES= mri_anova_help.help
 MISCFILES= 
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 PKG_OBJS = 
 

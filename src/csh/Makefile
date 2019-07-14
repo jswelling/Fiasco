@@ -16,7 +16,7 @@
 
 PKG	= csh
 PKG_MAKETARGETS = copy_csh make_docs
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 SCRIPTFILES = FIASCO *.csh *.py
 SCRIPTSWITHDOCS = FIASCO groupcompare.csh make_merged_maps.csh \
 	merge_detrend.csh false_discovery.py testingroup.csh \
@@ -34,7 +34,7 @@ SCRIPTSWITHDOCS = FIASCO groupcompare.csh make_merged_maps.csh \
 	pullback_roi_mask.py plot_roi_time_series.py strip_skull.py \
 	epoch_subset.py afni_tshift.py plot_roi_event_response.py
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 copy_csh:
 	-rm -f fiasco.local.csh

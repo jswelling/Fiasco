@@ -13,12 +13,12 @@ PKG_MAKEBINS = $(CB)/affinemap $(CB)/follow $(CB)/pullback $(CB)/morph \
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= affinemap.c follow.c pullback.c morph.c watershed.c
 DOCFILES= affinemap_help.help follow_help.help pullback_help.help \
 	  morph_help.help watershed_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 PKG_OBJS = $O/affinemap.o $O/follow.o $O/pullback.o $O/morph.o $O/watershed.o
 

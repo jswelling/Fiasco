@@ -15,7 +15,7 @@ PKG_LIBS     = -lfmri -lcrg -lmri -lpar -lbio -lacct -lmisc -larray \
 PKG_MAKEBINS = $(CB)/checkpfile $(CB)/pfileorder $(CB)/spiral \
 	$(CB)/srecon $(CB)/sgrid $(CB)/spiral_reader $(CB)/slow_ft
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= checkpfile.c commun.c header.c \
 	pfileorder.c spiral.c worker.c worker_utils.c sgrid.c srecon.c \
 	spiral_reader.c mriheader.c slow_ft.c dirichlet.c vpolygon.c
@@ -23,7 +23,7 @@ HFILES= rdb.h checkpfile.h spiral.h dirichlet.h vpolygon.h
 DOCFILES= pfileorder_help.help spiral_help.help sgrid_help.help \
 	srecon_help.help spiral_reader_help.help slow_ft_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 PKG_OBJS     = $O/commun.o $O/header.o $O/spiral.o \
 	     $O/worker.o $O/worker_utils.o $O/mriheader.o

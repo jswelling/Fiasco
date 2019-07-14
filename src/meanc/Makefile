@@ -12,11 +12,11 @@ PKG_MAKEBINS = $(CB)/meanc $(CB)/meanc3d
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= meanc.c meanc3d.c
 DOCFILES= meanc_help.help meanc3d_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a

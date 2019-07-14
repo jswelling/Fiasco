@@ -12,11 +12,11 @@ PKG_MAKEBINS = $(CB)/scripthelp
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lcrg -lmisc $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= scripthelp.c
 DOCFILES= scripthelp_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a

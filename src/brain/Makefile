@@ -14,7 +14,7 @@ PKG_LIBS     = -lfmri -lcrg -lmri -lpar -lbio -lacct -lmisc \
 PKG_MAKEBINS = $(CB)/vmpfx $(CB)/generate_vmpfx_in $(CB)/byte_extract \
 	$(CB)/smooth_missing
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= addendum.c generate_vmpfx_in.c vmpfx.c amoeba.c info.c \
 	drift.c lbfgs.c qnewton-lbfgs.c tmperror.c byte_extract.c \
 	smooth_missing.c
@@ -23,7 +23,7 @@ DOCFILES= vmpfx_help.help generate_vmpfx_in_help.help byte_extract_help.help \
 	smooth_missing_help.help README
 MISCFILES= vmpfx_proto.t vmpfx_null_proto.t ramps.txt
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 # Available conditional compiler options:
 #  Really present:

@@ -16,11 +16,11 @@ LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a
 HDRS= fmri.h mri.h par.h bio.h misc.h acct.h stdcrg.h
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= baseline2.c
 DOCFILES= baseline2_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $O/baseline2.o: baseline2.c
 	$(CC_RULE)

@@ -14,14 +14,14 @@ PKG_OBJS     = $O/gift.o $O/fiasco_read.o $O/fiasco_write.o $O/pgh_read.o \
 	$O/pgh_write.o $O/analyze_read.o $O/analyze_write.o \
 	$O/spiral_sl_read.o $O/spiral_sl_write.o 
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= analyze_read.c analyze_write.c fiasco_read.c fiasco_write.c \
 	gift.c pgh_read.c pgh_write.c spiral_sl_read.c \
 	spiral_sl_write.c
 HFILES= analyze.h fiasco.h gift.h pgh.h spiral.h spiral_sl.h
 DOCFILES= README gift_help.help specs.txt
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 HFILES = gift.h fiasco.h analyze.h spiral_sl.h pgh.h spiral.h
 

@@ -16,11 +16,11 @@
 
 PKG	= fiat_scripts
 PKG_MAKETARGETS = cover_matching_scripts copy_csh make_docs
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 SCRIPTFILES = *.csh 
 SCRIPTSWITHDOCS = 
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 cover_matching_scripts:
 	@( for i in \( $(SCRIPTFILES) \); do \

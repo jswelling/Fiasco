@@ -12,11 +12,11 @@ PKG_MAKEBINS = $(CB)/ireg3d $(CB)/iwarp
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= ireg3d.c iwarp.c
 DOCFILES= ireg3d_help.help iwarp_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a $L/libfmri.a

@@ -46,7 +46,7 @@ PGHTONIFTI_OBJS = $O/pghtonifti.o $O/pghmri_reader.o $O/base_reader.o \
 	       $O/convert_reader.o $O/pghtonifti_help.o $O/tables.o \
 	       $O/smart_utils.o $O/vec3.o
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= reader.c epi_correction.c rcn.c nr_sub.c \
 	smartreader.c lx_reader.c lx_epibold_reader.c \
 	lx_splx_reader.c lx_sf11_reader.c windaq_reader.c \
@@ -65,7 +65,7 @@ HFILES= rcn.h control_data.h nr_sub.h smartreader.h dicom_dict.h \
 DOCFILES= reader_help.help smartreader_help.help pghtoafni_help.help \
 	pghtonifti_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libfmri.a $L/libpar.a $L/libbio.a $L/libarray.a \
 	  $L/libmisc.a $L/libacct.a $L/librttraj.a

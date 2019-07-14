@@ -17,7 +17,7 @@ PKG_MAKEBINS = $(CB)/prefix $(CB)/pulsecalc $(CB)/blind_minimize \
 PKG_LIBS     = -ldcdf -lfmri -lmri -lpar -lbio -lacct \
 	     -lcrg -lmisc -lpulse $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= pulsecalc.c blind_minimize.c parallel_mode.c image_entropy.c \
 	mutual_information.c fiat_version.c
 HFILES= 
@@ -29,7 +29,7 @@ MISCFILES= sed.script
 LIBFILES= $L/libfmri.a $L/libmri.a $L/libpar.a $L/libbio.a \
 	  $L/libarray.a $L/libmisc.a $L/libacct.a $L/libcrg.a
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $O/fiat_version.o: fiat_version.c
 	$(CC_RULE)

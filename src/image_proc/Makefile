@@ -13,11 +13,11 @@ PKG_MAKEBINS = $(CB)/mri_to_img $(CB)/matte $(CB)/colorize
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lcrg -lmisc -lm \
 	-ldcdf $(LAPACK_LIBS)
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= mri_to_img.c matte.c colorize.c
 DOCFILES= mri_to_img_help.help matte_help.help colorize_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a

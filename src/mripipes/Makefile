@@ -17,7 +17,7 @@ PKG_MAKEBINS = $(CB)/_mripipes.$(SHR_EXT) $(CB)/mripipes.py \
 PKG_CFLAGS   = -I$(PYTHON_INCLUDE)
 PKG_LIBS     = -lfmri -lmri -lbio -lcrg -lmisc -ldcdf $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= mripipes.c mripipes_wrap.c test_tool.c mri_file_input_tool.c \
 	devnull_tool.c passthru_tool.c mri_file_output_tool.c \
 	matmult_tool.c rpn_math_tool.c zero_src_tool.c \
@@ -33,7 +33,7 @@ MISCFILES= mripipes.i mripipes.py mripipes_setup.py install_py_modules.bash
 
 .PHONY: build_envs.bash
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $(CB)/_mripipes.$(SHR_EXT) $(CB)mripipes.py: \
 $(CSOURCE) $(HFILES) $L/libmisc.a

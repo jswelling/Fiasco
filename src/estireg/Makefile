@@ -17,11 +17,11 @@ LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a
 HDRS= mri.h par.h bio.h array.h misc.h acct.h
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= estireg.c 
 DOCFILES= estireg_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $O/estireg.o: estireg.c
 	$(CC_RULE)

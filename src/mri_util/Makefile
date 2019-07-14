@@ -25,7 +25,7 @@ PKG_MAKEBINS = $(CB)/mri_complex_to_scalar \
 PKG_LIBS     = -lfmri -ldcdf -lmri -lpar -lbio -lacct \
 	-lcrg -lmisc $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= mri_complex_to_scalar.c mri_rpn_math.c mri_splus_filter.c \
 	slave_splus.c slave_splus_tester.c \
 	splus_binary_pipes.c mri_subset.c mri_glm.c \
@@ -56,7 +56,7 @@ DOCFILES= mri_complex_to_scalar_help.help mri_splus_filter_help.help \
 
 MISCFILES= bio_init.S
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 PKG_OBJS = $O/mri_splus_filter.o $O/slave_splus.o
 

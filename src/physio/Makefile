@@ -12,12 +12,12 @@ PKG_MAKEBINS = $(CB)/cardiopeaks $(CB)/resppeaks $(CB)/syncpeaks $(CB)/eventpeak
 
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lcrg -lmisc $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= cardiopeaks.c resppeaks.c polyfit.c syncpeaks.c eventpeaks.c
 HFILES= polyfit.h
 DOCFILES= cardiopeaks_help.help resppeaks_help.help syncpeaks_help.help eventpeaks_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a

@@ -14,12 +14,12 @@ PKG_MAKEBINS = cdftester
 
 PKG_LIBS     = $(LAPACK_LIBS)
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE = ipmpar.c dcdflib.c cdftester.c
 HFILES= dcdflib.h dcdflib_private.h
 DOCFILES= README libdcdf_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIB_OBJ = $O/dcdflib.o $O/ipmpar.o
 

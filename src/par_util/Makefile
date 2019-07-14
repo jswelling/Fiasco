@@ -13,12 +13,12 @@ PKG_MAKEBINS = $(CB)/par_translate
 PKG_LIBS     = -ldcdf -lfmri -lmri -lpar -lbio -lacct -lmisc \
 	-lcrg $(LAPACK_LIBS) -lm
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= par_translate.c
 HFILES= parameters.h
 DOCFILES= par_translate_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a

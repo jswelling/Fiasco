@@ -27,7 +27,7 @@ PKG_MAKEBINS = $(CB)/smoother_tester $(CB)/quat_tester \
 PKG_LIBS     = -lfmri -lmri -lpar -lbio -lacct -lmisc -lcrg $(LAPACK_LIBS) -lm
 PKG_CFLAGS   = -I$(PYTHON_INCLUDE)
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= fft2d.c fmri.c fshrot.c polyt.c glm.c glm_irls.c smoother.c \
 	smoother_tester.c parsesplit.c fft3d.c quaternion.c quat_tester.c \
 	fshrot3d.c linrot3d.c praxis.c history.c filetypes.c kvhash.c \
@@ -72,7 +72,7 @@ FMRI_OBJ= $O/fmri.o $O/fft2d.o $O/fshrot.o $O/polyt.o $O/glm.o \
 
 .PHONY: build_envs.bash
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $L/libfmri.a: $(FMRI_OBJ)
 	@echo "%%%% Building $(@F) %%%%"

@@ -7,22 +7,40 @@
 #		9/96	Written by Greg Hood (PSC)
 #
 
-ifndef $(ARCH)
-ifeq ("$(wildcard config.mk)", "")
-include ../../config.mk   # this is being included from a subdirectory
-else
-include config.mk   # this is being included from top level
-endif
+#ifndef $(TOPDIR)
+#$(info "including config.mk to define TOPDIR")
+#ifeq ("$(wildcard config.mk)", "")
+#include ../../config.mk   # this is being included from a subdirectory
+#else
+#include config.mk   # this is being included from top level
+#endif
 
-FMRI = $(TOPDIR)
-endif
+#FMRI = $(TOPDIR)
+#else
+#$(info 'topdir was defined: ' $(TOPDIR) $(FMRI))
+#endif
+
+# Thanks to stack overflow user Eldar Abusalimov
+# see https://stackoverflow.com/questions/10858261/abort-makefile-if-variable-not-set
+# Check that given variables are set and all have non-empty values,
+# die with an error otherwise.
+#
+# Params:
+#   1. Variable name(s) to test.
+#   2. (optional) Error message to print.
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $2, ($2))))
 
 SHELL  = /bin/sh
 O      = $(FMRI)/obj/$(ARCH)/$(PKG)
 L      = $(FMRI)/lib/$(ARCH)
 B      = $(FMRI)/bin/$(ARCH)
 I      = $(FMRI)/include/$(ARCH)
-CB     = $(FMRI)/bin/$(COMPILE_ARCH)
+CB     = $(FMRI)/bin/$(ARCH)
 D      = $(FMRI)/doc/generated
 CFLAGS = $(PKG_CFLAGS) $(FMRI_CFLAGS)
 LFLAGS = $(PKG_LFLAGS) -L$L $(FMRI_LFLAGS)
@@ -57,16 +75,28 @@ docs: $(PKG_MAKEBINS)
 	    done; \
 	fi )
 
-fiattarfile: $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+install: docs
+	@:$(call check_defined, PREFIX)
+	mkdir -p $(PREFIX)/lib
+	for fname in $(PKG_MAKELIBS) ; do cp $${fname} $(PREFIX)/lib ; done ;
+	mkdir -p $(PREFIX)/bin
+	for fname in $(PKG_MKBINS) ; do cp $${fname} $(PREFIX)/bin ; done ;
+	mkdir -p $(PREFIX)/include
+	for fname in $(PKG_EXPORTS) ; do cp $${fname} $(PREFIX)/include ; done ;
+	mkdir -p $(PREFIX)/doc
+	mkdir -p $(PREFIX)/doc/generated
+	cp $D/*.html $(PREFIX)/doc/generated
+
+fiattarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
 	tar rvf /tmp/fiat.tar -C $(FMRI) \
-		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
 
-tarfile: $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+tarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy
 	tar rvf /tmp/fiasco.tar -C $(FMRI) \
-		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(MAKEFILES) \
+		` $(B)/prefix $(REL_DIR) $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) \
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) depend.mk.dummy `
 
 dirs:
@@ -85,7 +115,7 @@ include_updated: $(PKG_EXPORTS)
 	fi )
 
 clean:
-	-@echo "%%%% Cleaning $(PWD) %%%%"
+	-@echo "%%%% Cleaning $(PKG) %%%%"
 	-rm -rf $O
 	-cd $L; rm -f $(PKG_MAKELIBS)
 	-cd $B; rm -f $(PKG_MAKEBINS)
@@ -108,7 +138,7 @@ depend.mk.$(ARCH):
 	touch depend.mk.$(ARCH)
 
 checkout:
-	-(for i in $(HFILES) $(CSOURCE) $(MAKEFILES) $(DOCFILES) \
+	-(for i in $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES); do co -q $$i; done)
 
 CC_RULE = @( echo "%%%% Compiling $(@F:.o=.c) %%%%" ; \
@@ -129,5 +159,5 @@ MULTI_LD  = @( echo "%%%% Linking $(@F) %%%%" ; \
 MULTI_HELP_LD = @( echo "%%%% Linking $(@F) %%%%" ; \
 	$(LD) $(LFLAGS) -o $B/$(@F) $(PKG_OBJS) $O/$(@F)_help.o $(LIBS) )
 
-include depend.mk.$(DEP_NM)
+include depend.mk.$(ARCH)
 

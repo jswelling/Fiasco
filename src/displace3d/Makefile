@@ -17,11 +17,11 @@ LIBFILES= $L/libmri.a $L/libpar.a $L/libbio.a $L/libarray.a $L/libmisc.a \
 	$L/libacct.a
 HDRS= fmri.h mri.h par.h bio.h misc.h acct.h stdcrg.h
 
-MAKEFILES= Makefile
+ALL_MAKEFILES= Makefile
 CSOURCE= displace3d.c
 DOCFILES= displace3d_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $O/displace3d.o: displace3d.c
 	$(CC_RULE)

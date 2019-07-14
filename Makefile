@@ -9,12 +9,9 @@ SHELL        = /bin/sh
 ARCH         := $(shell src/fiat_scripts/fiasco_getarch.csh)
 COMPILE_ARCH = $(ARCH)
 
-include Makefile.common
-
-FMRI         = $(TOPDIR)
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+FMRI         = $(dir $(mkfile_path))
 DEFINES      = ARCH=$(ARCH) COMPILE_ARCH=$(COMPILE_ARCH) FMRI="$(FMRI)"
 
-all depend .DEFAULT:
-	$(MAKE) $(DEFINES) -f Makefile.common $@ 2>&1 | \
-		grep -v 'recipe for target'
-
+include Makefile_common

@@ -14,13 +14,13 @@ PKG_CFLAGS   = -DDIAGNOSTIC=1 -DDEBUG=0
 PKG_LIBS     = -lmisc -lcrg
 PKG_OBJS     = $O/buildhelp.o $O/slist.o $O/helphelp.o $O/buildhelp_help.o
 
-MAKEFILES= Makefile macros.m4
+ALL_ALL_MAKEFILES= Makefile macros.m4
 CSOURCE= buildhelp.c clproc.c efunc.c help.c helpblank.c inpfproc.c \
 	sorting.c slist.c helphelp.c
 HFILES= stdcrg.h slist.h helphelp.h
 DOCFILES= buildhelp_help.help
 
-include ../Makefile.pkg
+include ../Makefile_pkg
 
 $L/libcrg.a: $O/sorting.o $O/inpfproc.o $O/clproc.o $O/help.o $O/efunc.o \
 		$O/slist.o $O/helphelp.o
