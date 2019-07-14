@@ -43,7 +43,7 @@ tarfile: $(CSOURCE) $(HFILES) $(SSOURCE) $(MISCFILES) $(MAKEFILES)
 		$(DOCFILES) $(SCRIPTFILES) $(MISCFILES) $(SSOURCE) \
 		depend.mk.dummy `
 
-depend: $(CSOURCE) $(HFILES)
+depend: $(CSOURCE) $(HFILES) dirs
 	@echo "%%%% Generating dependencies in $(PWD) %%%%"
 	@-rm -f depend.mk.$(ARCH)
 	@echo '#Automatically generated; do not edit.' > depend.mk.$(ARCH) 

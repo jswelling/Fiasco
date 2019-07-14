@@ -127,7 +127,7 @@ clean:
 	    done; \
 	fi )
 
-depend: $(CSOURCE) $(HFILES)
+depend: $(CSOURCE) $(HFILES) dirs include_updated
 	@echo "%%%% Generating dependencies in $(PWD) %%%%"
 	@-rm -f depend.mk.$(ARCH)
 	@echo '#Automatically generated; do not edit.' > depend.mk.$(ARCH) 
