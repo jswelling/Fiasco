@@ -79,8 +79,9 @@ install: docs
 	@:$(call check_defined, PREFIX)
 	mkdir -p $(PREFIX)/lib
 	for fname in $(PKG_MAKELIBS) ; do cp $${fname} $(PREFIX)/lib ; done ;
+	cp $(CB)/*.$(SHR_EXT) $(PREFIX)/lib  # special feature to catch python DLLs
 	mkdir -p $(PREFIX)/bin
-	for fname in $(PKG_MKBINS) ; do cp $${fname} $(PREFIX)/bin ; done ;
+	for fname in $(PKG_MAKEBINS) ; do cp $${fname} $(PREFIX)/bin ; done ;
 	mkdir -p $(PREFIX)/include
 	for fname in $(PKG_EXPORTS) ; do cp $${fname} $(PREFIX)/include ; done ;
 	mkdir -p $(PREFIX)/doc
