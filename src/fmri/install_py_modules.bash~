@@ -1,0 +1,7 @@
+#! /bin/bash +i
+
+. `cat ../../config.mk | grep -v '^#' | sed 's/ = /=/g'`
+
+echo $ARCH
+
+incdir="${PWD}/../../include/LINUXX86_64"

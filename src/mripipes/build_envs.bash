@@ -1,0 +1,3 @@
+CFLAGS="-D_BSD_SOURCE -D_XOPEN_SOURCE=500 -DFORTRAN_ADD_UNDERSCORE -Wimplicit -DLINUX -O -fPIC -DLINUXX86_64 -I/home/welling/git/Fiasco//include/LINUXX86_64 -DMPI -DFFTW3 -DNOAFS -I/home/welling/anaconda3/include/python3.6"
+LFLAGS="-L/home/welling/git/Fiasco//lib/LINUXX86_64 -lfftw3 -lm -lfmri -lmri -lbio -lcrg -lmisc -ldcdf -llapack -lblas -lm"
+SRCFILES="mripipes.c mripipes_wrap.c test_tool.c mri_file_input_tool.c devnull_tool.c passthru_tool.c mri_file_output_tool.c matmult_tool.c rpn_math_tool.c zero_src_tool.c subset_tool.c pad_tool.c block_map_tool.c func_2rows_unblocked_tool.c special_tool.c"

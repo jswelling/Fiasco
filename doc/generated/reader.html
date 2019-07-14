@@ -6,7 +6,438 @@
   </head>
   <body>
     <h1>reader_help</h1>
+<h2>Introduction</h2>
+<pre>
+
+  reader is used to convert scanner data to standard Pittsburgh
+  format.  Currently, it assumes data is being read in "xyzt"
+  dimension order.
+
+  reader   [-input Old-data-file] [-dataout New-data-file] 
+           [-dims X-Dim Y-Dim Z-Dim T-Dim] [-headerout Header-file] 
+           [-offset N-bytes] [-reorder Boolean] [-skip N-bytes]
+           [-sliceskip N-bytes] [-type Data-type] 
+           [-veclen Vector-length] [-dataorder vxyzt|vxytz]
+           [-tag idtag] [-xchop] [-ychop] [-autoscale] 
+           [-bigendian | -littleendian] [-debug]
+
+  reader   -readheader [-input Pfile] [-dataout New-data-file]
+           [-headerout Header-file] [-phaseref Phaseref-file]
+           [-bandpass Bandpass-dir] [-rampfile Rampsample-file]
+           [-tag idtag] [-xchop] [-ychop] [-autoscale]
+           [-bigendian | -littleendian] [-debug]
+
+  reader.m -help [topic]
+
+  Command Line Options (see Arguments:flag)
+
+  -help   Engage help system, providing help on topic, if supplied,
+          or starting the interactive help system otherwise.
+
+  Note: Old-data-file and New-data-file must differ.
+
+</pre>
+<h2>Arguments</h2>
+<h3>input</h3>
+<pre>
+
+  -input Old-data-file        (-i Old-data-file)
+
+     Specifies that data should be read from Old-data-file.
+     Default value is "input.dat".  If -readheader is specified,
+     the input file is treated as either a Pfile or a Windaq file
+     and header information is read from it.
+
+     Note: If Old-data-file and New-data-file have identical names
+           an error results and the program exits.
+
+</pre>
+<h3>dataout</h3>
+<pre>
+
+  -dataout New-data-file      (-da New-data-file)
+
+     Specifies that output data should be written to New-data-file.
+     Default value is ".dat".
+
+     Note: If Old-data-file and New-data-file have identical names
+           an error results and the program exits.
+
+</pre>
+<h3>dims</h3>
+<pre>
+
+  -dims X-Dim Y-Dim Z-Dim T-Dim    (-di X-Dim Y-Dim Z-Dim T-Dim)
+
+     Specifies length (extent) of each dimension of the data.
+     The order of the dimensions is currently assumed to be
+     "xyzt", and thus the dimension lengths are read in this
+     order.  All four lengths should be specified (space delimited).
+     Default value is 1 1 1 1.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>headerout</h3>
+<pre>
+
+  -headerout Header-file      (-h Header-file)
+
+     Specifies that output header should be written to Header-file.
+     Default value is "output.mri".
+
+</pre>
+<h3>offset</h3>
+<pre>
+
+  -offset N-bytes             (-o N-bytes)
+
+     Specifies the number of bytes to be ignored at the beginning
+     of Old-data-file.
+     Default is 0.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>reorder</h3>
+<pre>
+
+  -reorder Boolean            (-r Boolean)
+
+     If Boolean is true, the images will be re-ordered according
+     to the standard EPI data collection scheme, in order to
+     store images adjacent to those which lie adjacent in space
+     (as opposed to adjacent in collection time).  The 
+     re-ordering assumes that the images comes in the order:
+       0 2 4 6 ... (Z-Dim - 1) 1 3 5 ... (Z-Dim - 2)  if Z-Dim is odd
+       0 2 4 6 ... (Z-Dim - 2) 1 3 5 ... (Z-Dim - 1)  if Z-Dim is even
+     where 0 1 2 ... Z-Dim is the desired order.
+     Default value is false.
+
+     Note: -reorder true works only with -dataorder vxyzt (the
+           default).  -reorder true is incompatible with -dataorder 
+           vxytz.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>skip</h3>
+<pre>
+
+  -skip N-bytes               (-s N-bytes)
+
+     Specifies the number of bytes to skip (in Old-Data-file) between
+     data blocks.  If dataorder is vxyzt (the default), this number
+     of bytes is skipped between each image read (i.e. each read of 
+     X-Dim * Y-Dim values * Z-Dim values).  If dataorder is vxytz,
+     this number of bytes is skipped after each group of T-Dim images.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>sliceskip</h3>
+<pre>
+
+  -sliceskip N-bytes               (-ss N-bytes)
+
+     Specifies the number of bytes to skip (in Old-Data-file)
+     between each slice read (i.e. each read of X-Dim * Y-Dim values).
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>type</h3>
+<pre>
+
+  -type Data-type             (-t Data-type)
+
+     Specifies the binary storage type of the data in Old-data-file.
+     The possible values of Data-type are:
+        "uchar"  (or "u" or "MRI_UINT8")           :  unsigned char
+        "short"  (or "s" or "MRI_INT16")           :  short int
+        "long"   (or "l" or "MRI_INT32" or "int")  :  long int
+        "float"  (or "f" or "MRI_FLOAT32")         :  float
+        "double" (or "d" or "MRI_FLOAT64")         :  double
+     Default value is "short".  
+
+     Note: The datatype of the output Pgh MRI dataset may not match
+           this datatype, because of filtering computations which
+           may be performed.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>veclen</h3>
+<pre>
+
+  -veclen Vector-length       (-v Vector-length)
+
+     Specifies the dimensionality of the data value at each pixel
+     location.  For example, complex numbers havevector-length 2.  
+     This is the fastest varying dimension.
+     Default value is 2.
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>dataorder</h3>
+<pre>
+
+  -dataorder vxyzt|vxytz      (-do vxyzt|vxytz)
+
+     Specifies the data order in both input and output files.
+     Valid strings are "vxyzt" for a time series of complete image
+     volumes, vs. vxytz for a collection of series, each representing
+     a single slice for all times.  
+     Default is vxyzt.  
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+     Note: -reorder true works only with -dataorder vxyzt (the
+           default).  -reorder true is incompatible with -dataorder 
+           vxytz.
+
+     Note: If the input file contains multiple shots (as recognized
+           by -readheader), the output dataorder will contain an
+           "s" dimension representing those shots.  
+
+</pre>
+<h3>tag</h3>
+<pre>
+
+  -tag idtag
+
+     Specifies that the given string is to be associated with the
+     data by including it in the Pittsburgh MRI file produced.  The
+     tag will become the value of the key "images.scan.id".  
+     This is typically used to attach a unique scan ID to the file. 
+
+</pre>
+<h3>readheader</h3>
+<pre>
+
+  -readheader
+
+     Specifies that header data is to be read from the input file.
+     This implies that the input file is either a GE LX Pfile or a 
+     Windaq file.  This flag is incompatible with several flags which 
+     provide header information directly.  In some cases this option 
+     causes the -ychop option to be set, if reader determines it will
+     be needed based on data in the header.
+
+</pre>
+<h3>xchop</h3>
+<pre>
+
+  -xchop
+
+     Specifies that the zero frequency data in the frequency encoding
+     direction comes first in each k space row of input data, rather
+     than in the middle of the row.  This switch phase shifts the
+     data by pi/2, putting the zero frequency component in mid-row
+     in keeping with the Fiasco convention.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+</pre>
+<h3>ychop</h3>
+<pre>
+
+  -ychop
+
+     Specifies that the zero frequency data in the phase encoding
+     direction comes first in each k space column of input data, rather
+     than in the middle of the column.  This switch phase shifts the
+     data by pi/2, putting the zero frequency component in mid-column
+     in keeping with the Fiasco convention.  The -readheader option
+     sometimes causes -ychop to be set, since GE LX scanner data 
+     may require this operation.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+</pre>
+<h3>autoscale</h3>
+<pre>
+
+  -autoscale
+
+     Specifies that the output is to be scaled by a constant factor
+     such that the 2D FFT of the first slice has a specified "nice"
+     range.  Note that this does not imply that the reconstructed
+     images will all have that range.  The range of the first
+     reconstructed image may not even have this range, if the input
+     data is twoshot or partial k (this is not compensated for
+     during scaling).  However, even in these circumstances the
+     ranges should be reasonable.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+</pre>
+<h3>phaseref</h3>
+<pre>
+
+  -phaseref Phaseref-file
+
+     Specifies the GE LX2 phase reference file for use with this
+     data.  This file typically is named "ref.dat".  There is no
+     default; absense of this flag means that phase reference
+     correction is not carried out.  This option can only be used
+     along with the -readheader option.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+</pre>
+<h3>bandpass</h3>
+<pre>
+
+  -bandpass Bandpass-dir
+
+     Specifies the directory in which GE LX2 bandpass correction
+     files are to be found.  There is no default; absense of this
+     flag means that bandpass correction is not carried out.
+     These files have names like "bcrcvs1.dat", "bcrcvs2.dat", etc.
+     This option can only be used along with the -readheader option.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+</pre>
+<h3>rampfile</h3>
+<pre>
+
+  -rampfile Rampsample-file
+
+     Specifies the GE LX2 ramp sampling correction data file for
+     use with this data.  This file is typically named "vrgf.dat".  
+     There is no default; absence of this flag means that ramp
+     sampling correction is not carried out.  This option can
+     only be used along with the -readheader option.
+
+     Note: This option is incompatible with a Windaq file and will 
+           not be executed if included with one.
+
+
+</pre>
+<h3>bigendian</h3>
+<pre>
+
+  -bigendian
+
+     Specifies that the input is in bigendian order.  This is only
+     of concern if the input comes from a foreign machine.  The
+     default is to expect bigendian input data (since all the MRI
+     scanners we know of produce data in that order).
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+</pre>
+<h3>littleendian</h3>
+<pre>
+
+  -littleendian
+
+     Specifies that the input is in littleendian order.  This is only
+     of concern if the input comes from a foreign machine.  The
+     default is to expect bigendian input data (since all the MRI
+     scanners we know of produce data in that order).
+
+     Note: If -readheader is specified, header information supplies
+           this data, so this option is incompatible with -readheader.
+
+
+</pre>
+<h3>debug</h3>
+<pre>
+
+  -debug
+
+     Causes debugging output to be written to stderr.
+
+
+</pre>
+<h2>Details</h2>
+<h3>ByteOrder</h3>
+<pre>
+
+  Data files contain the data, stored in binary format.  By default,
+  the input is assumed to be in bigendian byte order; this is the
+  format produced by scanners (to our knowledge).  Output data is
+  written in the native byte order of the machine running "reader".
+  Since Pittsburgh MRI format includes information about the byte
+  order of its data, the user should not need to be concerned with the
+  byte order of "reader"'s output.
+
+  However, if the input data has been produced on a littleendian
+  machine (for example by AFNI running on an Intel machine), the user
+  must use the -littleendian flag to specify the input byte order.
+  Note that this is true even if "reader" and (for example) AFNI are
+  running on the same littleendian machine!  Unless told otherwise,
+  "reader" *always* assumes that its input data is in bigendian
+  order.
+
+</pre>
+<h3>DataType</h3>
+<pre>
+
+  By default, input data are assumed to be stored as unsigned short
+  integers.  This is the format produced by scanners (to our
+  knowledge).  The output datatype will also be unsigned short
+  integers, unless the details of an input operation force "reader" to 
+  convert to floating point.  Since the Pittsburgh MRI format includes 
+  information about the stored datatype, it is not usually necessary
+  for the user to be concerned with the output data type.  If
+  necessary, the utility program "mri_type_convert" can be used to
+  convert the output dataset to another format.
+
+  If the input data are not in short integer format, the appropriate
+  -type option must be used to give "reader" the needed format
+  information.  This can occur if the input data is output for some
+  other program.  For example, data converted by AFNI to Talairach
+  coordinates is stored as floats.  Thus "-type float" must be used
+  when it is read.
+
+</pre>
+<h3>Calculation</h3>
+<pre>
+
+  If -readheader is set, the input data is assumed to be either a 
+  Pfile from a GE LX scanner or a Windaq file.
+
+  If it is a Pfile from a GE LX scanner, several correction steps 
+  are performed.  These include ramp sampling correction, bandpass 
+  asymmetry correction, and phase reference correction if the
+  appropriate input files are provided.  Output data is always phase
+  shifted by pi/2 in the phase encoding direction to match the 
+  standard, which assumes that the zero frequency point is at the
+  center of the sampled raster in K space.  Baseline correction must
+  be performed before this shift, so it is always done for data read
+  from GE LX Pfiles.
+
+  If the input data is a Windaq file, the output file has the following
+  dimensions: v is the number of channels; t is the number of samples;
+  and x, y, and z are all equal to 1.
+
+  If -readheader is not set, the input data is assumed to be raw and
+  to require no filtering.  Baseline correction is not done in this
+  case.
+
+
+
+</pre>
     <hr>
-    (automatically generated by reader_help version of Sat Jan  2 22:44:15 2010)
+    (automatically generated by reader_help version of Sat Jul 13 21:45:30 2019)
   </body>
 </html>

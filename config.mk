@@ -72,7 +72,7 @@ PAR_LIBS =
 # If Python.h is not in the default include path, its path should be
 # specified here.
 #
-PYTHON_INCLUDE = /home/welling/anaconda3/envs/py3Env/include/python3.7
+PYTHON_INCLUDE = /home/welling/anaconda3/include/python3.6
 
 #
 # If the include files describing the FIFF file format are available,

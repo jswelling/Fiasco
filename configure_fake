@@ -1,0 +1,4 @@
+#! /usr/bin/bash
+	echo 'THIS IS CONFIGURE'
+	$(info am I in a Makefile)
+

@@ -1,0 +1,870 @@
+#Automatically generated; do not edit.
+# DO NOT DELETE
+
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/unistd.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/getopt.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: /usr/include/xlocale.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: optimizer.h fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: history.h filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/fft2d.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: /usr/include/math.h fmri.h fiat.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: glm.h smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: fshrot3d.h linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: filetypes.h kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: entropy.h spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/fmri.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: /usr/include/strings.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/fshrot.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: /usr/include/math.h fmri.h fiat.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: glm.h smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: fshrot3d.h linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: filetypes.h kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: entropy.h spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/polyt.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/limits.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: /usr/include/assert.h lapack.h
+/home/welling/git/Fiasco/obj//fmri/glm.o: glm.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/limits.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/assert.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/glm_irls.o: lapack.h glm.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: /usr/include/assert.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/smoother.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/smoother_tester.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: /usr/include/errno.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/parsesplit.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/unistd.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/getopt.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: /usr/include/strings.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: optimizer.h fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: history.h filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/fft3d.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/quaternion.o: kalmanfilter.h lapack.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/quat_tester.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/fshrot3d.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/linrot3d.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/praxis.o: /usr/include/alloca.h lapack.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/history.o: /usr/include/time.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/history.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/history.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/history.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/history.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/history.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/history.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/history.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/history.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/history.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/unistd.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/getopt.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/ctype.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: /usr/include/endian.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: frozen_header_info.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: frozen_header_info_cnv4.h
+/home/welling/git/Fiasco/obj//fmri/filetypes.o: windaq_header_info.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: /usr/include/xlocale.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/kvhash.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/bvls.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: /usr/include/wchar.h fmri.h fiat.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: glm.h smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: fshrot3d.h linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: filetypes.h kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: entropy.h spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/fmin.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/Python.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/patchlevel.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyconfig.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pymacconfig.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/limits.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/assert.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyport.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/time.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pymath.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pymem.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/object.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/objimpl.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pydebug.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/unicodeobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/ctype.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /usr/include/endian.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/intobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/boolobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/longobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/floatobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/complexobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/rangeobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/stringobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/memoryobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/bufferobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/bytesobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/bytearrayobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/tupleobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/listobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/dictobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/enumobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/setobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/methodobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/moduleobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/funcobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/classobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/fileobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/cobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pycapsule.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/traceback.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/sliceobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/cellobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/iterobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/genobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/descrobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/warnings.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/weakrefobject.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/codecs.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyerrors.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pystate.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyarena.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/modsupport.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pythonrun.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/ceval.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/sysmodule.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/intrcheck.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/import.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/abstract.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/compile.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/code.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/eval.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyctype.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pystrtod.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pystrcmp.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/dtoa.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: /home/welling/myEnv/include/python2.7/pyfpe.h
+/home/welling/git/Fiasco/obj//fmri/quaternion_wrap.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: /usr/include/assert.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/optimizer.o: kalmanfilter.h lapack.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: smoother.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/optimizer_tester.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: /usr/include/strings.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/linwarp.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: /usr/include/time.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/rpn_engine.o: kalmanfilter.h lapack.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/time.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/entropy.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/fexceptions.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: smoother.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/exception_tester.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/closest_warp.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: /usr/include/wchar.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: rpn_engine.h entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: interpolator.h slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/spline.o: mriu.h kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: /usr/include/assert.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/interpolator.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: /usr/include/math.h fmri.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: fiat.h glm.h smoother.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: parsesplit.h quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: optimizer.h fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: filetypes.h kvhash.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: rpn_engine.h entropy.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/fft3d_tester.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/ctype.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/endian.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/unistd.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/getopt.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: /usr/include/errno.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: smoother.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: optimizer.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: fshrot3d.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: linwarp.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: history.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: filetypes.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: kvhash.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: slicepattern.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: mriu.h
+/home/welling/git/Fiasco/obj//fmri/slicepattern_tester.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: /usr/include/math.h fmri.h fiat.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: glm.h smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: fshrot3d.h linrot3d.h linwarp.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: closest_warp.h history.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: filetypes.h kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: entropy.h spline.h interpolator.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/mriu.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/Python.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/patchlevel.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyconfig.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pymacconfig.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/limits.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/string.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/xlocale.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/assert.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyport.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/time.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pymath.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pymem.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/object.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/objimpl.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pydebug.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/unicodeobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/ctype.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /usr/include/endian.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/intobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/boolobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/longobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/floatobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/complexobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/rangeobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/stringobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/memoryobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/bufferobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/bytesobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/bytearrayobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/tupleobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/listobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/dictobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/enumobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/setobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/methodobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/moduleobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/funcobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/classobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/fileobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/cobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pycapsule.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/traceback.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/sliceobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/cellobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/iterobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/genobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/descrobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/warnings.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/weakrefobject.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/codecs.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyerrors.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pystate.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyarena.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/modsupport.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pythonrun.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/ceval.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/sysmodule.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/intrcheck.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/import.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/abstract.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/compile.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/code.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/eval.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyctype.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pystrtod.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pystrcmp.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/dtoa.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: /home/welling/myEnv/include/python2.7/pyfpe.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: glm.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: quaternion.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: spline.h
+/home/welling/git/Fiasco/obj//fmri/fiasco_numpy_wrap.o: kalmanfilter.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/glm_tester.o: /usr/include/alloca.h glm.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/math.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/features.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/stdc-predef.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/stdio.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/libio.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/_G_config.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/wchar.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/strings.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/assert.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/stdlib.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: /usr/include/alloca.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: fmri.h fiat.h glm.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: smoother.h parsesplit.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: quaternion.h optimizer.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: fshrot3d.h linrot3d.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: linwarp.h closest_warp.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: history.h filetypes.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: kvhash.h rpn_engine.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: entropy.h spline.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: interpolator.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: slicepattern.h mriu.h
+/home/welling/git/Fiasco/obj//fmri/kalmanfilter.o: kalmanfilter.h lapack.h
