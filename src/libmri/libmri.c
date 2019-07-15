@@ -2836,7 +2836,7 @@ mri_report_error (MRI_Dataset *ds, char *fmt, ...)
       char buf[256];
       time_t t;
       t= time(NULL);
-      sprintf(buf,asctime(localtime(&t)));
+      sprintf(buf,"%s",asctime(localtime(&t)));
       buf[strlen(buf)-1]= '\0'; /* supress trailing blank */
       if (ds) {
 	strcat(buf,": fatal error on ");

@@ -28,8 +28,8 @@
 /* This is the overall include file for things in the fmri directory */
 
 #define MALLOC_FAILURE(num,type)\
-  { fprintf(stderr,"%s:%d: %s: unable to allocate %d %ss\n",\
-            __FILE__,__LINE__,__func__,num,#type); exit(-1); }
+  { fprintf(stderr,"%s:%d: %s: unable to allocate %ld %ss\n",\
+            __FILE__,__LINE__,__func__,(long)num,#type); exit(-1); }
 
 typedef struct FComplex
 {

@@ -656,7 +656,7 @@ par_delegate_task ()
   if (context_changed)
     {
       current_context = (Context *) malloc(sizeof(Context));
-      fprintf(stderr, "Context allocated at %x\n", current_context);
+      fprintf(stderr, "Context allocated at %lx\n", (uintptr_t)current_context);
       current_context->use_count = 1;
 #if defined(PVM)
       current_context->buffer.bufid = pvm_mkbuf(PvmDataDefault);
@@ -767,7 +767,7 @@ par_broadcast_context ()
     {
       if (gettimeofday(&current_time, NULL) != 0)
 	Abort("Master could not get time of day.\n");
-      printf("pbc: %d %d %d %d %d\n",
+      printf("pbc: %d %d %d %ld %ld\n",
 	     n_hosts_pending, n_workers_pending,
 	     total_time,
 	     current_time.tv_sec, current_time.tv_usec);
@@ -776,7 +776,7 @@ par_broadcast_context ()
     }
   if (gettimeofday(&current_time, NULL) != 0)
     Abort("Master could not get time of day.\n");
-  printf("pbc_cls: %d %d %d %d %d\n",
+  printf("pbc_cls: %d %d %d %ld %ld\n",
 	 n_hosts_pending, n_workers_pending,
 	 total_time,
 	 current_time.tv_sec, current_time.tv_usec);
@@ -1605,39 +1605,39 @@ DisuseContext (Context **pContext)
   if (context == NULL || --context->use_count > 0)
     return;
   if (context->use_count < 0)
-    fprintf(stderr, "CONTEXT_ERROR: use_count of context %x is %d\n",
-	    context, context->use_count);
+    fprintf(stderr, "CONTEXT_ERROR: use_count of context %lx is %d\n",
+	    (uintptr_t)context, context->use_count);
   FreeBuffer(&context->buffer);
   free(context);
-  fprintf(stderr, "Context freed at %x\n", context);
+  fprintf(stderr, "Context freed at %lx\n", (uintptr_t)context);
 
   /* make sure that context is not used anywhere */
   if (current_context == context)
     fprintf(stderr,
-	    "CONTEXT ERROR: current_context is a pointer to deleted context %x\n",
-	    context);
+	    "CONTEXT ERROR: current_context is a pointer to deleted context %lx\n",
+	    (uintptr_t)context);
   for (i = 0; i < n_workers; ++i)
     {
       if (workers[i].last_context == context)
 	fprintf(stderr,
-		"CONTEXT ERROR: worker %d has a pointer to deleted context %x\n",
-		i, context);
+		"CONTEXT ERROR: worker %d has a pointer to deleted context %lx\n",
+		i, (uintptr_t)context);
       if (workers[i].first_task != NULL &&
 	  workers[i].first_task->context == context)
 	fprintf(stderr,
-		"CONTEXT ERROR: the first_task of worker %d has a pointer to deleted context %x\n",
-		i, context);
+		"CONTEXT ERROR: the first_task of worker %d has a pointer to deleted context %lx\n",
+		i, (uintptr_t)context);
       if (workers[i].second_task != NULL &&
 	  workers[i].second_task->context == context)
 	fprintf(stderr,
-		"CONTEXT ERROR: the second_task of worker %d has a pointer to deleted context %x\n",
-		i, context);
+		"CONTEXT ERROR: the second_task of worker %d has a pointer to deleted context %lx\n",
+		i, (uintptr_t)context);
     }
   for (t = first_queued_task; t != NULL; t = t->next)
     if (t->context == context)
       fprintf(stderr,
-	      "CONTEXT ERROR: task %x on task queue has a pointer to deleted context %x\n",
-	      t, context);
+	      "CONTEXT ERROR: task %lx on task queue has a pointer to deleted context %lx\n",
+	      (uintptr_t)t, (uintptr_t)context);
 }
 
 static void

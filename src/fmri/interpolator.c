@@ -290,7 +290,7 @@ static void baseDestroySelf( Interpolator* self )
 static void baseDumpSelf( const Interpolator* self, FILE* ofile )
 {
   fprintf(ofile,
-	  "<%s> interpolator at 0x%lx, fast blk %ld, extent %d, data 0x%lx\n",
+	  "<%s> interpolator at 0x%lx, fast blk %ld, extent %ld, data 0x%lx\n",
 	  self->typeName,(long)self,self->fast_blksize,self->extent,
 	  (long)self->dataField);
 }
@@ -424,7 +424,7 @@ static void calcClosest1D( Interpolator* self, double* result, double* loc,
   if (iloc<0) iloc= 0;
   if (iloc>self->extent-1) iloc= self->extent-1;
   if (self->debug)
-    fprintf(stderr,"interpolator:calcClosest1D: Doing %d at %d; loc= %f\n",
+    fprintf(stderr,"interpolator:calcClosest1D: Doing %ld at %ld; loc= %f\n",
 	    runLength, iloc*self->fast_blksize+offset,*loc);
   for (i=0; i<runLength; i++)
     result[i]= self->dataField[iloc*self->fast_blksize + offset + i];

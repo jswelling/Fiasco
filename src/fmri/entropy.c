@@ -534,7 +534,7 @@ double ent_calcMaskedImageEntropyDouble( EntropyContext* ctx,
 	ctx->histogram[bin]++;
       else {
 	outOfRangeCounts++;
-	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %d\n",bin);
+	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %ld\n",bin);
       }
     }
     c += stride;
@@ -614,7 +614,7 @@ double ent_calcImageEntropyDouble( EntropyContext* ctx,
 	ctx->histogram[bin]++;
       else {
 	outOfRangeCounts++;
-	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %d\n",bin);
+	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %ld\n",bin);
       }
     }
   if (outOfRangeCounts && ctx->verboseFlag)
@@ -718,7 +718,7 @@ double ent_calcMaskedJointEntropyDouble( MutualInfoContext* mc,
       }
       else {
 	outOfRangeCounts++;
-	if (mc->debugFlag) fprintf(stderr,"miss: bins would be %d %d\n",bin,bin2);
+	if (mc->debugFlag) fprintf(stderr,"miss: bins would be %ld %ld\n",bin,bin2);
       }
     }
     e += stride1;
@@ -731,7 +731,7 @@ double ent_calcMaskedJointEntropyDouble( MutualInfoContext* mc,
 
   if (mc->debugFlag) {
     FILE* f;
-    fprintf(stderr,"Writing %d-by-%d histogram of raw longs to debug.raw\n",
+    fprintf(stderr,"Writing %ld-by-%ld histogram of raw longs to debug.raw\n",
 	    mc->num_of_boxes, mc->num_of_boxes);
     f= fopen("debug.raw","w");
     (void)fwrite(mc->histogram,sizeof(long),mc->num_of_boxes*mc->num_of_boxes,
@@ -830,7 +830,7 @@ double ent_calcJointEntropyDouble( MutualInfoContext* mc,
     }
     else {
       outOfRangeCounts++;
-      if (mc->debugFlag) fprintf(stderr,"miss: bins would be %d %d\n",bin,bin2);
+      if (mc->debugFlag) fprintf(stderr,"miss: bins would be %ld %ld\n",bin,bin2);
     }
     c += stride1;
     f += stride2;
@@ -841,7 +841,7 @@ double ent_calcJointEntropyDouble( MutualInfoContext* mc,
 
   if (mc->debugFlag) {
     FILE* f;
-    fprintf(stderr,"Writing %d-by-%d histogram of raw longs to debug.raw\n",
+    fprintf(stderr,"Writing %ld-by-%ld histogram of raw longs to debug.raw\n",
 	    mc->num_of_boxes, mc->num_of_boxes);
     f= fopen("debug.raw","w");
     (void)fwrite(mc->histogram,sizeof(long),mc->num_of_boxes*mc->num_of_boxes,
@@ -964,7 +964,7 @@ double ent_calcMaskedImageEntropyFloat( EntropyContext* ctx,
 	ctx->histogram[bin]++;
       else {
 	outOfRangeCounts++;
-	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %d\n",bin);
+	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %ld\n",bin);
       }	
     }
     c += stride;
@@ -1044,7 +1044,7 @@ double ent_calcImageEntropyFloat( EntropyContext* ctx,
 	ctx->histogram[bin]++;
       else {
 	outOfRangeCounts++;
-	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %d\n",bin);
+	if (ctx->debugFlag) fprintf(stderr,"miss: bin would be %ld\n",bin);
       }
     }
   if (outOfRangeCounts && ctx->verboseFlag)
@@ -1148,7 +1148,7 @@ double ent_calcMaskedJointEntropyFloat( MutualInfoContext* mc,
       }
       else {
 	outOfRangeCounts++;
-	if (mc->debugFlag) fprintf(stderr,"miss: bins would be %d %d\n",bin,bin2);
+	if (mc->debugFlag) fprintf(stderr,"miss: bins would be %ld %ld\n",bin,bin2);
       }
     }
     e += stride1;
@@ -1250,7 +1250,7 @@ double ent_calcJointEntropyFloat( MutualInfoContext* mc,
     }
     else {
       outOfRangeCounts++;
-      if (mc->debugFlag) fprintf(stderr,"miss: bins would be %d %d\n",bin,bin2);
+      if (mc->debugFlag) fprintf(stderr,"miss: bins would be %ld %ld\n",bin,bin2);
     }
     c += stride1;
     f += stride2;
