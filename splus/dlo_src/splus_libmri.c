@@ -115,6 +115,9 @@ static int CheckForRemovalHooks ();
 static int ConvertDatatype ();
 static void mri_report_error (MRI_Dataset *ds, char *fmt, ...);
 
+/* This is used to avoid a really annoying gcc warning message */
+static inline void ignore_result(ssize_t unused) { (void)unused; }
+
 /* PUBLIC FUNCTIONS */
 
 /*-------- OPENING AND CLOSING DATASETS ---------------------------*/
@@ -1487,7 +1490,7 @@ CleanFiles (MRI_Dataset *ds)
 	  else
 	    {
 	      fflush(f->fp);
-	      ftruncate(fileno(f->fp), (off_t) (empty_blocks[i].start));
+	      ignore_result(ftruncate(fileno(f->fp), (off_t) (empty_blocks[i].start)));
 	    }
       }
 }
@@ -1501,7 +1504,7 @@ CreateTempFile (MRI_Dataset *ds)
 
   if ((tmp_dir = getenv("MRI_TMP_DIR")) == NULL)
     tmp_dir = "/tmp";
-  sprintf(file_name, "%s/mri%ld.%d", tmp_dir, getpid(), tmp_num++);
+  sprintf(file_name, "%s/mri%d.%d", tmp_dir, getpid(), tmp_num++);
   f = GetFile(ds, file_name);
   f->external = TRUE;
   return(f);
@@ -2920,7 +2923,7 @@ CopyBlock (MRI_File *dest_file, int dest_offset,
     {
       n = (size > BUFFER_SIZE) ? BUFFER_SIZE : size;
       fseek(src_file->fp, (long) (src_offset+offset), SEEK_SET);
-      fread(buffer, n, 1, src_file->fp);
+      ignore_result(fread(buffer, n, 1, src_file->fp));
       fseek(dest_file->fp, (long) (dest_offset+offset), SEEK_SET);
       fwrite(buffer, n, 1, dest_file->fp);
       size -= n;
