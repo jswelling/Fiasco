@@ -61,14 +61,14 @@ FIAT_MAKEFILES = Makefile Makefile_common Makefile.ALPHA Makefile.CRAY \
 	Makefile.LINUXI386 Makefile.LINUXX86_64 Makefile.CYGWIN \
 	config.mk.sample
 ALL_MAKEFILES = $(FIAT_MAKEFILES) splus/Makefile_splus
-DOCFILES = doc/fiasco_executables.html doc/fiasco_install.html \
-	doc/fiasco_instruct.html \
-	doc/fiasco_parallel.html doc/mri_pgh.html \
+DOCFILES = docs/fiasco_executables.html docs/fiasco_install.html \
+	docs/fiasco_instruct.html \
+	docs/fiasco_parallel.html docs/mri_pgh.html \
 	README README.COPYRIGHT README.CITATIONS
 DATADIRS = epidata spiraldata tsdata atlases
 SCRIPTFILES = 
 FIAT_MISCFILES = bin/placeholder include/placeholder lib/placeholder \
-	obj/placeholder doc/generated/placeholder configure 
+	obj/placeholder docs/generated/placeholder configure 
 MISCFILES = $(FIAT_MISCFILES) splus/formula \
 	splus/dlo/placeholder splus/S/placeholder
 
@@ -121,8 +121,8 @@ all: depend make-all make-all-splus
 
 install: make-install make-install-splus
 	@:$(call check_defined, PREFIX)
-	mkdir -p $(PREFIX)/doc
-	cp doc/*.html $(PREFIX)/doc
+	mkdir -p $(PREFIX)/docs
+	cp docs/*.html $(PREFIX)/docs
 
 releaseprep: make-releaseprep make-releaseprep-splus
 	chmod +x configure
