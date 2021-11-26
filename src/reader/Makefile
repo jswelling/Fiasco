@@ -323,7 +323,7 @@ $O/pghmri_reader.o: pghmri_reader.c
 
 $(CB)/smartreader: $(SMARTREADER_OBJS) $(LIBFILES)
 	@echo "%%%% Linking $(@F) %%%%"
-	@$(LD) $(LFLAGS) -o $(CB)/$(@F) $(SMARTREADER_OBJS) $(LIBS)
+	$(LD) $(LFLAGS) -o $(CB)/$(@F) $(SMARTREADER_OBJS) $(LIBS)
 
 releaseprep:
 	echo "no release prep from " `pwd`

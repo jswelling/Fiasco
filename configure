@@ -48,7 +48,8 @@ defsOfInterest= ['CC', 'PAR_CFLAGS','PAR_LIBS','FFTW_INCLUDE','FFTW_CFLAGS',\
                  'PYTHON_INCLUDE','FIFF_CFLAGS',\
                  'NFFT_LIBS','NFFT_CFLAGS','PNG_LIBS','PNG_CFLAGS',\
                  'TIFF_LIBS','TIFF_CFLAGS','SWIG',
-                 'FITSIO_LIBS','FITSIO_CFLAGS']
+                 'FITSIO_LIBS','FITSIO_CFLAGS',
+                 'Z_CFLAGS', 'Z_LIBS']
 defsMustHave= ['CC', 'FFTW_INCLUDE','FFTW_CFLAGS',\
                  'FFTW_LIB','LAPACK_LIBS','AFS_FLAG',\
                  'PYTHON_INCLUDE']
@@ -162,6 +163,8 @@ int main()
 
 pngTestProg= \
 """
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #ifdef USE_PNG
 #include <png.h>
@@ -186,30 +189,237 @@ int main()
       fprintf(stderr,"Unable to create png data structure! (2)");
       exit(-1);
    }
-   if (setjmp(png_ptr->jmpbuf)) {
+   if (setjmp(png_jmpbuf(png_ptr))) {
      png_destroy_write_struct(&png_ptr, &info_ptr);
      fprintf(stderr,"Fatal error in png libraries!");
      exit(-1);
    }
 
    png_init_io(png_ptr,fp);
-   info_ptr->bit_depth= 8;
-   info_ptr->color_type= PNG_COLOR_TYPE_GRAY;
-   info_ptr->gamma= 1.0;
-   info_ptr->height= 10;
-   info_ptr->width= 10;
-   info_ptr->num_text= 0;
-   info_ptr->max_text= 2;
-   info_ptr->text= notes;
+   png_set_IHDR(png_ptr, info_ptr, 10, 10, 8, PNG_COLOR_TYPE_GRAY,
+		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+		PNG_FILTER_TYPE_DEFAULT);
    notes[0].key= "Title";
    notes[0].text= (png_charp)"This is my title";
-   notes[0].text_length= strlen("This is mytitle");
+   notes[0].compression= PNG_TEXT_COMPRESSION_zTXt;
+   png_set_text(png_ptr, info_ptr, notes, 1);
    png_write_info(png_ptr,info_ptr);
 #endif
    return 0;
 }
 """
 
+pngTestOutputFname = 'configure_tmp.png'
+
+zTestProg= \
+r"""
+/* This was cut down from https://github.com/madler/zlib/blob/master/test/example.c */
+/* example.c -- usage example of the zlib compression library
+ * Copyright (C) 1995-2006, 2011, 2016 Jean-loup Gailly
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
+
+/* @(#) $Id$ */
+
+#include "zlib.h"
+#include <stdio.h>
+
+#ifdef STDC
+#  include <string.h>
+#  include <stdlib.h>
+#endif
+
+#if defined(VMS) || defined(RISCOS)
+#  define TESTFILE "foo-gz"
+#else
+#  define TESTFILE "foo.gz"
+#endif
+
+#define CHECK_ERR(err, msg) { \
+    if (err != Z_OK) { \
+        fprintf(stderr, "%s error: %d\n", msg, err); \
+        exit(1); \
+    } \
+}
+
+static z_const char hello[] = "hello, hello!";
+/* "hello world" would be more standard, but the repeated "hello"
+ * stresses the compression code better, sorry...
+ */
+
+static const char dictionary[] = "hello";
+static uLong dictId;    /* Adler32 value of the dictionary */
+
+int  main               OF((int argc, char *argv[]));
+
+
+#ifdef Z_SOLO
+
+void *myalloc OF((void *, unsigned, unsigned));
+void myfree OF((void *, void *));
+
+void *myalloc(q, n, m)
+    void *q;
+    unsigned n, m;
+{
+    (void)q;
+    return calloc(n, m);
+}
+
+void myfree(void *q, void *p)
+{
+    (void)q;
+    free(p);
+}
+
+static alloc_func zalloc = myalloc;
+static free_func zfree = myfree;
+
+#else /* !Z_SOLO */
+
+static alloc_func zalloc = (alloc_func)0;
+static free_func zfree = (free_func)0;
+
+void test_compress      OF((Byte *compr, uLong comprLen,
+                            Byte *uncompr, uLong uncomprLen));
+void test_gzio          OF((const char *fname,
+                            Byte *uncompr, uLong uncomprLen));
+
+/* ===========================================================================
+ * Test read/write of .gz files
+ */
+void test_gzio(fname, uncompr, uncomprLen)
+    const char *fname; /* compressed file name */
+    Byte *uncompr;
+    uLong uncomprLen;
+{
+#ifdef NO_GZCOMPRESS
+    fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
+#else
+    int err;
+    int len = (int)strlen(hello)+1;
+    gzFile file;
+    z_off_t pos;
+
+    file = gzopen(fname, "wb");
+    if (file == NULL) {
+        fprintf(stderr, "gzopen error\n");
+        exit(1);
+    }
+    gzputc(file, 'h');
+    if (gzputs(file, "ello") != 4) {
+        fprintf(stderr, "gzputs err: %s\n", gzerror(file, &err));
+        exit(1);
+    }
+    if (gzprintf(file, ", %s!", "hello") != 8) {
+        fprintf(stderr, "gzprintf err: %s\n", gzerror(file, &err));
+        exit(1);
+    }
+    gzseek(file, 1L, SEEK_CUR); /* add one zero byte */
+    gzclose(file);
+
+    file = gzopen(fname, "rb");
+    if (file == NULL) {
+        fprintf(stderr, "gzopen error\n");
+        exit(1);
+    }
+    strcpy((char*)uncompr, "garbage");
+
+    if (gzread(file, uncompr, (unsigned)uncomprLen) != len) {
+        fprintf(stderr, "gzread err: %s\n", gzerror(file, &err));
+        exit(1);
+    }
+    if (strcmp((char*)uncompr, hello)) {
+        fprintf(stderr, "bad gzread: %s\n", (char*)uncompr);
+        exit(1);
+    } else {
+        printf("gzread(): %s\n", (char*)uncompr);
+    }
+
+    pos = gzseek(file, -8L, SEEK_CUR);
+    if (pos != 6 || gztell(file) != pos) {
+        fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
+                (long)pos, (long)gztell(file));
+        exit(1);
+    }
+
+    if (gzgetc(file) != ' ') {
+        fprintf(stderr, "gzgetc error\n");
+        exit(1);
+    }
+
+    if (gzungetc(' ', file) != ' ') {
+        fprintf(stderr, "gzungetc error\n");
+        exit(1);
+    }
+
+    gzgets(file, (char*)uncompr, (int)uncomprLen);
+    if (strlen((char*)uncompr) != 7) { /* " hello!" */
+        fprintf(stderr, "gzgets err after gzseek: %s\n", gzerror(file, &err));
+        exit(1);
+    }
+    if (strcmp((char*)uncompr, hello + 6)) {
+        fprintf(stderr, "bad gzgets after gzseek\n");
+        exit(1);
+    } else {
+        printf("gzgets() after gzseek: %s\n", (char*)uncompr);
+    }
+
+    gzclose(file);
+#endif
+}
+
+#endif /* Z_SOLO */
+
+
+
+/* ===========================================================================
+ * Usage:  example [output.gz  [input.gz]]
+ */
+
+int main(argc, argv)
+    int argc;
+    char *argv[];
+{
+    Byte *compr, *uncompr;
+    uLong comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
+    uLong uncomprLen = comprLen;
+    static const char* myVersion = ZLIB_VERSION;
+
+    if (zlibVersion()[0] != myVersion[0]) {
+        fprintf(stderr, "incompatible zlib version\n");
+        exit(1);
+
+    } else if (strcmp(zlibVersion(), ZLIB_VERSION) != 0) {
+        fprintf(stderr, "warning: different zlib version\n");
+    }
+
+    printf("zlib version %s = 0x%04x, compile flags = 0x%lx\n",
+            ZLIB_VERSION, ZLIB_VERNUM, zlibCompileFlags());
+
+    compr    = (Byte*)calloc((uInt)comprLen, 1);
+    uncompr  = (Byte*)calloc((uInt)uncomprLen, 1);
+    /* compr and uncompr are cleared to avoid reading uninitialized
+     * data and to ensure that uncompr compresses well.
+     */
+    if (compr == Z_NULL || uncompr == Z_NULL) {
+        printf("out of memory\n");
+        exit(1);
+    }
+
+#ifdef Z_SOLO
+    (void)argc;
+    (void)argv;
+#else
+    test_gzio((argc > 1 ? argv[1] : TESTFILE),
+              uncompr, uncomprLen);
+#endif
+    
+    return 0;
+}
+"""
+
+zTestOutputFname = 'foo.gz'
 
 tiffTestProg= \
 """
@@ -938,6 +1148,127 @@ if 'AFS_FLAG' not in newDict:
 if 'AFS_FLAG' in newDict and newDict['AFS_FLAG']=='-DNOAFS':
     Message("No writable AFS file system (which makes life easy)")
 
+
+def test_candidate_flags(name, lib_key, incl_key, candidate_dict, new_dict,
+                         test_code_string, test_code_output_name):
+    assert lib_key in candidate_dict, f'candidate_dict does not contain {lib_key}'
+    assert incl_key in candidate_dict, f'candidate_dict does not contain {incl_key}'
+    Message(f"Testing locations for {name.upper()}")
+    cflags= f"{candidate_dict[incl_key]} "
+    if not new_dict['arch'] in ["HPPA", "HPPA20", "CRAY", "T3D", "T3E"]:
+        cflags += " -DFORTRAN_ADD_UNDERSCORE"
+    libs= f"{candidate_dict[lib_key]} -lm"
+    tfile= open("configure_tmp.c","w")
+    tfile.write(test_code_string)
+    tfile.close()
+    (rc,lines)= runCmd(f"{new_dict['CC']} -o configure_tmp {cflags} configure_tmp.c {libs}")
+    os.unlink("configure_tmp.c")
+    if rc==None:
+        if compiledExeExists("configure_tmp",arch):
+            (rc,lines)= runCompiledExe("./configure_tmp",arch)
+            deleteCompiledExe("configure_tmp",arch)
+            if test_code_output_name is not None:
+                if rc==None and os.access(test_code_output_name,os.W_OK):
+                    os.unlink(test_code_output_name)
+    return rc == None
+
+
+def lib_finder(name, lib_key, incl_key, ln_flag_options, incl_fname,
+               new_dict, old_dict,
+               test_code_string, test_code_output_fname):
+    """
+    Inputs:
+      name: the lowercase name of the library, e.g. 'png' for libpng
+      lib_key: key specifying the lib entry in the dicts, e.g. 'PNG_LIBS'
+      incl_key: key specifying the include entry, e.g. 'PNG_CFLAGS'
+      ln_flag_options: list of strings specifying link flags,
+                       for example ['-lpng', '-lpng -lz']
+      incl_fname: name of the include file, e.g. 'png.h'
+      new_dict, old_dict: the current definition dicts
+    Returns: tuple (updated_new_dict, success_flag)
+      updated_new_dict is new_dict, with updated entries added.
+      success_flag: boolean, True on success
+      
+    """
+    candidate_dict = {}
+    if lib_key in new_dict:
+        candidate_dict[lib_key] = new_dict[lib_key]
+    else:
+        Message(f"Looking for {name.upper()} library")
+        # Maybe it just works?
+        for opt in ln_flag_options:
+            tmp_candidate_dict = {lib_key: f'{opt}', incl_key:f'-DUSE_{name.upper()}'}
+            if test_candidate_flags(name, lib_key, incl_key,
+                                    tmp_candidate_dict, new_dict,
+                                    test_code_string, test_code_output_fname):
+                new_dict.update(tmp_candidate_dict)
+                return new_dict, True
+        # Drat; we have to actually work for it
+        lib_loc = None
+        for loc in possibleLibLocs:
+            if libExists(name, loc, new_dict['arch']):
+                lib_loc = loc
+                break
+        if lib_loc:
+            if libLocRequiresExplicitPath(lib_loc,new_dict['arch']):
+                candidate_dict[lib_key]= f"-L{lib_loc} -l{name}"
+            else:
+                candidate_dict[lib_key] = f"-l{name}"
+        else:
+            if lib_key in old_dict:
+                Message(f"I will try the old location for the {name.upper()} library.")
+                candidate_dict[lib_key]= old_dict[lib_key]
+
+    if lib_key not in candidate_dict:
+        Message(f"I did not find the {name.upper()} library.")
+        return new_dict, False
+
+    #
+    # Location of includes
+    #
+    if incl_key in new_dict:
+        candidate_dict[incl_key] = new_dict[incl_key]
+    else:
+        incl_loc = None
+        for loc in possibleIncLocs:
+            if incExists(incl_fname, loc, new_dict['arch']):
+                incl_loc = loc
+                break
+        if incl_loc:
+            if incLocRequiresExplicitPath(loc, new_dict['arch']):
+                candidate_dict[incl_key]= f"-DUSE_{name.upper()} -I{incl_loc}"
+            else:
+                candidate_dict[incl_key]= f"-DUSE_{name.upper()}"
+        else:
+            if incl_key in old_dict:
+                Message(f"I will try the old location for the {name.upper()} include files.")
+                candidate_dict[incl_key]= old_dict[incl_key]
+
+    if incl_key not in candidate_dict:
+        Message(f"I did not find the {name.upper()} include file.")
+        return new_dict, False
+
+    # test final guess
+    if test_candidate_flags(name, lib_key, incl_key, candidate_dict, new_dict,
+                            test_code_string, test_code_output_fname):
+        new_dict.update(candidate_dict)
+        return new_dict, True
+    else:
+        Message(f"cannot find {name.upper()} libraries."
+                f"My guess of {candidate_dict[incl_key]} {candidate_dict[lib_key]} failed.")
+        return new_dict, False
+                            
+    
+newDict, found_z = lib_finder('z', 'Z_LIBS', 'Z_CFLAGS',
+                              ['-lz'], 'zlib.h',
+                              newDict, oldDict,
+                              zTestProg, zTestOutputFname)
+newDict, found_png = lib_finder('png', 'PNG_LIBS', 'PNG_CFLAGS',
+                                ['-lpng', '-lpng -lz'], 'png.h',
+                                newDict, oldDict,
+                                pngTestProg, pngTestOutputFname)
+
+
 #
 # Is libpng available?
 #
@@ -947,6 +1278,7 @@ if 'AFS_FLAG' in newDict and newDict['AFS_FLAG']=='-DNOAFS':
 if 'PNG_LIBS' not in newDict:
     Message("Looking for PNG library")
     pngLibLoc= None
+    print('point 1')
     for loc in possibleLibLocs:
         if libExists('png',loc,newDict['arch']):
             pngLibLoc= loc
@@ -956,7 +1288,9 @@ if 'PNG_LIBS' not in newDict:
         if libExists('z',loc,newDict['arch']):
             zLibLoc= loc
             break
+    print(f'point 2: {pngLibLoc} {zLibLoc}')
     if pngLibLoc and zLibLoc:
+        print('point 3')
         if libLocRequiresExplicitPath(pngLibLoc,newDict['arch']):
             newDict['PNG_LIBS']= "-L%s -lpng"%pngLibLoc
         else:
@@ -1411,3 +1745,4 @@ maybeWrite(o,newDict,'SWIG')
 o.close()
 
 
+EOF
