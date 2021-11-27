@@ -40,11 +40,11 @@ idString= "$Id: pick_n_voxels.py,v 1.3 2006/05/04 23:02:58 welling Exp $"
 def buildExtentStr(fname,dimstr,totpix):
     extstr= ""
     for i in range(len(dimstr)):
-	thischar= dimstr[i]
-	if thischar=="q":
-	    extstr= extstr + "%d:"%totpix
-	else:
-	    extstr= extstr + "%d:"%getDim(fname,thischar) 
+        thischar= dimstr[i]
+        if thischar=="q":
+            extstr= extstr + "%d:"%totpix
+        else:
+            extstr= extstr + "%d:"%getDim(fname,thischar) 
     extstr= extstr[0:-1] # remove trailing ':'
     return extstr
 
@@ -64,11 +64,11 @@ fFlag= 0 # input is Fmap
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdTPF",["mask=","twotails"])
@@ -127,16 +127,16 @@ dimstr= inChunk.getValue('dimensions');
 #Check reasonableness of input
 if dimstr != "xyz":
     if dimstr == "xyzt":
-	if inChunk.getDim("t") != 1:
-	    sys.exit("Input file must have t extent 1!")
+        if inChunk.getDim("t") != 1:
+            sys.exit("Input file must have t extent 1!")
     elif dimstr == "vxyzt":
         if inChunk.getDim("t") != 1:
-	    sys.exit("Input file must have t extent 1!")
+            sys.exit("Input file must have t extent 1!")
         if inChunk.getDim("v") != 1:
-	    sys.exit("Input file must have v extent 1!")
+            sys.exit("Input file must have v extent 1!")
     elif dimstr == "vxyz":
-	if inChunk.getDim("v") != 1:
-	    sys.exit("Input file must have v extent 1!")
+        if inChunk.getDim("v") != 1:
+            sys.exit("Input file must have v extent 1!")
     else:
         sys.exit("Input file must have dimensions (v)xyz(t)!")
 if maskChunk != None:

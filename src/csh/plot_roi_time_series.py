@@ -32,7 +32,8 @@ import os.path
 import string
 import getopt
 import threading
-import popen2
+import subprocess
+from subprocess import PIPE
 if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
@@ -61,7 +62,9 @@ def runChildProcess(rCommand, voxValListList, rsList, bars, plotName,
     stdoutLines= []
     stderrLines= []
     debugMessage("Starting <%s>"%rCommand)
-    childHook= popen2.Popen3(rCommand,True)
+    childHook= subprocess.Popen(rCommand, shell=True,
+                                stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                                close_fds=True)
     stdoutThread= threading.Thread(group=None,target=slurpThisPipe,\
                                    args=(childHook.fromchild,stdoutLines))
     stdoutThread.start()
@@ -167,11 +170,11 @@ elif rCommand.find('Splus')>=0:
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdlr:",["out=","title=",

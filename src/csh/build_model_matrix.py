@@ -36,7 +36,8 @@ import string
 import getopt
 import array
 import threading
-import popen2
+import subprocess
+from subprocess import PIPE
 from math import *
 if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
@@ -59,7 +60,9 @@ def runChildProcess(rCommand, factors, levelTable, factorLevels, rOptions):
     stdoutLines= []
     stderrLines= []
     debugMessage("Starting <%s>"%rCommand)
-    childHook= popen2.Popen3(rCommand,True)
+    childHook= subprocess.Popen(rCommand, shell=True,
+                                stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                                close_fds=True)
     stdoutThread= threading.Thread(group=None,target=slurpThisPipe,\
                                    args=(childHook.fromchild,stdoutLines))
     stdoutThread.start()
@@ -187,7 +190,7 @@ def runChildProcess(rCommand, factors, levelTable, factorLevels, rOptions):
 
 # Figure out what slave to use
 rCommand= "R --slave --no-save --no-restore-history --no-restore-data"
-if os.environ.has_key('SPLUS'):
+if "SPLUS" in os.environ:
     rCommand= os.environ['SPLUS']
 if rCommand.find('R') >= 0:
     if rCommand.find('--no-save')<0: rCommand += ' --no-save'
@@ -199,11 +202,11 @@ elif rCommand.find('Splus')>=0:
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",\

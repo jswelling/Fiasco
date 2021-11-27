@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>coregister_struct_to_inplane.py</title>
+  </head>
+  <body>
+    <h1>coregister_struct_to_inplane.py</h1>
+<h2>Overview</h2>
+<pre>
+
+  coregister_struct_to_inplane.py is used to align anatomical
+  (typically axial) structural data to in-plane structural scan data.
+  Its output is a generated shell script which can be applied to any 
+  anatomical structural Pgh MRI dataset of the same orientation to 
+  produce an inplane-aligned version.
+
+  coregister_struct_to_inplane.py [-v] [-d] [--oscript scriptName] 
+                 strippedInplane strippedStruct
+
+    -v requests verbose output
+    -d requests debugging output
+    --oscript scriptName specifies the name for the output shell
+       script which implements the alignment.  The default name
+       is "apply_coreg_struct_to_inplane.gen_csh"
+    --alg algString specifies an optimization algorithm.  The
+       default depends on the image types of the input images.
+    strippedInplane is a skull-stripped inplane structural dataset
+    strippedStruct is a skull-stripped anatomical (typically axial)
+      structural dataset.  It must be in the same dominant orientation
+      as strippedInplane- that is, if strippedInplane is oblique
+      axial than strippedStruct must be axial.
+
+  or
+
+  coregister_struct_to_inplane.py -help [topic]
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  The script uses the following steps to estimate the aligning
+  transformation:
+
+    1) Geometrical information stored in the input datasets is
+       used to calculate an initial, approximate aligning
+       rotation and translation.
+    2) That transformation is used to produce a version of the
+       anatomical dataset in the inplane coordinate system.
+    3) The inplane-aligned anatomical dataset is downsampled in the
+       Z direction, and the inplane structurals are resampled
+       in the X and Y directions.  This produces a pair of datasets
+       at the same resolution and covering the same volume.
+       The Z extent of these datasets is actually larger than that
+       of the inplanes, to allow some empty space and to make a
+       Z dimension for which an efficient FFT is available.
+    4) Using this pair of datasets, an aligning transformation is 
+       estimated to correct for head motion between the acquisition
+       of the inplane and anatomical scans.
+    5) The transformations from steps (1) and (4) are merged
+       analytically to produce a single transformation that does
+       the total alignment.
+    6) A shell script is written which implements this transformation.
+
+  The output shell script can be called as follows:
+
+    apply_coreg_struct_to_inplane.gen_csh axialName outName resampName
+
+  where apply_coreg_struct_to_inplane.gen_csh is the (default) script 
+  name, axialName is an anatomical structural dataset, outName is the the
+  aligned version of the anatomical structurals, and resampName is
+  equivalent to outName but resampled to match the inplane structural
+  resolution.  The outName and resampName datasets are translated and
+  rotated to have the same center and axis alignment as the inplane
+  structural dataset.  The resampName dataset has the same corner
+  coordinates as the inplane structurals in the inplane coordinate
+  system; the outName dataset has corner coordinates appropriate to
+  its size in that coordinate system.
+
+  Note that the output dataset coordinates produced are specified
+  in the (oblique) inplane coordinate system, and not in scanner 
+  coordinates.  This means that, for example, the TLF and
+  TRB corners will have the same Z coordinate.
+
+  If the available anatomical dataset is not in the same dominant
+  orientation as the inplane dataset (for example, saggital
+  anatomicals and oblique axial inplanes), align_by_permutation.py
+  can be used to reorder the anatomical dataset to the correct
+  orientation.
+
+  Note that the skull-stripping must be done with another command.
+  Typically one would use the 'strip_skull.py' script, which in turn
+  uses software from external packages, for example AFNI's
+  3dSkullStrip.  The typical command to do so for an inplane structural
+  dataset called Inplane would be:
+
+    strip_skull.py -v Inplane strippedInplane
+
+  Note also that only rotation and translation are used to do the 
+  alignment, and that consequently the alignment estimate is limited
+  by the different distortions introduced by the imaging methods used
+  to create the input datasets.
+
+  The algorithm used to estimate the aligning transformation is
+  specified by the algString command line argument.  The format of
+  the algorithm string matches that for the estireg3d command, with
+  the addition of these terms:
+
+    "gradmag" : align gradient magnitudes of images rather than
+                the images themselves
+    "meanc" :   scale images so that masked mean intensities are
+                equal. (The masking threshold is currently hard-coded
+                in the script).
+
+  If the --alg algString option is not given, the default depends on 
+  whether the functional and inplane datasets are either both
+  T1-weighted or both T2-weighted (as determined by the "images.tr" 
+  tag in the dataset), or if they differ.  If the weightings match, 
+  the default algorithm is "opt=praxis,obj=mse,meanc".  If they
+  differ, the default algorithm is "opt=praxis,obj=jointentropy".
+
+</pre>
+    <hr>
+    (automatically generated by coregister_struct_to_inplane.py version of Mon Jul 15 00:18:47 2019)
+  </body>
+</html>

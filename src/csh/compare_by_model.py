@@ -36,7 +36,7 @@ import string
 import getopt
 import array
 import threading
-import popen2
+import subprocess
 from math import *
 if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])

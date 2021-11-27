@@ -36,12 +36,12 @@ idString= "$Id: false_discovery.py,v 1.14 2006/05/04 23:02:58 welling Exp $"
 def safeRun(cmd):
     cmdout= os.popen(cmd)
     if cmdout.close() != None :
-	print("Command failed: <%s>"%cmd)
-	sys.exit(1)
+        print("Command failed: <%s>"%cmd)
+        sys.exit(1)
 
 def removeTmpDir(path):
     for file in os.listdir(path):
-	os.remove("%s/%s"%(path,file));
+        os.remove("%s/%s"%(path,file));
     os.rmdir(path);
 
 def describeSelf():
@@ -51,37 +51,37 @@ def getDim(mrifile,index):
     cmdout= os.popen("mri_printfield -field images.extent.%s %s" % (index,mrifile))
     xstr= cmdout.read()
     if cmdout.close() != None :
-	print("mri_printfield failed for images.extent.%s on %s!"%(index,mrifile))
-	sys.exit(1)
+        print("mri_printfield failed for images.extent.%s on %s!"%(index,mrifile))
+        sys.exit(1)
     return string.atoi(string.strip(xstr));
 
 def getDimStr(mrifile):
     cmdout= os.popen("mri_printfield -field images.dimensions %s" % mrifile)
     dimstr= cmdout.read()
     if cmdout.close() != None :
-	print("mri_printfield failed for images.dimensions on %s!"%mrifile)
-	sys.exit(1)
+        print("mri_printfield failed for images.dimensions on %s!"%mrifile)
+        sys.exit(1)
     return string.strip(dimstr);
 
 def buildExtentStr(fname,dimstr,totpix):
     extstr= ""
     for i in range(len(dimstr)):
-	thischar= dimstr[i]
-	if thischar=="q":
-	    extstr= extstr + "%d:"%totpix
-	else:
-	    extstr= extstr + "%d:"%getDim(fname,thischar) 
+        thischar= dimstr[i]
+        if thischar=="q":
+            extstr= extstr + "%d:"%totpix
+        else:
+            extstr= extstr + "%d:"%getDim(fname,thischar) 
     extstr= extstr[0:-1] # remove trailing ':'
     return extstr
 
 def cFunc(totpix, samplesIndependent):
     if samplesIndependent:
-	return 1;
+        return 1;
     else:
-	result= 0;
-	for i in xrange(1,totpix):
-	    result= result + (1.0/i)
-	return result;
+        result= 0;
+        for i in xrange(1,totpix):
+            result= result + (1.0/i)
+        return result;
 
 ##############################
 #
@@ -94,11 +94,11 @@ samplesIndependent= 0;
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"",["independent"])
@@ -114,7 +114,7 @@ if len(pargs) != 2 :
 
 for a,b in opts:
     if a=="--independent":
-	samplesIndependent= 1;
+        samplesIndependent= 1;
 
 qrate= string.atof(pargs[0])
 infile= pargs[1]
@@ -137,20 +137,20 @@ dimstr= getDimStr(infile);
 #Check reasonableness of input
 if dimstr != "xyz":
     if dimstr == "xyzt":
-	if getDim(infile,"t") != 1:
-	    print("Input file must have t extent 1!")
-	    sys.exit(1)
+        if getDim(infile,"t") != 1:
+            print("Input file must have t extent 1!")
+            sys.exit(1)
     elif dimstr == "vxyzt":
-	if getDim(infile,"t") != 1:
-	    print("Input file must have t extent 1!")
-	    sys.exit(1)
-	if getDim(infile,"v") != 1:
-	    print("Input file must have v extent 1!")
-	    sys.exit(1)
+        if getDim(infile,"t") != 1:
+            print("Input file must have t extent 1!")
+            sys.exit(1)
+        if getDim(infile,"v") != 1:
+            print("Input file must have v extent 1!")
+            sys.exit(1)
     elif dimstr == "vxyz":
-	if getDim(infile,"v") != 1:
-	    print("Input file must have v extent 1!")
-	    sys.exit(1)
+        if getDim(infile,"v") != 1:
+            print("Input file must have v extent 1!")
+            sys.exit(1)
     else:
         print("Input file must have dimensions (v)xyz(t)!")
         sys.exit(1)
@@ -159,9 +159,9 @@ if dimstr != "xyz":
 newdimstr= "vq"
 newextstr= "1:%d"%totpix
 safeRun("mri_copy_chunk -chunk images -replace %s %s/tmp_fd"%\
-	(infile,tmpdir))
+        (infile,tmpdir))
 safeRun("mri_remap -chunk images -order %s -length %s %s/tmp_fd "%\
-	(newdimstr,newextstr,tmpdir))
+        (newdimstr,newextstr,tmpdir))
 safeRun("mri_sort -asc %s/tmp_fd %s/tmp_fd_2"%(tmpdir,tmpdir))
 
 #Walk through the file of sorted p scores, finding the first entry to
@@ -179,14 +179,14 @@ scale= qrate/cFunc(validpix,samplesIndependent);
 rejectNullThresh= 0.0
 for line in allLines:
     try:
-	val= string.atof(string.strip(line))
+        val= string.atof(string.strip(line))
     except ValueError:
-	continue
+        continue
     cutoff= (scale*i)/validpix
 
 #    print("%d: %g vs %g"%(i,cutoff,val))
     if cutoff >= val:
-	rejectNullThresh= val
+        rejectNullThresh= val
 
     i= i+1
 

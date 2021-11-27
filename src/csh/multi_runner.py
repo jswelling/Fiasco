@@ -109,7 +109,7 @@ def buildAndCheckAnalysis( path, spec ):
         return 0
     try:
         os.makedirs(path)
-    except OSError, s:
+    except OSError as s:
         Message("Error creating %s: %s!"%(path,s))
     setPathProtection(path)
     homeDir= os.getcwd()
