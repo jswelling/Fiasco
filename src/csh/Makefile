@@ -46,8 +46,9 @@ copy_csh:
 	-cp -f $(SCRIPTFILES) $B
 
 make_docs:
-	@( for i in $(SCRIPTSWITHDOCS) ; do \
+	( for i in $(SCRIPTSWITHDOCS) ; do \
 	  echo "%%%% Generating $$i.html %%%%" ; \
+          echo env PATH="$B:$(PATH)" $B/$$i -help htmldoc >> /tmp/junk.txt ; \
           env PATH="$B:$(PATH)" $B/$$i -help htmldoc > $D//$$i.html 2> /dev/null ; \
 	  : ; \
 	done )

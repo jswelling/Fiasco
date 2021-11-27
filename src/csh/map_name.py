@@ -80,7 +80,7 @@ def addTriple( dictKey, key, value ):
 	newDict[key]= value;
 	mapDict[dictKey]= newDict;
         if verbose:
-            print "Added new dictionary <%s> to mapDict"%dictKey
+            print("Added new dictionary <%s> to mapDict"%dictKey)
 
 def loadByColumn( lines, istart, n ):
     global mapDict
@@ -98,7 +98,7 @@ def loadByColumn( lines, istart, n ):
 def loadMap( fname ):
     global mapDict
     if verbose :
-	print "Loading dictionary file <%s>"%fname
+	print("Loading dictionary file <%s>"%fname)
     f= open(fname)
     lines= map(trim,f.readlines())
     f.close();
@@ -123,7 +123,7 @@ def loadMap( fname ):
 		    i= i+1;
 		mapDict[mapAttr]= thisDict;
                 if verbose:
-                    print "Added new dictionary <%s> to mapDict"%mapAttr
+                    print("Added new dictionary <%s> to mapDict"%mapAttr)
 	else:
 	    i= i+1;
 
@@ -132,7 +132,7 @@ def loadEnv( str ):
     # to the front override those which come later.
     str= string.strip(str);
     if verbose :
-	print "Loading environment %s"%str;
+	print("Loading environment %s"%str)
     while len(str)>0 :
 	brk= string.rfind( str, ":" );
 	if brk > 0:
@@ -145,7 +145,7 @@ def loadEnv( str ):
     
 def safeMap( dict, term ):
     if verbose:
-	print "safely mapping <%s>"%term;
+	print("safely mapping <%s>"%term)
     if len(term)==0:
 	return term;
     if dict.has_key(term):
@@ -157,7 +157,7 @@ def expandDictionary(dict,nameOfAnotherDict):
     global mapDict
     if mapDict.has_key(nameOfAnotherDict):
         if verbose:
-            print "Adding dictionary for <%s>"%nameOfAnotherDict
+            print("Adding dictionary for <%s>"%nameOfAnotherDict)
         for (key,val) in mapDict[nameOfAnotherDict].items():
             dict[key]= val
 
@@ -168,7 +168,7 @@ def maybeExpandDictionary(dict,termKey,term):
         if subDict.has_key(termKey):
             if subDict[termKey]==term:
                 if verbose:
-                    print "Adding dictionary for <%s>:<%s>"%(termKey,term)
+                    print("Adding dictionary for <%s>:<%s>"%(termKey,term))
                 for (key,val) in subDict.items():
                     if key != termKey:
                         dict[key]= val
@@ -184,7 +184,7 @@ def hasDelimPairs( term ):
 
 def defineTerm( dict, term ):
     if verbose:
-        print "defining term <%s>"%term
+        print("defining term <%s>"%term)
     brk= string.find(term,"=");
     if brk > 0:
         key= string.strip(term[0:brk])
@@ -200,7 +200,7 @@ def recursiveMap( dict, term, lvl ):
     if lvl>maxDepth:
         raise RuntimeError,"Recursion too deep mapping %s"%term;
     if verbose:
-        print "recursively mapping <%s> at level %d"%(term,lvl);
+        print("recursively mapping <%s> at level %d"%(term,lvl))
     result= term
     while hasDelimPairs(result):
         for c in delimiters:
@@ -218,18 +218,18 @@ def recursiveMap( dict, term, lvl ):
                     maybeExpandDictionary(dict,result[brk2+1:],mapResult2)
                     result= result[0:brk1]+ mapResult1 + mapResult2
         if verbose:
-            print "level %d pass %d: <%s> has become <%s>"%\
-                  (lvl,mappingPass,term,result)
+            print("level %d pass %d: <%s> has become <%s>"%\
+                  (lvl,mappingPass,term,result))
         mappingPass= mappingPass+1
     if dict.has_key(result):
         result= recursiveMap(dict,dict[term],lvl+1);
         maybeExpandDictionary(dict,term,result)
     if verbose:
-        print "mapped <%s> to <%s> at level %d"%(term,result,lvl)
+        print("mapped <%s> to <%s> at level %d"%(term,result,lvl))
     return result
 
 def describeSelf():
-    print """
+    print("""
 Usage: %s [-v] [-m map] [-m map] [-m map] [-t target] [-d key1=val1] [-d key2=val2] ... mainkey
 
 -v specifies verbose mode.
@@ -287,7 +287,7 @@ dictionary, replacing the whole target or any part delimited by '$' or '@'
 characters with the corresponding value.  The string which ultimately
 results is the output.
 
-""" % sys.argv[0]
+""" % sys.argv[0])
 
 ##############################
 #
@@ -302,12 +302,12 @@ if len(sys.argv) == 1 :
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],'-m:-v-d:-t:')
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit(-1);
 
 if len(pargs)!=1:
-    print "%s: too few or too many main keys" % sys.argv[0]
+    print("%s: too few or too many main keys" % sys.argv[0])
     describeSelf();
     sys.exit(-1);
 
@@ -322,12 +322,12 @@ for a,b in opts:
 
 # Load the global translation maps
 useAltScript= False
-if os.environ.has_key("F_MAP_SCRIPT"):
+if "F_MAP_SCRIPT" in os.environ:
     altScript= os.environ["F_MAP_SCRIPT"]
     if os.path.isfile(altScript):
         useAltScript= True
 
-if os.environ.has_key("F_MAP_PATH"):
+if "F_MAP_PATH" in os.environ:
     loadEnv(os.environ["F_MAP_PATH"]);
 
 # Handle flags which effect mappings
@@ -351,7 +351,7 @@ for a,b in opts:
 mainkey= pargs[0]
 if useAltScript:
     execfile(altScript)
-    print altMapMethod( valDict, target, mainkey )
+    print(altMapMethod( valDict, target, mainkey ))
 else:    
     # Add terms from sub-dictionary associated with mainkey to value dictionary
     if mapDict.has_key(mainkey):
@@ -360,4 +360,4 @@ else:
         raise RuntimeError,"Main key %s has no associated values!"%mainkey;
 
     # And output the result string
-    print recursiveMap(valDict,target,0);
+    print(recursiveMap(valDict,target,0))

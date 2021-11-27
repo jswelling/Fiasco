@@ -35,17 +35,17 @@ import os.path
 import string
 import getopt
 from math import *
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 import mripipes
 
 def initCallback(dim,dimstr,fastBlk,upstream_extent,extent1,extent2,
                  slowBlk,hookDict):
-##     print "initCallback Args: %s <%s> %d %d %d %d %d %s"%\
-##           (dim,dimstr,fastBlk,upstream_extent,extent1,extent2,slowBlk,hookDict)
+##     print("initCallback Args: %s <%s> %d %d %d %d %d %s"%\
+##           (dim,dimstr,fastBlk,upstream_extent,extent1,extent2,slowBlk,hookDict))
     if (len(hookDict['blockOffsetList'])%extent2 != 0):
-        print "Length of block offset list does not match extent!"
+        print("Length of block offset list does not match extent!")
         return 0
     hookDict['fastBlk']=fastBlk*extent1
     hookDict['slowBlk']=slowBlk
@@ -62,8 +62,8 @@ def myCallback(size,offset,hookDict):
     fast_blk_offset= offset%fastBlk
     n_full_extents= n_fast_blks/extent
     extent_offset= n_fast_blks%extent
-##     print "callback: %d %d %d %d"%\
-##           (n_fast_blks,fast_blk_offset,n_full_extents,extent_offset)
+##     print("callback: %d %d %d %d"%\
+##           (n_fast_blks,fast_blk_offset,n_full_extents,extent_offset))
     return (fastBlk-fast_blk_offset,
             n_full_extents*upstreamBlk
             + blockOffsetList[extent_offset]+fast_blk_offset)
@@ -97,7 +97,7 @@ try:
                                  ["len=","dim=","newdim=",
                                   "debug","offsetfile="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 

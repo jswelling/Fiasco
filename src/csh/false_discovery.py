@@ -36,7 +36,7 @@ idString= "$Id: false_discovery.py,v 1.14 2006/05/04 23:02:58 welling Exp $"
 def safeRun(cmd):
     cmdout= os.popen(cmd)
     if cmdout.close() != None :
-	print "Command failed: <%s>"%cmd
+	print("Command failed: <%s>"%cmd)
 	sys.exit(1)
 
 def removeTmpDir(path):
@@ -51,7 +51,7 @@ def getDim(mrifile,index):
     cmdout= os.popen("mri_printfield -field images.extent.%s %s" % (index,mrifile))
     xstr= cmdout.read()
     if cmdout.close() != None :
-	print "mri_printfield failed for images.extent.%s on %s!"%(index,mrifile)
+	print("mri_printfield failed for images.extent.%s on %s!"%(index,mrifile))
 	sys.exit(1)
     return string.atoi(string.strip(xstr));
 
@@ -59,7 +59,7 @@ def getDimStr(mrifile):
     cmdout= os.popen("mri_printfield -field images.dimensions %s" % mrifile)
     dimstr= cmdout.read()
     if cmdout.close() != None :
-	print "mri_printfield failed for images.dimensions on %s!"%mrifile
+	print("mri_printfield failed for images.dimensions on %s!"%mrifile)
 	sys.exit(1)
     return string.strip(dimstr);
 
@@ -103,7 +103,7 @@ if len(sys.argv)>1:
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"",["independent"])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -120,11 +120,11 @@ qrate= string.atof(pargs[0])
 infile= pargs[1]
 
 #Make up a temporary directory
-if os.environ.has_key("F_TEMP"):
+if "F_TEMP" in os.environ:
     tmpdir= "%s/tmp_fd_%d"%(os.environ["F_TEMP"],os.getpid());
 else:
     tmpdir= "./tmp_fd_%d"%os.getpid();
-#print "temp directory is %s"%tmpdir;
+#print("temp directory is %s"%tmpdir;)
 os.makedirs(tmpdir);
 
 #Get relevant dimensions
@@ -138,21 +138,21 @@ dimstr= getDimStr(infile);
 if dimstr != "xyz":
     if dimstr == "xyzt":
 	if getDim(infile,"t") != 1:
-	    print "Input file must have t extent 1!"
+	    print("Input file must have t extent 1!")
 	    sys.exit(1)
     elif dimstr == "vxyzt":
 	if getDim(infile,"t") != 1:
-	    print "Input file must have t extent 1!"
+	    print("Input file must have t extent 1!")
 	    sys.exit(1)
 	if getDim(infile,"v") != 1:
-	    print "Input file must have v extent 1!"
+	    print("Input file must have v extent 1!")
 	    sys.exit(1)
     elif dimstr == "vxyz":
 	if getDim(infile,"v") != 1:
-	    print "Input file must have v extent 1!"
+	    print("Input file must have v extent 1!")
 	    sys.exit(1)
     else:
-        print "Input file must have dimensions (v)xyz(t)!"
+        print("Input file must have dimensions (v)xyz(t)!")
         sys.exit(1)
 
 #Generate sorted file
@@ -169,13 +169,13 @@ safeRun("mri_sort -asc %s/tmp_fd %s/tmp_fd_2"%(tmpdir,tmpdir))
 cmdout= os.popen("mri_rpn_math -out %s/tmp_fd_3 '$1,dup,is_finite,if_print_1,0.0' %s/tmp_fd_2"%(tmpdir,tmpdir))
 allLines= cmdout.readlines()
 if cmdout.close() != None :
-    print "mri_rpn_math failed!"
+    print("mri_rpn_math failed!")
     sys.exit(1)
 validpix= len(allLines);
-#print "totpix %d; validpix %d"%(totpix,validpix)
+#print("totpix %d; validpix %d"%(totpix,validpix))
 i= 1
 scale= qrate/cFunc(validpix,samplesIndependent);
-#print "%d: scale is %f "%(samplesIndependent,scale);
+#print("%d: scale is %f "%(samplesIndependent,scale);)
 rejectNullThresh= 0.0
 for line in allLines:
     try:
@@ -184,14 +184,14 @@ for line in allLines:
 	continue
     cutoff= (scale*i)/validpix
 
-#    print "%d: %g vs %g"%(i,cutoff,val)
+#    print("%d: %g vs %g"%(i,cutoff,val))
     if cutoff >= val:
 	rejectNullThresh= val
 
     i= i+1
 
 # We use repr() to get more significant digits in output.
-print repr(rejectNullThresh);
+print(repr(rejectNullThresh))
 
 # Clean up
 removeTmpDir(tmpdir);

@@ -31,7 +31,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -73,7 +73,7 @@ if len(sys.argv)>1:
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdTPF",["mask=","twotails"])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -196,7 +196,7 @@ else:
 safeRun("mri_subset -d q -len 1 -s %d sorted selected"%(nVox-1))
 vals= readCmdOutputToList("mri_rpn_math -out junk '0,$1,1,if_print_1' selected")
 thresh= string.atof(vals[0])
-print repr(thresh)
+print(repr(thresh))
 
 # Clean up
 os.chdir(homedir)

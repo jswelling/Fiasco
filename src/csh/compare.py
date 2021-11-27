@@ -37,7 +37,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -56,13 +56,13 @@ def errHandle(verbosity,status,progname,message):
 
 
 def listText(verbosity,file):
-    print "made it to listText function"
+    print("made it to listText function")
     linecount=readCmdOutputToList("grep -an '^L' %s.mri | head -1 | awk -F: '{print $1-1}'" % file)
-    print linecount
+    print(linecount)
     if (linecount==[]):
-        print "made it in if linecount"
+        print("made it in if linecount")
         linecount=readCmdOutputToList("wc -l %s.mri | awk '{print $1}'" %file)
-    print linecount
+    print(linecount)
     text=readCmdOutputToList("head -%s %s.mri"%(string.atoi(linecount.pop()),file))
     for i in range(len(text)):
         text[i].strip()
@@ -79,10 +79,10 @@ def listText(verbosity,file):
 def listChunks(mri_text):
     chunk_list=[]
     for line in mri_text:
-#        print line
+#        print(line)
         if line.endswith(' = [chunk]'):
             chunk_list.append(line.replace(' = [chunk]',''))
-#            print chunk_list
+#            print(chunk_list)
     return chunk_list            
                 
 
@@ -91,12 +91,12 @@ def setDatafile(file,chunk):
     if dsExists(file):
         if chunkExists(file,chunk):
             dir=os.path.dirname(file)
-#            print dir
+#            print(dir)
             base=os.path.basename(file)
-#            print base
+#            print(base)
             datpath=(dir,base)
             chunkfile=getFieldNofail(file,chunk,"file")
-#            print chunkfile
+#            print(chunkfile)
 
             if chunkfile=='':
                 physfile=file+'.mri'
@@ -112,7 +112,7 @@ def setDatafile(file,chunk):
 
             datpath = (dir,physfile)
             
-#        print physfile
+#        print(physfile)
 
             
     return datpath
@@ -153,7 +153,7 @@ threshold=0
 terminate=0
 notext=0
 
-print opts
+print(opts)
 
 for a,b in opts:
     if a in ("-v","--verbose"):
@@ -174,7 +174,7 @@ for a,b in opts:
         notext=1
 
 files=pargs
-print files
+print(files)
 
 if len(files)<2:
     errHandle(getVerbose(),2,progname,"%s: Need to specify two input files!\n")
@@ -182,7 +182,7 @@ if len(files)<2:
 ##for i in range(len(files)):
 ##     files[i]=files[i].replace('.mri','')
 ##     files[i]=files[i].replace('\n','')
-##     print files
+##     print(files)
 
 
 if not(dsExists(files[0])) or not(dsExists(files[1])):
@@ -191,7 +191,7 @@ if not(dsExists(files[0])) or not(dsExists(files[1])):
 ds1=MRIDataset(files[0])
 ds2=MRIDataset(files[1])
 
-print "about to compare text"
+print("about to compare text")
 
 #text comparison
 if not notext:

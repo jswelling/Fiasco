@@ -33,7 +33,7 @@ import string
 import getopt
 import threading
 import popen2
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -46,7 +46,7 @@ autoBarLocList= [6.5, 23, 29.5, 46, 52.5, 69, 75.5, 92, 98.5, 115, 121.5,
 barLocList= None
 
 def parseBarLocations(txt):
-    print "Parsing <%s>"%txt
+    print("Parsing <%s>"%txt)
     substrings= txt.split(",")
     return [ float(x) for x in substrings ]
 
@@ -155,7 +155,7 @@ def runChildProcess(rCommand, voxValListList, rsList, bars, plotName,
 rCommand= "R --slave --no-save --no-restore-history --no-restore-data"
 #rCommand= "R --no-save --no-restore-history --no-restore-data"
 #rCommand= "cat"
-if os.environ.has_key('SPLUS'):
+if "SPLUS" in os.environ:
     rCommand= os.environ['SPLUS']
 if rCommand.find('R') >= 0:
     if rCommand.find('--no-save')<0: rCommand += ' --no-save'
@@ -178,7 +178,7 @@ try:
                                                        "autobars","bars=",
                                                        "window="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -281,8 +281,8 @@ for i in xrange(runningsumWindow):
 for i in xrange(runningsumWindow,tDim):
     rsList[i] /= float(runningsumWindow)
 ## for i in xrange(tDim):
-##     print "%d: vals %s -> mean %g -> running sum %g"%\
-##           (i,voxValListList[0][i],meanList[i],rsList[i])
+##     print("%d: vals %s -> mean %g -> running sum %g"%\
+##           (i,voxValListList[0][i],meanList[i],rsList[i]))
 
 # Create the plot
 runChildProcess(rCommand, voxValListList, rsList, barLocList, "test.ps",

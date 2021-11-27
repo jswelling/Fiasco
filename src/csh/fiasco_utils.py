@@ -73,7 +73,7 @@ def errorMessage( str ):
     Message(str)
 
 def makeTempDir( baseString ):
-    if os.environ.has_key("F_TEMP"):
+    if "F_TEMP" in os.environ:
         tmpdir= "%s/%s_%d"%(os.environ["F_TEMP"],baseString,os.getpid())
     else:
         tmpdir= "./%s_%d"%(baseString,os.getpid())

@@ -33,12 +33,12 @@ import os.path
 import string
 import getopt
 import time
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 import fiasco_utils
 
 def describeSelf():
-    print "usage [-i intervalInSeconds] pidToWatch"
+    print("usage [-i intervalInSeconds] pidToWatch")
 
 idString= "$Id: watcher.py,v 1.1 2003/08/07 17:39:44 welling Exp $"
 
@@ -92,12 +92,12 @@ while 1:
         statinfo= string.split(statfile.readline())
         statfile.close()
         if len(thisLine)>0:
-            print "cmd=<%s> status=%s"%(string.strip(thisLine[len(thisLine)-1]),statinfo[2])
+            print("cmd=<%s> status=%s"%(string.strip(thisLine[len(thisLine)-1]),statinfo[2]))
         else:
-            print "cmd=%s status=%s"%(statinfo[1],statinfo[2])
+            print("cmd=%s status=%s"%(statinfo[1],statinfo[2]))
     else:
         if len(thisLine)>0:
-            print thisLine[len(thisLine)-1]
+            print(thisLine[len(thisLine)-1])
     sys.stdout.flush()
     time.sleep(sleepInterval)
 

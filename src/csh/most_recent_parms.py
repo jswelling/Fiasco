@@ -65,7 +65,7 @@ def match( str, target ):
     return val;
 
 def describeSelf():
-    print """
+    print("""
 Usage: %s [-v] [-t] [-f] typestring
 
 -v specifies verbose mode.
@@ -81,7 +81,7 @@ that filename is returned.  The given typestring must occur in the
 first word bounded by spaces or '.' .  If no such entry is found an
 empty string is returned.
 
-""" % progname
+""" % progname)
 
 ##############################
 #
@@ -122,10 +122,10 @@ for a,b in opts:
 	failOnMissing= 1;
 
 # Find the parameter file list
-if os.environ.has_key("F_SUMM_INPUT"):
+if "F_SUMM_INPUT" in os.environ:
     fname= string.strip(os.environ["F_SUMM_INPUT"]);
     if verbose :
-	print "Loading environment %s"%fname;
+	print("Loading environment %s"%fname)
     f= open(fname);
     lines= map(trim,f.readlines());
     f.close();
@@ -140,7 +140,7 @@ for l in lines:
     if len(l)>0:
 	[a,b]= string.split(l);
 	if verbose : 
-	    print "<%s> <%s>; target <%s>"%(a,b,typestring);
+	    print("<%s> <%s>; target <%s>"%(a,b,typestring))
 	if match(a,typestring) >= 0:
 	    result= b;
 
@@ -155,8 +155,8 @@ if failOnMissing:
 if tailname:
     loc= string.rfind(result,"/");
     if loc < 0:
-	print result;
+	print(result)
     else:
-	print result[loc+1:];
+	print(result[loc+1:])
 else:
     print result;

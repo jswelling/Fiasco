@@ -32,7 +32,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -49,21 +49,21 @@ def printBlockList(title, blocks):
     blocks.reverse()
 
 def checkEnvInt(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= string.atoi(os.environ[name])
     else:
         result= val
     return result
 
 def checkEnvFloat(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= string.atof(os.environ[name])
     else:
         result= val
     return result
 
 def checkEnvString(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= os.environ[name]
     else:
         result= val

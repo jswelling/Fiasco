@@ -35,7 +35,7 @@ import os.path
 import string
 import getopt
 import re
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 

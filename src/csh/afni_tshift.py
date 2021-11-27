@@ -1,11 +1,11 @@
-#! /bin/env python
+#! /usr/bin/env python
 import sys
 import os
 import string
 import getopt
 import copy
 import math
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -27,7 +27,7 @@ if len(sys.argv)>1:
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",[])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print ("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 

@@ -38,7 +38,7 @@ import array
 import threading
 import popen2
 from math import *
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -210,7 +210,7 @@ try:
                                  ["nslices=","nimages=","out=","model=",
                                   "ordered","unordered","contrasts="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
