@@ -1496,6 +1496,7 @@ o.write(\
 #
 # This file was generated for architecture %s
 #
+ARCH = %s
 
 #
 # When this file was generated, configure was run from this directory:
@@ -1507,7 +1508,7 @@ TOPDIR = %s
 # build Fiasco.  Note that if MPI is to be used for parallelism,
 # you probably want mpicc!
 #
-"""%(rcsid,newDict['arch'], newDict['topdir']))
+"""%(rcsid,newDict['arch'], newDict['arch'], newDict['topdir']))
 maybeWrite(o,newDict,'CC')
 
 o.write(\

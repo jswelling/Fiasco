@@ -37,7 +37,7 @@ import getopt
 import math
 import copy
 import array
-from quaternion import *
+from .quaternion import *
 
 global _debug_
 global _verbose_
