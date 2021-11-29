@@ -75,7 +75,8 @@ class MyBuild(DistutilsBuild):
         fiasco_fiat_dir.mkdir(exist_ok=True)
         for fname in [
                 'src/fmri/quaternion.i', 'src/fmri/quaternion.c',
-                'src/csh/fiasco_utils.py'
+                'src/csh/fiasco_utils.py',
+                'src/fmri/fiasco_numpy.i', 'src/fmri/numpy.i',
         ]:
             link_in(fname, fiasco_fiat_dir)        
     
@@ -158,17 +159,53 @@ def gen_fiasco_utils_pymodule():
     return 'FiascoFiat.fiasco_utils'
 
 
+def gen_fiasco_numpy_extension():
+    top_dir = Path(__file__).parent
+    subprocess.run([top_dir / 'configure'])
+    config = read_config_dict(required=['ARCH', 'LAPACK_LIBS'])
+    libraries = ['fmri', 'misc']
+    library_dirs = [f"lib/{config['ARCH']}"]
+    libs, dirs = parse_link_args_for_libs(config['LAPACK_LIBS'])
+    libraries.extend(libs)
+    library_dirs.extend(dirs)
+    # Obtain the numpy include directory.
+    # This logic works across numpy versions.
+    try:
+        import numpy
+        numpy_include = numpy.get_include()
+    except ImportError:
+        sys.exit("The python package 'numpy' is not installed!")
+    except AttributeError:
+        numpy_include = numpy.get_numpy_include()
+    
+    return Extension(
+        '_fiasco_numpy',
+        ['FiascoFiat/fiasco_numpy.i'],
+        include_dirs=['FiascoFiat/include', numpy_include],
+        swig_opts=['-IFiascoFiat/include', f'-I{numpy_include}'],
+        libraries = libraries,
+        library_dirs= library_dirs,
+        define_macros=get_extra_macros(config)
+    )
+    
+
+def gen_fiasco_numpy_pymodule():
+    return 'FiascoFiat.fiasco_numpy'
+
+
 setup(
     cmdclass={'install':MyInstall, 'build':MyBuild},
     name='FiascoFiat',
     version='5.3.1',
     #packages=['quaternion'],
-    install_requires=['subprocess', 'pathlib'],
+    install_requires=['subprocess', 'pathlib', 'numpy'],
     ext_modules=[
         gen_quaternion_extension(),
+        gen_fiasco_numpy_extension(),
     ],
     py_modules=[
         gen_quaternion_pymodule(),
+        gen_fiasco_numpy_pymodule(),
         gen_fiasco_utils_pymodule()
     ],
 )
