@@ -32,7 +32,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -49,21 +49,21 @@ def printBlockList(title, blocks):
     blocks.reverse()
 
 def checkEnvInt(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= string.atoi(os.environ[name])
     else:
         result= val
     return result
 
 def checkEnvFloat(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= string.atof(os.environ[name])
     else:
         result= val
     return result
 
 def checkEnvString(val, name):
-    if os.environ.has_key(name):
+    if name in os.environ:
         result= os.environ[name]
     else:
         result= val
@@ -102,11 +102,11 @@ syncThresh= checkEnvFloat(-500.0, "F_PHYS_SYNCTHRESH") # threshold height for fi
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) )
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] )
-	sys.exit()
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) )
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] )
+        sys.exit()
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",["samptime=","ndisdaq=","syncchannel=","cardiochannel=","respchannel=","syncthresh="])
@@ -126,7 +126,7 @@ for a,b in opts:
     if a=="-v":
         setVerbose(1)
     if a=="-d":
-	setDebug(1)
+        setDebug(1)
     if a=="--samptime":
         sampTime= string.atoi(b)
     if a=="--ndisdaq":

@@ -31,7 +31,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -99,16 +99,16 @@ def maybeBuildNormalizedFunc(dsName):
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdl:h:r:",["basepath="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -156,7 +156,7 @@ valsInROI= \
                         fullStrippedAxialDSName))
 debugMessage("Found %d valid samples"%len(valsInROI))
 if len(valsInROI)==0:
-    print "0.0 0.0 0.0 0.0 0.0 0"
+    print("0.0 0.0 0.0 0.0 0.0 0")
 else:
     floatsInROI= [float(x) for x in valsInROI]
     floatsInROI.sort()
@@ -164,9 +164,9 @@ else:
     q1Loc= int(n/4)
     medianLoc= int(n/2)
     q3Loc= int((3*n)/4)
-    print "%r %r %r %r %r %d"%\
+    print("%r %r %r %r %r %d"%\
           (floatsInROI[0], floatsInROI[q1Loc], floatsInROI[medianLoc],
-           floatsInROI[q3Loc], floatsInROI[-1], n)
+           floatsInROI[q3Loc], floatsInROI[-1], n))
     
 # Clean up
 os.chdir(homedir)

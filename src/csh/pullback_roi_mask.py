@@ -31,7 +31,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -59,7 +59,7 @@ try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",
                                  ["srcdir=","thresh=","strippedthresh="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 

@@ -10,7 +10,7 @@
 
 PKG          = mripipes
 PKG_EXPORTS  = mripipes.h
-PKG_MAKELIBS = 
+PKG_MAKELIBS = $L/libmripipestools.a
 PKG_MAKEBINS = $(CB)/_mripipes.$(SHR_EXT) $(CB)/mripipes.py \
 	build_envs.bash
 
@@ -31,9 +31,59 @@ DOCFILES=
 #
 MISCFILES= mripipes.i mripipes.py mripipes_setup.py install_py_modules.bash
 
+TOOLS_OBJ= $O/test_tool.o $O/mri_file_input_tool.o \
+	$O/devnull_tool.o $O/passthru_tool.o $O/mri_file_output_tool.o \
+	$O/matmult_tool.o $O/rpn_math_tool.o $O/zero_src_tool.o \
+	$O/subset_tool.o $O/pad_tool.o $O/block_map_tool.o \
+	$O/func_2rows_unblocked_tool.o $O/special_tool.o
+
 .PHONY: build_envs.bash
 
 include ../Makefile_pkg
+
+$L/libmripipestools.a: $(TOOLS_OBJ)
+	@echo "%%%% Building $(@F) %%%%"
+	@$(AR) $(ARFLAGS) $L/libmripipestools.a $(TOOLS_OBJ)
+	@$(RANLIB) $L/libmripipestools.a
+
+$O/test_tool.o: test_tool.c
+	$(CC_RULE)
+
+$O/mri_file_input_tool.o: mri_file_input_tool.c
+	$(CC_RULE)
+
+$O/devnull_tool.o: devnull_tool.c
+	$(CC_RULE)
+
+$O/passthru_tool.o: passthru_tool.c
+	$(CC_RULE)
+
+$O/mri_file_output_tool.o: mri_file_output_tool.c
+	$(CC_RULE)
+
+$O/matmult_tool.o: matmult_tool.c
+	$(CC_RULE)
+
+$O/rpn_math_tool.o: rpn_math_tool.c
+	$(CC_RULE)
+
+$O/zero_src_tool.o: zero_src_tool.c
+	$(CC_RULE)
+
+$O/subset_tool.o: subset_tool.c
+	$(CC_RULE)
+
+$O/pad_tool.o: pad_tool.c
+	$(CC_RULE)
+
+$O/block_map_tool.o: block_map_tool.c
+	$(CC_RULE)
+
+$O/func_2rows_unblocked_tool.o: func_2rows_unblocked_tool.c
+	$(CC_RULE)
+
+$O/special_tool.o: special_tool.c
+	$(CC_RULE)
 
 $(CB)/_mripipes.$(SHR_EXT) $(CB)mripipes.py: \
 $(CSOURCE) $(HFILES) $L/libmisc.a

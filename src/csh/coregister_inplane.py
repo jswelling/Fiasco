@@ -32,7 +32,7 @@ import os.path
 import string
 import getopt
 from math import *
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -125,17 +125,17 @@ def algRequiresMeanCorrect( str ):
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",["oscript=","maxctrsep=",\
                                                     "alg="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -178,16 +178,16 @@ zdim= funcChunk.getDim("z");
 dimstr= funcChunk.getValue('dimensions');
 if dimstr != "xyz":
     if dimstr == "xyzt":
-	if funcChunk.getDim("t") != 1:
-	    sys.exit("Input file must have t extent 1!")
+        if funcChunk.getDim("t") != 1:
+            sys.exit("Input file must have t extent 1!")
     elif dimstr == "vxyzt":
         if funcChunk.getDim("t") != 1:
-	    sys.exit("Input file must have t extent 1!")
+            sys.exit("Input file must have t extent 1!")
         if funcChunk.getDim("v") != 1:
-	    sys.exit("Input file must have v extent 1!")
+            sys.exit("Input file must have v extent 1!")
     elif dimstr == "vxyz":
-	if funcChunk.getDim("v") != 1:
-	    sys.exit("Input file must have v extent 1!")
+        if funcChunk.getDim("v") != 1:
+            sys.exit("Input file must have v extent 1!")
     else:
         sys.exit("Input file must have dimensions (v)xyz(t)!")
 

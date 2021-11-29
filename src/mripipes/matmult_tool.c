@@ -29,7 +29,7 @@
 #include <stdcrg.h>
 #include <kvhash.h>
 #include <mripipes.h>
-#include "../fmri/lapack.h"
+#include "lapack.h"
 
 /***********************
  * Notes-

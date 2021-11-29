@@ -35,7 +35,7 @@ import getopt
 import urllib
 import re
 import grp
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -109,7 +109,7 @@ def buildAndCheckAnalysis( path, spec ):
         return 0
     try:
         os.makedirs(path)
-    except OSError, s:
+    except OSError as s:
         Message("Error creating %s: %s!"%(path,s))
     setPathProtection(path)
     homeDir= os.getcwd()

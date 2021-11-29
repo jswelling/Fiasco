@@ -11,7 +11,6 @@
 %module fiasco_numpy
 %{
 #define SWIG_FILE_WITH_INIT
-#include "numpy/old_defines.h"
 #include "glm.h"
 #include "optimizer.h"
 #include "quaternion.h"
@@ -142,7 +141,7 @@ Regressor* glm_create_poisson_regressor(void);
     data= PyTuple_GetItem(clientdata,3);
     
     dimensions[0]= n;
-    valArray= PyArray_FromDimsAndData(1,dimensions,PyArray_DOUBLE,(char*)vals);
+    valArray= PyArray_FromDimsAndData(1,dimensions,PyArray_DTYPE,(char*)vals);
 
     arglist = Py_BuildValue("OO",valArray,data);        // Build argument list
     resultObj = PyEval_CallObject(valFunc,arglist);     // Call Python
@@ -171,7 +170,7 @@ Regressor* glm_create_poisson_regressor(void);
     data= PyTuple_GetItem(clientdata,3);
     
     dimensions[0]= n;
-    valArray= PyArray_FromDimsAndData(1,dimensions,PyArray_DOUBLE,(char*)vals);
+    valArray= PyArray_FromDimsAndData(1,dimensions,PyArray_DTYPE,(char*)vals);
 
     arglist = Py_BuildValue("OO",valArray,data);        // Build argument list
     resultObj = PyEval_CallObject(resetFunc,arglist);     // Call Python

@@ -36,7 +36,7 @@ import os.path
 import string
 import getopt
 from math import *
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -161,7 +161,7 @@ if len(sys.argv)>1:
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vd",["oscript="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 

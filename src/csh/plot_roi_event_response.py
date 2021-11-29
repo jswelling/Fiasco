@@ -315,8 +315,8 @@ def recordSampleInEventTupleLists(liveEventTupleList, val, time):
     for i in xrange(len(liveEventTupleList)):
         t= liveEventTupleList[i]
         (name,start,sampList)= t
-##         print "State %s sees value %g at time %g - %g = %g"%\
-##               (name,val,time,start,time-start)
+##         print("State %s sees value %g at time %g - %g = %g"%\
+##               (name,val,time,start,time-start))
         sampList.append( ((time-start), val) )
 
 def binTime( time ):

@@ -41,7 +41,7 @@ L      = $(FMRI)/lib/$(ARCH)
 B      = $(FMRI)/bin/$(ARCH)
 I      = $(FMRI)/include/$(ARCH)
 CB     = $(FMRI)/bin/$(ARCH)
-D      = $(FMRI)/doc/generated
+D      = $(FMRI)/docs/generated
 CFLAGS = $(PKG_CFLAGS) $(FMRI_CFLAGS)
 LFLAGS = $(PKG_LFLAGS) -L$L $(FMRI_LFLAGS)
 LIBS   = $(PKG_LIBS) $(FMRI_LIBS)
@@ -84,9 +84,9 @@ install: docs
 	for fname in $(PKG_MAKEBINS) ; do cp $${fname} $(PREFIX)/bin ; done ;
 	mkdir -p $(PREFIX)/include
 	for fname in $(PKG_EXPORTS) ; do cp $${fname} $(PREFIX)/include ; done ;
-	mkdir -p $(PREFIX)/doc
-	mkdir -p $(PREFIX)/doc/generated
-	cp $D/*.html $(PREFIX)/doc/generated
+	mkdir -p $(PREFIX)/docs
+	mkdir -p $(PREFIX)/docs/generated
+	cp $D/*.html $(PREFIX)/docs/generated
 
 fiattarfile: $(HFILES) $(CSOURCE) $(ALL_MAKEFILES) $(DOCFILES) \
 		$(SCRIPTFILES) $(MISCFILES) depend.mk.dummy

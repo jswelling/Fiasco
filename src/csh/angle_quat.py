@@ -32,7 +32,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -66,4 +66,4 @@ for a,b in opts:
         zangle=float(b)
 
 Q=quat_from_euler_RzRyRx(None,zangle,yangle,xangle)
-print Q.x, Q.y, Q.z, Q.w
+print(Q.x, Q.y, Q.z, Q.w)

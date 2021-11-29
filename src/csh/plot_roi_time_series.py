@@ -32,8 +32,9 @@ import os.path
 import string
 import getopt
 import threading
-import popen2
-if os.environ.has_key("FIASCO"):
+import subprocess
+from subprocess import PIPE
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -46,7 +47,7 @@ autoBarLocList= [6.5, 23, 29.5, 46, 52.5, 69, 75.5, 92, 98.5, 115, 121.5,
 barLocList= None
 
 def parseBarLocations(txt):
-    print "Parsing <%s>"%txt
+    print("Parsing <%s>"%txt)
     substrings= txt.split(",")
     return [ float(x) for x in substrings ]
 
@@ -61,7 +62,9 @@ def runChildProcess(rCommand, voxValListList, rsList, bars, plotName,
     stdoutLines= []
     stderrLines= []
     debugMessage("Starting <%s>"%rCommand)
-    childHook= popen2.Popen3(rCommand,True)
+    childHook= subprocess.Popen(rCommand, shell=True,
+                                stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                                close_fds=True)
     stdoutThread= threading.Thread(group=None,target=slurpThisPipe,\
                                    args=(childHook.fromchild,stdoutLines))
     stdoutThread.start()
@@ -155,7 +158,7 @@ def runChildProcess(rCommand, voxValListList, rsList, bars, plotName,
 rCommand= "R --slave --no-save --no-restore-history --no-restore-data"
 #rCommand= "R --no-save --no-restore-history --no-restore-data"
 #rCommand= "cat"
-if os.environ.has_key('SPLUS'):
+if "SPLUS" in os.environ:
     rCommand= os.environ['SPLUS']
 if rCommand.find('R') >= 0:
     if rCommand.find('--no-save')<0: rCommand += ' --no-save'
@@ -167,18 +170,18 @@ elif rCommand.find('Splus')>=0:
 # Check for "-help"
 if len(sys.argv)>1:
     if sys.argv[1] == "-help":
-	if len(sys.argv)>2:
-	    os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
-	else:
-	    os.system( "scripthelp %s"%sys.argv[0] );
-	sys.exit();
+        if len(sys.argv)>2:
+            os.system( "scripthelp %s %s"%(sys.argv[0],sys.argv[2]) );
+        else:
+            os.system( "scripthelp %s"%sys.argv[0] );
+        sys.exit();
 
 try:
     (opts,pargs) = getopt.getopt(sys.argv[1:],"vdlr:",["out=","title=",
                                                        "autobars","bars=",
                                                        "window="])
 except:
-    print "%s: Invalid command line parameter" % sys.argv[0]
+    print("%s: Invalid command line parameter" % sys.argv[0])
     describeSelf();
     sys.exit()
 
@@ -281,8 +284,8 @@ for i in xrange(runningsumWindow):
 for i in xrange(runningsumWindow,tDim):
     rsList[i] /= float(runningsumWindow)
 ## for i in xrange(tDim):
-##     print "%d: vals %s -> mean %g -> running sum %g"%\
-##           (i,voxValListList[0][i],meanList[i],rsList[i])
+##     print("%d: vals %s -> mean %g -> running sum %g"%\
+##           (i,voxValListList[0][i],meanList[i],rsList[i]))
 
 # Create the plot
 runChildProcess(rCommand, voxValListList, rsList, barLocList, "test.ps",

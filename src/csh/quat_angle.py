@@ -32,7 +32,7 @@ import os
 import os.path
 import string
 import getopt
-if os.environ.has_key("FIASCO"):
+if "FIASCO" in os.environ:
     sys.path.append(os.environ["FIASCO"])
 from fiasco_utils import *
 
@@ -77,8 +77,8 @@ Q1=quat_create(None,qx,qy,qz,qw)
 (success, xangle, yangle, zangle)= quat_to_euler_RzRyRx(Q1,xangle,yangle,\
                                                         zangle)
 if success:
-    print xangle, yangle, zangle
+    print(xangle, yangle, zangle)
 else:
-    print "Conversion failed!"
+    print("Conversion failed!")
 
 

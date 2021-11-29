@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>build_model_matrix.py</title>
+  </head>
+  <body>
+    <h1>build_model_matrix.py</h1>
+<h2>Overview</h2>
+<pre>
+
+  build_model_matrix.py uses R to produce a design matrix from a Fiasco
+  split file and a model equation.
+
+   build_model_matrix.py [-v][-d] --nslices dz --nimages dt
+     --out outfile --model 'model equation' [--ordered | --unordered] 
+     [--contrasts none|poly|sum|treatment|helmert]
+     split1 [split2 [split3 ...]]
+
+  where
+
+    -v specifies verbose output
+    -d specifies debugging output
+    --nslices dz is the number of slices, presumably the same for all
+      the input splitfiles
+    --nimages dt is the total number of images covered by all the 
+      input splitfiles
+    --out outfile is a Pgh MRI file containing the output X matrix.
+      It will have dimensions vtz, where the extent of v matches
+      the number of matrix columns.
+    --model 'model equation' specifies the model equation, for
+      example '~ height*weight'.  The model must be specified in
+      terms of the factors given in the split file(s).
+    --ordered specifies that the factors are to be treated as ordered.
+      This is the default.
+    --unordered specifies that the factors are to be treated as unordered.
+    --contrasts contrastType specifies the type of contrast to be used
+      in constructing the design matrix.  For ordered data the options
+      are "none" and "sum" ("none" being the default).  For unordered
+      data the options are "treatment" and "helmert" ("treatment"
+      being the default).
+    split1 and etc. are split files of the type read by 'intsplit'.
+      If multiple files are given, they are concatenated in time.
+
+  or
+
+   build_model_matrix.py -help [topic]
+
+</pre>
+<h2>Details</h2>
+<pre>
+
+  This script provides an interface between the statistics package R
+  and Fiasco.  It runs R as a slave process, translates the
+  information in a Fiasco split file into a format R understands, uses
+  R to produce a model matrix, and translates the results back to the 
+  Fiasco universe.  In principle it should work with SPlus also, but 
+  problems in the management of the SPlus slave process prevent this.
+  The command to run is taken from the environment variable SPLUS,
+  if it is set, and modified appropriately.  If SPLUS is not set the
+  command used is 'R --slave --no-save'.
+
+  <b>NOTE</b> that if it did work with SPlus the resulting model matrix
+  would not be the same as that produced by R, because the two
+  packages use different default methods for factoring the model.
+
+  <b>NOTE</b> also that if you use a model matrix produced with R to perform
+  a regression using mri_glm, the results may differ from those which
+  R would produce for the same regression.  This is because R uses
+  QR decomposition while mri_glm uses SVD decomposition.
+
+  <h4>Handling of the Split File(s)</h4>
+
+  The model formula must be written in terms of the factors specified
+  on the second line(s) of the split file(s), and must be written
+  in the standard format used by R.  
+
+  If the split file(s) given do not specify experimental conditions
+  for the full range of times and slices, the remaining entries will
+  be marked missing (NA).  Any conditions which are specified for
+  times or slices outside the specified ranges are ignored.
+
+  <h4>Interaction With R</h4>
+
+  A separate R slave process is run and a separate model matrix
+  is generated for every slice, because, of course, the model matrix
+  can vary by slice.  The actual R instructions used to generate the 
+  model matrix are:
+
+    options('na.action'=na.pass)
+    ...CONTRASTS SET HERE...
+    ...FACTOR DEFINITIONS HERE...
+    ...
+    df &lt;- data.frame( 'FacName1'=fac1, 'FacName2'=fac2, ... )
+    mm &lt;- model.matrix( 'Formula', df )
+
+  where the FACTOR DEFINITIONS lines depend on the factor and
+  treatment types. The 'Formula' is of course that specified on the 
+  command line, and FacName1 and etc. are the factor names specified 
+  by the split files(s). 
+
+  If the --unordered flag is given, or the --ordered flag is given
+  (or defaulted) with a treatment type other than "none", the contrast
+  types are set via:
+
+    options(contrasts=c('contr.treatment','contr.poly'))
+
+  where 'treatment' and 'poly' are replaced with the unordered and
+  ordered contrast methods specified.  Ordered factors are then
+  generated with R commands like:
+
+    fac1 &lt;- ordered(c( ...FACTOR VALUES... ),
+                    levels=c( ...FACTOR LEVELS... ))
+
+  where '...FACTOR VALUES...' and '...FACTOR LEVELS...' are the
+  values and levels specified by the split file(s).  Any
+  number of factors can occur; they are numbered sequentially and
+  treated as fac1 is in the example.   Unordered factors are generated
+  using the factor() function in place of the ordered() function.
+
+  If the --ordered flag is given (or defaulted) and --contrast is set 
+  to 'none' (or defaulted), the factors are
+  produced with commands like:
+
+    fac1 &lt;- c( ...FACTOR VALUES... )
+
+  which results in a very simple contrast pattern.  In this case,
+  factor levels are not explicitly defined.
+ 
+  The values collected from R include the dimensions of the design
+  matrix, the elements of the design matrix, and the column names.
+  These names are those produced by the R command:
+
+    attr(mm,'dimnames')[[2]]
+
+  If the first of these is '(Intercept)', the associated column of 1's
+  is dropped from the design matrix, because mri_glm automatically
+  adds an equivalent column.  If the first column label is not 
+  '(Intercept)' the first column is not dropped; this can occur if
+  the formula given explicitly excludes the intercept.  <b>NOTE</b> that 
+  mri_glm will still include an intercept column in this case!
+
+  <h4>Structure of the Output File</h4>
+
+  The labels of the columns are saved in the output file keys of 
+  the form 'images.label.v.N' where N is the column number (counting
+  from zero).  Thus, for example, one can recover the label for the
+  third column with the command:
+
+    mri_printfield -fld images.label.v.2 outfile
+
+  Missing (NA) values in the split file(s) will result in
+  corresponding NaN (not-a-number) IEEE floating point values in the
+  output dataset.  Note that this is model-dependent.  If some factor
+  for a given time and slice has an unknown value but that factor is
+  not included in the model, the corresponding matrix element will 
+  not be NaN.  The NaN's thus mark missing values in the output
+  design matrix.
+
+  To use this design matrix in a run of mri_glm, the corresponding
+  data elements must also be marked missing in the 'missing' chunk
+  of the input dataset, and the design matrix NaN's must be replaced
+  with zeros.  This will cause mri_glm to drop the associated rows
+  of the regression.  The NaN design matrix elements must be copied 
+  to the 'missing' chunk of the input dataset and replaced with 0's
+  in the design matrix itself before the design matrix can be used
+  as a factor matrix to mri_glm.
+
+</pre>
+    <hr>
+    (automatically generated by build_model_matrix.py version of Mon Jul 15 00:18:47 2019)
+  </body>
+</html>
