@@ -14,7 +14,6 @@ def partition(pred, iterable):
     return itertools.filterfalse(pred, t1), filter(pred, t2)
 
 
-
 def link_in(pathstr, fiasco_fiat_dir):
     top_dir = fiasco_fiat_dir.parent
     target = top_dir / pathstr
@@ -30,11 +29,11 @@ class MyInstall(DistutilsInstall):
         self.do_post_install_stuff()
 
     def do_pre_install_stuff(self):
-        print(f'DO_PRE_INSTALL_STUFF IS HAPPENING in {self.build_base}')
-        print('DO_PRE_INSTALL_STUFF FINISHED')
+        pass
         
     def do_post_install_stuff(self):
-        print('DO_POST_INSTALL_STUFF IS HAPPENING')
+        pass
+
 
 class MyBuild(DistutilsBuild):
 
@@ -56,8 +55,6 @@ class MyBuild(DistutilsBuild):
         self.do_post_build_stuff()
 
     def do_pre_build_stuff(self):
-        print(f'DO_PRE_BUILD_STUFF IS HAPPENING in {self.build_base}')
-        sys.stdout.flush()
         top_dir = Path(__file__).parent
         subprocess.run([top_dir / 'configure'])
         subprocess.run(['make', '-f', top_dir / 'Makefile'])
@@ -85,10 +82,8 @@ class MyBuild(DistutilsBuild):
         for fname in fname_list:
             link_in(fname, fiasco_fiat_dir)        
     
-        print(f'DO_PRE_BUILD_STUFF FINISHED')
-        
     def do_post_build_stuff(self):
-        print('DO_POST_BUILD_STUFF IS HAPPENING')
+        pass
 
 def read_config_dict(required=[]):
     """
@@ -203,19 +198,6 @@ def gen_mripipes_extension():
     libs, dirs = parse_link_args_for_libs(config['LAPACK_LIBS'])
     libraries.extend(libs)
     library_dirs.extend(dirs)
-    # Obtain the numpy include directory.
-    # This logic works across numpy versions.
-    # try:
-    #     import numpy
-    #     numpy_include = numpy.get_include()
-    # except ImportError:
-    #     sys.exit("The python package 'numpy' is not installed!")
-    # except AttributeError:
-    #     numpy_include = numpy.get_numpy_include()
-    src_files = ['FiascoFiat/mripipes.i', 'FiascoFiat/mripipes.c']
-    # for path in Path('FiascoFiat').glob('*_tool.c'):
-    #     src_files.append(str(path))
-    # print(f'TOOLS: {src_files}')
     
     return Extension(
         '_mripipes',
