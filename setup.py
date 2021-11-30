@@ -193,6 +193,7 @@ def gen_fiasco_numpy_pymodule():
 
 def gen_mripipes_extension():
     config = read_config_dict(required=['ARCH', 'LAPACK_LIBS'])
+    src_files = ['FiascoFiat/mripipes.i', 'FiascoFiat/mripipes.c']
     libraries = ['mripipestools', 'mri', 'fmri', 'dcdf', 'misc', 'bio', 'crg']
     library_dirs = [f"lib/{config['ARCH']}"]
     libs, dirs = parse_link_args_for_libs(config['LAPACK_LIBS'])
