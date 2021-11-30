@@ -219,7 +219,6 @@ setup(
     cmdclass={'install':MyInstall, 'build':MyBuild},
     name='FiascoFiat',
     version='5.3.1',
-    #packages=['quaternion'],
     install_requires=['subprocess', 'pathlib', 'numpy'],
     ext_modules=[
         gen_quaternion_extension(),
